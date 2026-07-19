@@ -1,0 +1,19 @@
+# Godot
+.godot/
+*.import
+*.translation
+export/
+export_presets.cfg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+data/.env
+data/llm_config.json
+
+# Build
+*.exe
+*.dll
+*.pck

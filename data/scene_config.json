@@ -1,0 +1,63 @@
+{
+  "scene_info": {
+    "name": "客厅",
+    "description": "一个温馨的客厅，阳光从窗户照进来，沙发柔软舒适，茶几上摆着小说，餐桌上有杯珍珠奶茶"
+  },
+  "objects": [
+    {
+      "id": "sofa",
+      "name": "沙发",
+      "description": "一张柔软的米色布艺沙发，靠垫有点歪",
+      "state": "空着",
+      "affordances": ["sit", "lie_down"],
+      "position": [0.0, 0.0, 2.5],
+      "interaction_point": [0.0, 0.0, 1.5],
+      "needs_proximity": true,
+      "effects": {"energy": 15, "fun": 5}
+    },
+    {
+      "id": "tv",
+      "name": "电视机",
+      "description": "一台40寸液晶电视，遥控器在茶几上",
+      "state": "关闭",
+      "affordances": ["turn_on", "turn_off", "watch", "change_channel"],
+      "position": [0.0, 0.8, 5.0],
+      "interaction_point": [0.0, 0.0, 4.0],
+      "needs_proximity": true,
+      "effects": {"fun": 25}
+    },
+    {
+      "id": "book",
+      "name": "一本书",
+      "description": "一本翻到第42页的悬疑小说，主角刚刚发现了一个重要线索",
+      "state": "在茶几上",
+      "affordances": ["read", "pick_up", "put_down"],
+      "position": [0.5, 0.35, 2.0],
+      "interaction_point": [0.5, 0.0, 1.5],
+      "needs_proximity": true,
+      "effects": {"fun": 20}
+    },
+    {
+      "id": "milk_tea",
+      "name": "奶茶",
+      "description": "一杯刚做好的珍珠奶茶，杯子外壁挂着水珠，吸管还没插上",
+      "state": "满满一杯",
+      "affordances": ["drink", "pick_up", "put_down", "throw"],
+      "position": [2.0, 0.7, 1.5],
+      "interaction_point": [2.0, 0.0, 1.0],
+      "needs_proximity": true,
+      "consumable": true,
+      "effects": {"hunger": -15, "fun": 10}
+    },
+    {
+      "id": "plant",
+      "name": "绿植小绿",
+      "description": "一盆翠绿的室内盆栽，小叶子给它取名叫小绿，看起来需要浇水了",
+      "state": "需要浇水",
+      "affordances": ["water", "prune", "look_at"],
+      "position": [-2.0, 0.0, 3.5],
+      "interaction_point": [-2.0, 0.0, 2.8],
+      "needs_proximity": true
+    }
+  ]
+}
