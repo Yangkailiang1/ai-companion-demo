@@ -1,6 +1,6 @@
 # AI Companion Demo — 主开发进展
 
-> Godot 4.6.1 | GDScript | ECNU-Max (DeepSeek V4 Flash)
+> Godot 4.6.1 | GDScript | ECNU-Max (DeepSeek V4 Flash)（可选）
 
 ## 项目定位
 
@@ -10,59 +10,163 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
-## 当前状态（v0.1 — 核心闭环）
+## 当前状态（v0.2 — 角色模型 + 动作管线）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
-| MessageBus | done | `scripts/core/message_bus.gd` |
-| WorldSimulator | done | `scripts/core/world_simulator.gd` |
+| MessageBus | done (含 performance_cue 信号) | `scripts/core/message_bus.gd` |
+| WorldSimulator | done (含需求冷却) | `scripts/core/world_simulator.gd` |
 | SemanticWorld | done | `scripts/core/semantic_world.gd` |
-| MemorySystem | done | `scripts/core/memory_system.gd` |
-| CodifiedProfile | done | `scripts/core/codified_profile.gd` |
-| CognitiveCycle | done | `scripts/core/cognitive_cycle.gd` |
-| GOAPPlanner | done | `scripts/core/goap_planner.gd` |
-| ActionExecutor | done | `scripts/core/action_executor.gd` |
-| AgentBase | done | `scripts/characters/agent_base.gd` |
-| UI (chat + bubble) | done | `scripts/ui/` |
-| 3D 场景 | done | `scenes/living_room.tscn` |
+| MemorySystem | stub (Episode 存储 OK，Reflection 未实现) | `scripts/core/memory_system.gd` |
+| CodifiedProfile | done (关键词匹配) | `scripts/core/codified_profile.gd` |
+| CognitiveCycle | done (LLM + 本地 fallback + gesture) | `scripts/core/cognitive_cycle.gd` |
+| GOAPPlanner | done (10 goal blueprints + validated dynamic plan) | `scripts/core/goap_planner.gd` |
+| ActionExecutor | done (11 primitives + performance cues) | `scripts/core/action_executor.gd` |
+| AgentBase | done (NavMesh + walk/idle cues) | `scripts/characters/agent_base.gd` |
+| **CharacterAnimationDriver** | **new v0.2** | `scripts/characters/character_animation_driver.gd` |
+| **PerformanceCueTypes** | **new v0.2** | `scripts/core/performance_cue_types.gd` |
+| AnimationController | done (程序化 fallback) | `scripts/characters/animation_controller.gd` |
+| InteractableObject | done | `scripts/objects/interactable_object.gd` |
+| ChatInput + HUD | done | `scripts/ui/chat_input.gd` |
+| DialogueBubble | done | `scripts/ui/dialogue_bubble.gd` |
+| 3D 场景 | done (企鹅 GLB + Skeleton3D + driver；灰盒仅作隐藏 fallback) | `scenes/living_room.tscn` |
+| **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
+| **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
+| **Blender 导出管线** | **new v0.2** | `tools/blender/` |
+| **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
+| 主场景编排 | done (CanvasLayer UI + WorldRoot) | `scenes/main.tscn` |
 | 数据配置 | done | `data/` |
+| 架构文档 | done | `docs/PROJECT_ARCHITECTURE.md` |
+| 资产需求 | done | `docs/ASSET_REQUIREMENTS.md` |
+| **动作管线文档** | **new v0.2** | `docs/CHARACTER_ACTION_PIPELINE.md` |
+| **资产来源文档** | **new v0.2** | `docs/ASSET_PROVENANCE.md` |
+
+### v0.1 垂直切片关键修复
+
+- 修复 `living_room.tscn` 12 处 `Transform3D` 退化基矩阵
+- 合并 `SignalBus` → `MessageBus`（7→6 Autoloads）
+- 移除 `agent_base.gd` 中不存在的 `AnimationTree` 引用
+- 重构主场景：`CanvasLayer` + HUD + 紧凑聊天面板 + 底部输入栏
+- `CognitiveCycle` 本地 fallback：关键词匹配回复 + 需求驱动决策
+- 自主事件冷却：自动触发 15s 间隔，需求阈值 120s 冷却（防刷屏）
+- 修正时间单位：现实 5 分钟 = 游戏 1 小时（不再错误地每秒推进 12 游戏小时）
+- `AgentBase` NavMesh fallback：无 NavMesh 时直接位置插值移动（不卡死）
+- `ActionExecutor` 每轮完成后释放，避免长时间聊天产生节点泄漏
+- 玩家输入忙时进入 FIFO 队列，不再静默丢失；UI 明确显示在线 AI、本地规则、排队和思考状态
+- 明确指令由 Runtime 约束 Goal（如“看电视”固定为 `watch_tv`），LLM 负责自然回复
+- 修正奶茶效果方向（恢复饱腹度而非让角色更饿），自主发言间隔调整为 90–150 秒
+- 移除遮挡摄像机的天花板，重新布局家具、补充环境光和 4× MSAA
 
 ## 数据流
 
 ```
-WorldSimulator(_process) → needs decay → MessageBus
+WorldSimulator(_process) → needs decay → MessageBus (cooldown-gated)
 Player Input → ChatInput → MessageBus
+Agent IdleTimer 30-60s → MessageBus
     ↓
-CognitiveCycle: Perception → Memory → Codified → LLM → GOAP → ActionExecutor
+CognitiveCycle: Perception → Memory → Codified → LLM/Fallback → GOAP → ActionExecutor
     ↓
-AgentBase: navigate / interact / speak / idle
+AgentBase: navigate (NavMesh or direct-fallback) / interact / speak / idle
+    ↓
+UI: ChatLog + HUD (needs bars) + 3D Bubble
 ```
 
-## 待完成 (v0.1)
+## Autoload（6 个）
 
-- [ ] Godot 中打开项目验证场景渲染
-- [ ] NavigationRegion3D 烘焙导航网格
-- [ ] 首次端到端测试 (玩家输入 → LLM → Agent 动作)
-- [ ] `data/llm_config.json` 已加入 .gitignore，本地配置
+```
+MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedProfile → CognitiveCycle
+```
+
+## 已完成验证
+
+- [x] GDScript parse error 修复（chat_input dead code 移除）
+- [x] Scene Transform3D degenerate basis 修复（12 处）
+- [x] affordance_types.gd `socail` typo → `social`
+- [x] 灰盒客厅可渲染（8m×8m, 3墙+地板+天花板, 5 物体, 1 Agent）
+- [x] 玩家输入 → Agent fallback 回复
+- [x] 自动化 fallback smoke test：输入框提交 → ChatLog → Agent 回复 → 动作队列
+- [x] 需求系统运行（hunger/energy/fun/social decay + HUD 实时更新）
+- [x] Agent 移动（直接插值 fallback, 无需 NavMesh）
+- [x] Godot headless 主场景实例化与 7 个动画检查
+- [x] Blender 5.0 导出 + Godot GLB 导入（企鹅、庭院）
+- [x] 中文动作指令 → performance cue → AnimationPlayer 自动化验收
+- [x] 1280×720 主场景截图验收：企鹅模型、HUD、输入框可见
+
+## v0.2 新能力
+
+- [x] Performance Cue 统一协议：`MessageBus.performance_cue`（idle/walk/wave/nod/think/happy/sit/talk）
+- [x] CharacterAnimationDriver 独立适配器（跨入 CognitiveCycle 和 ActionExecutor）
+- [x] LLM JSON schema 增加 `gesture` 字段，Runtime 校验未知 gesture
+- [x] 本地 fallback 支持 4 个显式测试句（挥挥手→wave, 点点头→nod, 想一想→think, 开心一点→happy）
+- [x] AgentBase 根据 is_moving 自动切换 idle/walk cue
+- [x] ActionExecutor 在 SPEAK/SIT 时发出对应 cue（IDLE 不抢占显式 one-shot 动作）
+- [x] Blender 导出管线：`export_penguin.py` + `generate_penguin_animations.py` + `export_garden.py`
+- [x] 7 个程序化骨骼动画生成脚本（idle/walk/wave/nod/think/happy/sit）
+- [x] 幻想庭院预览场景 `scenes/environments/endless_garden_preview.tscn`
+- [x] 文档：CHARACTER_ACTION_PIPELINE.md, ASSET_PROVENANCE.md
+- [x] FIFO 队列保留（v0.1 已有，v0.2 未退化）
+
+## v0.3 空间自主状态
+
+- [x] Blender 导出脚本已生成 penguin.glb + garden.glb
+- [x] penguin.glb 已替换主场景 Capsule/Sphere 灰盒
+- [x] GLB 自带 AnimationPlayer 已由 CharacterAnimationDriver 自动发现
+- [ ] 配置 `data/llm_config.json` 后端到端 LLM + gesture 测试
+- [x] 客厅程序化 NavigationRegion3D（家具障碍、巡逻和闲逛路径）
+- [ ] 庭院 NavigationRegion3D 烘焙
+- [ ] 添加外部 3D 资产替换灰盒家具（沙发、电视、茶几等）
 
 ## 后续版本路线
 
 | 版本 | 内容 |
 |------|------|
-| v0.1 | 核心闭环（当前） |
-| v0.2 | 长期记忆 + Reflection 反思 + 情绪系统 |
-| v0.3 | 多 Agent + CASCADE 协调 + 本地小模型 |
+| v0.1 | 核心闭环 → done（可运行垂直切片） |
+| v0.2 | **角色模型集成 + 动作管线** → **完成并通过 Godot 自动化与截图验收** |
+| v0.3 | **空间自主：NavMesh、巡逻、闲逛、结构化计划** → done |
+| v0.4 | 长期记忆 + Reflection 反思 + 情绪系统 |
+| v0.5 | 多 Agent + CASCADE 协调 + 本地小模型 |
 
 ## 知识库
 
-详细架构/论文/实现见知识库索引：
 - [KB-00 总索引](./docs/KB-00-overview.md)
 - [KB-01 系统架构](./docs/KB-01-architecture.md)
 - [KB-02 论文引用](./docs/KB-02-papers.md)
 - [KB-03 实现细节](./docs/KB-03-implementation.md)
+- **[PROJECT_ARCHITECTURE](./docs/PROJECT_ARCHITECTURE.md)** — 完整架构文档 (v0.1 新增)
+- **[ASSET_REQUIREMENTS](./docs/ASSET_REQUIREMENTS.md)** — 资产需求清单 (v0.1 新增)
 
-## LLM 配置
+## LLM 配置（可选）
+
+无 `data/llm_config.json` 时使用本地 fallback。配置后自动切换完整 LLM 推理：
 
 - **API**: `https://chat.ecnu.edu.cn/open/api/v1` (OpenAI 兼容)
 - **模型**: `ecnu-max` → DeepSeek V4 Flash
 - **格式**: OpenAI Chat Completions
+- 配置模板见 `data/llm_config.json.example`
+
+## 快速启动
+
+### Godot 运行
+
+1. 用 Godot 4.6.1 打开 `project.godot`
+2. 按 F5 运行，看到企鹅角色 + 灰盒客厅 + 左上角 HUD + 左下聊天面板 + 底部输入栏
+3. 在底部输入框打字并回车或点"发送"
+4. 小叶子会回复并可能执行动作（喝奶茶、看电视等）
+5. 可选：创建 `data/llm_config.json` 启用完整 AI 推理
+
+### v0.2: Blender 资产管线（已执行）
+
+```bash
+# 1. 导出企鹅模型 + 生成动画
+/Applications/Blender.app/Contents/MacOS/Blender --background /Users/yangkailiang/Documents/ai_games/model/extracted/penguin.blend --python tools/blender/export_penguin.py
+/Applications/Blender.app/Contents/MacOS/Blender --background /Users/yangkailiang/Documents/ai_games/model/extracted/penguin.blend --python tools/blender/generate_penguin_animations.py
+
+# 2. 导出庭院场景
+/Applications/Blender.app/Contents/MacOS/Blender --background /Users/yangkailiang/Documents/ai_games/scene/extracted/garden.blend --python tools/blender/export_garden.py
+
+# 3. Godot 会自动导入 GLB；两个 PackedScene 已在对应 .tscn 中完成实例化
+
+# 4. 验证
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script scripts/debug/headless_check.gd
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script scripts/debug/gesture_pipeline_check.gd
+```

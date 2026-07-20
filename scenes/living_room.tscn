@@ -1,9 +1,58 @@
-[gd_scene load_steps=10 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=26 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
 [ext_resource type="Script" path="res://scripts/characters/animation_controller.gd" id="3_anim"]
 [ext_resource type="Script" path="res://scripts/ui/dialogue_bubble.gd" id="4_bubble"]
+[ext_resource type="Script" path="res://scripts/characters/character_animation_driver.gd" id="5_anim_driver"]
+[ext_resource type="PackedScene" path="res://assets/characters/penguin/penguin.glb" id="6_penguin"]
+[ext_resource type="Script" path="res://scripts/navigation/room_navigation_region.gd" id="7_navigation_region"]
+
+[sub_resource type="BoxMesh" id="mesh_floor"]
+size = Vector3(8, 0.1, 8)
+
+[sub_resource type="BoxMesh" id="mesh_wall"]
+size = Vector3(8, 3, 0.2)
+
+[sub_resource type="BoxMesh" id="mesh_wall_side"]
+size = Vector3(0.2, 3, 8)
+
+[sub_resource type="BoxMesh" id="mesh_sofa"]
+size = Vector3(2, 0.5, 0.8)
+
+[sub_resource type="BoxShape3D" id="shape_sofa"]
+size = Vector3(2, 0.5, 0.8)
+
+[sub_resource type="BoxMesh" id="mesh_table"]
+size = Vector3(2.1, 0.35, 1.1)
+
+[sub_resource type="BoxMesh" id="mesh_tv"]
+size = Vector3(2.5, 1.2, 0.1)
+
+[sub_resource type="BoxMesh" id="mesh_book"]
+size = Vector3(0.3, 0.05, 0.2)
+
+[sub_resource type="CylinderMesh" id="mesh_cup"]
+top_radius = 0.15
+bottom_radius = 0.12
+height = 0.3
+
+[sub_resource type="CylinderMesh" id="mesh_plant"]
+top_radius = 0.3
+bottom_radius = 0.2
+height = 0.6
+
+[sub_resource type="CapsuleMesh" id="mesh_agent_body"]
+radius = 0.4
+height = 2.0
+
+[sub_resource type="CapsuleShape3D" id="shape_agent"]
+radius = 0.36
+height = 1.25
+
+[sub_resource type="SphereMesh" id="mesh_head"]
+radius = 0.2
+height = 0.4
 
 [sub_resource type="StandardMaterial3D" id="mat_floor"]
 albedo_color = Color(0.85, 0.82, 0.75, 1)
@@ -18,132 +67,168 @@ albedo_color = Color(0.75, 0.68, 0.6, 1)
 albedo_color = Color(0.15, 0.15, 0.15, 1)
 
 [sub_resource type="StandardMaterial3D" id="mat_agent"]
-albedo_color = Color(0.4, 0.7, 1.0, 1)
+albedo_color = Color(0.18, 0.65, 1, 1)
+emission_enabled = true
+emission = Color(0.03, 0.18, 0.35, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="StandardMaterial3D" id="mat_book"]
+albedo_color = Color(0.2, 0.5, 0.8, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_milk_tea"]
+albedo_color = Color(0.85, 0.48, 0.22, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_plant"]
+albedo_color = Color(0.18, 0.62, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="mat_table"]
+albedo_color = Color(0.38, 0.22, 0.12, 1)
+roughness = 0.75
 
 [node name="LivingRoom" type="Node3D"]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = null
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 8, 0)
 shadow_enabled = true
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
-
 [node name="Floor" type="MeshInstance3D" parent="."]
-transform = Transform3D(8, 1, 8, 0, 0, 0, 0, 0, 0, 0, -0.05, 0)
-mesh = BoxMesh.new()
-mesh.size = Vector3(1, 1, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+mesh = SubResource("mesh_floor")
 surface_material_override/0 = SubResource("mat_floor")
 
-[node name="Walls" type="Node3D" parent="."]
-[node name="WallBack" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(8, 3, 0.2, 0, 0, 0, 0, 0, 0, 0, 1.5, -4)
-mesh = BoxMesh.new()
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+script = ExtResource("7_navigation_region")
+
+[node name="WallBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4)
+mesh = SubResource("mesh_wall")
 surface_material_override/0 = SubResource("mat_wall")
 
-[node name="WallLeft" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.2, 3, 8, 0, 0, 0, 0, 0, 0, -4, 1.5, 0)
-mesh = BoxMesh.new()
+[node name="WallLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
+mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
 
-[node name="WallRight" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.2, 3, 8, 0, 0, 0, 0, 0, 0, 4, 1.5, 0)
-mesh = BoxMesh.new()
+[node name="WallRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 0)
+mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
-
-; === 交互物体 ===
 
 [node name="Sofa" type="StaticBody3D" parent="."]
-transform = Transform3D(2.0, 0.5, 0.8, 0, 0, 0, 0, 0, 0, 0, 0.25, 2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.25, 1.8)
 script = ExtResource("1_interact")
 object_id = "sofa"
 object_name = "沙发"
-[node name="Mesh" type="MeshInstance3D" parent="Sofa"]
-mesh = BoxMesh.new()
-mesh.size = Vector3(1, 1, 1)
+
+[node name="SofaMesh" type="MeshInstance3D" parent="Sofa"]
+mesh = SubResource("mesh_sofa")
 surface_material_override/0 = SubResource("mat_sofa")
 
+[node name="SofaCollision" type="CollisionShape3D" parent="Sofa"]
+shape = SubResource("shape_sofa")
+
 [node name="TV" type="StaticBody3D" parent="."]
-transform = Transform3D(2.5, 1.2, 0.1, 0, 0, 0, 0, 0, 0, 0, 0.8, 5.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.85, -3.82)
 script = ExtResource("1_interact")
 object_id = "tv"
 object_name = "电视机"
-[node name="Mesh" type="MeshInstance3D" parent="TV"]
-mesh = BoxMesh.new()
-mesh.size = Vector3(1, 1, 1)
+
+[node name="TVMesh" type="MeshInstance3D" parent="TV"]
+mesh = SubResource("mesh_tv")
 surface_material_override/0 = SubResource("mat_tv")
 
+[node name="CoffeeTable" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.175, 0.7)
+mesh = SubResource("mesh_table")
+surface_material_override/0 = SubResource("mat_table")
+
 [node name="Book" type="StaticBody3D" parent="."]
-transform = Transform3D(0.3, 0.05, 0.2, 0, 0, 0, 0, 0, 0, 0.5, 0.35, 2.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.4, 0.7)
 script = ExtResource("1_interact")
 object_id = "book"
 object_name = "一本书"
-[node name="Mesh" type="MeshInstance3D" parent="Book"]
-mesh = BoxMesh.new()
-mesh.size = Vector3(1, 1, 1)
-surface_material_override/0 = StandardMaterial3D.new()
-surface_material_override/0.albedo_color = Color(0.2, 0.5, 0.8, 1)
+
+[node name="BookMesh" type="MeshInstance3D" parent="Book"]
+mesh = SubResource("mesh_book")
+surface_material_override/0 = SubResource("mat_book")
 
 [node name="MilkTea" type="StaticBody3D" parent="."]
-transform = Transform3D(0.15, 0.3, 0.15, 0, 0, 0, 0, 0, 0, 2.0, 0.7, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.52, 0.7)
 script = ExtResource("1_interact")
 object_id = "milk_tea"
 object_name = "奶茶"
-[node name="Mesh" type="MeshInstance3D" parent="MilkTea"]
-mesh = CylinderMesh.new()
-mesh.top_radius = 0.15
-mesh.bottom_radius = 0.12
-mesh.height = 0.3
+
+[node name="MilkTeaMesh" type="MeshInstance3D" parent="MilkTea"]
+mesh = SubResource("mesh_cup")
+surface_material_override/0 = SubResource("mat_milk_tea")
 
 [node name="Plant" type="StaticBody3D" parent="."]
-transform = Transform3D(0.4, 0.6, 0.4, 0, 0, 0, 0, 0, 0, -2.0, 0.3, 3.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 0.3, -2.65)
 script = ExtResource("1_interact")
 object_id = "plant"
 object_name = "绿植小绿"
-[node name="Mesh" type="MeshInstance3D" parent="Plant"]
-mesh = CylinderMesh.new()
-mesh.top_radius = 0.3
-mesh.bottom_radius = 0.2
-mesh.height = 0.6
 
-; === Agent 角色 ===
+[node name="PlantMesh" type="MeshInstance3D" parent="Plant"]
+mesh = SubResource("mesh_plant")
+surface_material_override/0 = SubResource("mat_plant")
 
 [node name="Agent" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0, 0.4)
 script = ExtResource("2_agent")
 agent_name = "main_agent"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Agent"]
-shape = CapsuleShape3D.new()
-shape.radius = 0.3
-shape.height = 1.8
+[node name="AgentCollision" type="CollisionShape3D" parent="Agent"]
+position = Vector3(0, 0.625, 0)
+shape = SubResource("shape_agent")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Agent"]
-transform = Transform3D(0.4, 1.0, 0.4, 0, 0, 0, 0, 0, 0, 0, 0.9, 0)
-mesh = CapsuleMesh.new()
-mesh.radius = 0.4
-mesh.height = 2.0
+[node name="AgentBody" type="MeshInstance3D" parent="Agent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("mesh_agent_body")
 surface_material_override/0 = SubResource("mat_agent")
+visible = false
 
 [node name="AnimationController" type="Node3D" parent="Agent"]
 script = ExtResource("3_anim")
-[node name="AnimMesh" type="MeshInstance3D" parent="Agent/AnimationController"]
-mesh = SphereMesh.new()
-mesh.radius = 0.2
-mesh.height = 0.4
-transform = Transform3D(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1.2, 0)
+visible = false
+
+[node name="PenguinModel" parent="Agent" instance=ExtResource("6_penguin")]
+scale = Vector3(1.35, 1.35, 1.35)
+
+[node name="AgentHead" type="MeshInstance3D" parent="Agent/AnimationController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+mesh = SubResource("mesh_head")
+surface_material_override/0 = SubResource("mat_agent")
+
+[node name="AgentNameLabel" type="Label3D" parent="Agent"]
+position = Vector3(0, 1.72, 0)
+text = "小叶子"
+font_size = 42
+outline_size = 8
+modulate = Color(0.88, 0.95, 1, 1)
+outline_modulate = Color(0.02, 0.05, 0.1, 0.95)
+billboard = 1
+no_depth_test = true
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="Agent"]
+path_desired_distance = 0.3
+target_desired_distance = 0.45
+radius = 0.36
+height = 1.25
+
+[node name="CharacterAnimationDriver" type="Node" parent="Agent"]
+script = ExtResource("5_anim_driver")
+
+[node name="IdleTimer" type="Timer" parent="Agent"]
 
 [node name="DialogueBubble" type="Sprite3D" parent="Agent"]
-transform = Transform3D(0.3, 0.15, 1, 0, 0, 0, 0, 0, 0, 0, 1.8, 0)
+position = Vector3(0, 1.95, 0)
 script = ExtResource("4_bubble")
 billboard = 1
 
-[node name="Label3D" type="Label3D" parent="Agent/DialogueBubble"]
-pixel_size = 0.01
-font_size = 32
-outline_size = 2
-modulate = Color(0, 0, 0, 1)
+[node name="BubbleLabel" type="Label3D" parent="Agent/DialogueBubble"]
+pixel_size = 0.006
+font_size = 38
+outline_size = 7
+modulate = Color(1, 1, 1, 1)
+outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+no_depth_test = true

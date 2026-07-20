@@ -1,11 +1,11 @@
 # action_executor.gd — Primitive Action 执行器
-# 设计文档 §五.1: 8 个 Primitive Actions 的逐帧执行
-# 负责将 GOAP 生成的 Action Chain 逐个驱动 Godot 中的角色
+# 设计文档 §五.1: 11 个 Primitive Actions 的逐帧执行
+class_name ActionExecutor
 
 extends Node
 
 # 当前正在执行的 Action 队列
-var action_queue: Array[AffordanceTypes.PrimitiveAction] = []
+var action_queue=  []
 var current_action_index: int = 0
 var current_action: AffordanceTypes.PrimitiveAction = null
 
@@ -14,19 +14,30 @@ var agent_node: Node3D = null
 
 # 执行状态
 var is_executing: bool = false
+var _cancelled: bool = false
 signal queue_completed(agent_id: String)
 signal action_completed(action: AffordanceTypes.PrimitiveAction)
 
 
-func start_queue(agent: Node3D, actions: Array[AffordanceTypes.PrimitiveAction]) -> void:
+func start_queue(agent: Node3D, actions: Array) -> void:
 	agent_node = agent
 	action_queue = actions
 	current_action_index = 0
 	is_executing = true
+	_cancelled = false
 	_execute_next()
 
 
+func cancel() -> void:
+	_cancelled = true
+	is_executing = false
+	if is_instance_valid(agent_node) and agent_node.has_method("cancel_movement"):
+		agent_node.cancel_movement("action_cancelled")
+
+
 func _execute_next() -> void:
+	if _cancelled:
+		return
 	if current_action_index >= action_queue.size():
 		is_executing = false
 		queue_completed.emit(agent_node.name)
@@ -40,6 +51,12 @@ func _execute_action(action: AffordanceTypes.PrimitiveAction) -> void:
 	match action.type:
 		AffordanceTypes.Primitive.NAVIGATE:
 			_navigate(action.params)
+		AffordanceTypes.Primitive.NAVIGATE_POSITION:
+			_navigate_position(action.params)
+		AffordanceTypes.Primitive.PATROL:
+			_patrol(action.params)
+		AffordanceTypes.Primitive.WANDER:
+			_wander(action.params)
 		AffordanceTypes.Primitive.INTERACT:
 			_interact(action.params)
 		AffordanceTypes.Primitive.SPEAK:
@@ -73,17 +90,67 @@ func _navigate(params: Dictionary) -> void:
 		_on_action_finished()
 		return
 
-	if agent_node and agent_node.has_method("move_to"):
-		agent_node.move_to(obj.interaction_point)
-		# 等待到达信号
-		if agent_node.has_signal("arrived"):
-			await agent_node.arrived
-		else:
-			await get_tree().create_timer(1.5).timeout
-	else:
-		await get_tree().create_timer(1.0).timeout
+	await _travel_to(obj.interaction_point)
+	_finish_if_active()
 
-	_on_action_finished()
+
+func _navigate_position(params: Dictionary) -> void:
+	var navigation := RoomNavigation.new()
+	var target := Vector3.ZERO
+	var waypoint_name := String(params.get("waypoint", ""))
+	if not waypoint_name.is_empty() and navigation.has_waypoint(waypoint_name):
+		target = navigation.get_waypoint(waypoint_name)
+	else:
+		target = _to_vec3(params.get("position", Vector3.ZERO))
+	if not navigation.is_safe_position(target):
+		push_warning("ActionExecutor: rejected unsafe navigation target %s" % target)
+		_finish_if_active()
+		return
+	await _travel_to(target)
+	_finish_if_active()
+
+
+func _patrol(params: Dictionary) -> void:
+	var navigation := RoomNavigation.new()
+	var route_name := String(params.get("route", "room_perimeter"))
+	var laps := clampi(int(params.get("laps", 1)), 1, 3)
+	var route := navigation.get_route(route_name, laps)
+	if route.size() < 2:
+		push_warning("ActionExecutor: patrol route '%s' is missing or too short" % route_name)
+		_finish_if_active()
+		return
+	if agent_node.has_method("begin_locomotion_sequence"):
+		agent_node.begin_locomotion_sequence()
+	for target in route:
+		if _cancelled:
+			return
+		var success := await _travel_to(target)
+		if not success:
+			break
+	if is_instance_valid(agent_node) and agent_node.has_method("end_locomotion_sequence"):
+		agent_node.end_locomotion_sequence()
+	_finish_if_active()
+
+
+func _wander(params: Dictionary) -> void:
+	var navigation := RoomNavigation.new()
+	var point_index := int(params.get("point_index", -1))
+	var from_position := agent_node.global_position if is_instance_valid(agent_node) else Vector3.ZERO
+	await _travel_to(navigation.get_wander_point_away(from_position, 1.0, point_index))
+	_finish_if_active()
+
+
+func _travel_to(target: Vector3) -> bool:
+	if _cancelled or not is_instance_valid(agent_node):
+		return false
+	if not agent_node.has_method("move_to_position"):
+		return false
+	agent_node.move_to_position(target)
+	while not _cancelled and is_instance_valid(agent_node) and agent_node.is_moving:
+		await get_tree().process_frame
+	if _cancelled or not is_instance_valid(agent_node):
+		return false
+	return agent_node.global_position.distance_to(target) <= 0.75
 
 
 func _interact(params: Dictionary) -> void:
@@ -112,6 +179,7 @@ func _speak(params: Dictionary) -> void:
 	var tone: String = params.get("tone", "neutral")
 	if not text.is_empty():
 		MessageBus.ui_show_bubble.emit(text, tone, 4.0)
+	MessageBus.performance_cue.emit("talk", {"source": "executor"})
 	# speak 不阻塞，立即继续
 	_on_action_finished()
 
@@ -142,6 +210,7 @@ func _put_down(params: Dictionary) -> void:
 
 
 func _sit(params: Dictionary) -> void:
+	MessageBus.performance_cue.emit("sit", {"source": "executor"})
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
 
@@ -149,9 +218,26 @@ func _sit(params: Dictionary) -> void:
 # === 内部 ===
 
 func _on_action_finished() -> void:
+	if _cancelled:
+		return
 	action_completed.emit(current_action)
 	current_action_index += 1
 	call_deferred("_execute_next")
+
+
+func _finish_if_active() -> void:
+	if not _cancelled:
+		_on_action_finished()
+
+
+func _to_vec3(value: Variant) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	if value is Dictionary:
+		return Vector3(float(value.get("x", 0.0)), float(value.get("y", 0.0)), float(value.get("z", 0.0)))
+	return Vector3.ZERO
 
 
 func _str_to_need_type(str: String):

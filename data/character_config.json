@@ -28,7 +28,7 @@
     {
       "condition": "奶茶在附近且超过2小时没喝",
       "reaction": "盯着奶茶看了好久，忍不住想喝一口",
-      "random_prob": 0.3
+      "random_prob": 0.08
     },
     {
       "condition": "窗外阳光很好",

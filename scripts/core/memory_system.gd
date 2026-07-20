@@ -6,7 +6,7 @@ extends Node
 
 # === Episode Memory (SQLite 风格 — 用 JSON 文件存储)
 # 存储格式: {timestamp, content, importance(1-10)}
-var episode_memory: Array[Dictionary] = []
+var episode_memory=  []
 const MAX_EPISODES: int = 500
 
 # === Semantic Memory (键值对)
@@ -70,9 +70,9 @@ func update_relationship(target: String, field: String, delta: float) -> void:
 # === 读操作 (检索) ===
 # 参考 [GA §4.2.2]: score(m) = α·recency(m) + β·importance(m) + γ·relevance(query, m)
 
-func retrieve_relevant(query: String, top_k: int = 5, alpha: float = 1.0, beta: float = 1.0, gamma: float = 1.0) -> Array[Dictionary]:
+func retrieve_relevant(query: String, top_k: int = 5, alpha: float = 1.0, beta: float = 1.0, gamma: float = 1.0) -> Array:
 	var now = Time.get_unix_time_from_system()
-	var scored: Array[Dictionary] = []
+	var scored=  []
 
 	for ep in episode_memory:
 		var age_hours = (now - (ep["timestamp"] as float)) / 3600.0
@@ -84,7 +84,7 @@ func retrieve_relevant(query: String, top_k: int = 5, alpha: float = 1.0, beta: 
 		scored.append({"entry": ep, "score": score})
 
 	scored.sort_custom(func(a, b): return a["score"] > b["score"])
-	var result: Array[Dictionary] = []
+	var result=  []
 	for i in range(min(top_k, scored.size())):
 		result.append(scored[i]["entry"])
 
@@ -116,7 +116,7 @@ func add_reflection(content: String) -> void:
 # === 格式化输出（给 LLM 用）===
 
 func format_for_llm(query: String = "") -> String:
-	var lines: Array[String] = []
+	var lines=  []
 
 	# 最近记忆
 	var recent = retrieve_relevant(query, 5)

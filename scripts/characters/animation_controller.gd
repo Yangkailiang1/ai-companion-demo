@@ -4,6 +4,8 @@
 
 extends Node3D
 
+# mesh_instance 在场景中通过 inspector 设置，指向子 MeshInstance3D
+# 如果未设置，_ready 中自动从第一个子 MeshInstance3D 获取
 @export var mesh_instance: MeshInstance3D
 @export var default_color: Color = Color(0.4, 0.7, 1.0)
 
@@ -15,6 +17,13 @@ var is_active: bool = true
 
 
 func _ready():
+	# 如果未在 inspector 设置，尝试从子节点获取
+	if not mesh_instance:
+		for child in get_children():
+			if child is MeshInstance3D:
+				mesh_instance = child
+				break
+
 	if mesh_instance:
 		var mat = StandardMaterial3D.new()
 		mat.albedo_color = default_color

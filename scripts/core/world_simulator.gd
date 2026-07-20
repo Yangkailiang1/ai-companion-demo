@@ -9,8 +9,9 @@ var game_time: float = 8.0        # 游戏小时（0-24，8 = 早上8点）
 var day_number: int = 1           # 游戏天数
 var time_of_day: AffordanceTypes.TimeOfDay = AffordanceTypes.TimeOfDay.MORNING
 
-# 时间流速：现实 5 分钟 = 游戏 1 小时 → ratio = 12
-const TIME_RATIO: float = 12.0
+# 时间流速：现实 5 分钟 = 游戏 1 小时。
+# accumulator 的单位是“游戏小时”，因此每个现实秒只推进 1/300 小时。
+const GAME_HOURS_PER_REAL_SECOND: float = 1.0 / 300.0
 var time_accumulator: float = 0.0
 
 # Agent Needs 状态
@@ -27,12 +28,15 @@ const NEED_DECAY := {
 
 # 需求阈值：触发 Agent 认知循环
 const NEED_THRESHOLD := {
-	AffordanceTypes.NeedType.HUNGER: 30.0,   # 低于30 → 饿了
-	AffordanceTypes.NeedType.ENERGY: 20.0,   # 低于20 → 困了
-	AffordanceTypes.NeedType.SOCIAL: 20.0,   # 低于20 → 想聊天
-	AffordanceTypes.NeedType.FUN: 20.0,      # 低于20 → 找事做
-	AffordanceTypes.NeedType.BLADDER: 80.0,  # 高于80 → 需要去厕所
+	AffordanceTypes.NeedType.HUNGER: 30.0,
+	AffordanceTypes.NeedType.ENERGY: 20.0,
+	AffordanceTypes.NeedType.SOCIAL: 20.0,
+	AffordanceTypes.NeedType.FUN: 20.0,
+	AffordanceTypes.NeedType.BLADDER: 80.0,
 }
+
+# 阈值触发冷却（防止每个 game hour 都触发）
+var _last_threshold_trigger: Dictionary = {}
 
 
 func _ready():
@@ -42,7 +46,7 @@ func _ready():
 
 func _process(delta: float) -> void:
 	# 时间流逝
-	time_accumulator += delta * TIME_RATIO
+	time_accumulator += delta * GAME_HOURS_PER_REAL_SECOND
 	while time_accumulator >= 1.0:
 		time_accumulator -= 1.0
 		_advance_one_game_hour()
@@ -67,7 +71,7 @@ func _advance_one_game_hour() -> void:
 			"day": day_number
 		})
 
-	# 检查是否需要触发 Agent（需求低于阈值）
+	# 检查是否需要触发 Agent（需求低于阈值，带冷却）
 	_check_need_thresholds()
 
 
@@ -93,12 +97,21 @@ func _check_need_thresholds() -> void:
 		var triggered = (need_type == AffordanceTypes.NeedType.BLADDER) and (value >= threshold)
 		triggered = triggered or ((need_type != AffordanceTypes.NeedType.BLADDER) and (value <= threshold))
 
-		if triggered:
-			MessageBus.route_simulation_event("main_agent", "need_threshold", {
-				"need_type": need_type,
-				"value": value,
-				"threshold": threshold
-			})
+		if not triggered:
+			continue
+
+		# 冷却检查：每种 need type 至少间隔 30 game hours 才重复触发
+		var now = Time.get_unix_time_from_system()
+		var last_trigger = _last_threshold_trigger.get(need_type, 0.0) as float
+		if now - last_trigger < 120.0:  # 至少 2 分钟真实时间
+			continue
+		_last_threshold_trigger[need_type] = now
+
+		MessageBus.route_simulation_event("main_agent", "need_threshold", {
+			"need_type": need_type,
+			"value": value,
+			"threshold": threshold
+		})
 
 
 func _calculate_time_of_day() -> AffordanceTypes.TimeOfDay:

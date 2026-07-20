@@ -20,7 +20,7 @@ class ObjectData:
 	var name: String
 	var description: String
 	var state: String
-	var affordances: Array[String] = []
+	var affordances=  []
 	var position: Vector3
 	var interaction_point: Vector3
 	var needs_proximity: bool = true
@@ -125,8 +125,8 @@ func can_interact(obj_id: String, verb: String) -> bool:
 	return verb in obj.affordances
 
 # 获取可见物体列表（Function Calling 风格）
-func list_objects(filter_type: String = "") -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
+func list_objects(filter_type: String = "") -> Array:
+	var result=  []
 	for obj_id in objects:
 		var obj = objects[obj_id]
 		result.append(obj.to_dict())
@@ -143,7 +143,7 @@ func get_interaction_effects(obj_id: String, verb: String) -> Dictionary:
 
 func generate_semantic_snapshot(agent_id: String = "main_agent") -> String:
 	var sim = WorldSimulator.get_state_snapshot()
-	var lines: Array[String] = []
+	var lines=  []
 
 	lines.append("[当前场景]")
 	lines.append("%s，%s。" % [sim["time_of_day"], scene_info["description"]])
@@ -153,7 +153,7 @@ func generate_semantic_snapshot(agent_id: String = "main_agent") -> String:
 	lines.append("你的状态：饥饿感(%d/100) 精力(%d/100)" % [needs["hunger"] as float, needs["energy"] as float])
 
 	# 场景中的物体
-	var obj_descs: Array[String] = []
+	var obj_descs=  []
 	for obj_id in objects:
 		var obj = objects[obj_id]
 		obj_descs.append(obj.to_nl())

@@ -1,6 +1,6 @@
 # goap_planner.gd — Goal → Task Tree → Primitive Actions
 # 设计文档 §五.2: LLM 输出 Goal，GOAP 分解为 Primitive Chain
-# Precondition → Action → Effect 风格
+class_name GOAPPlanner
 
 extends Node
 
@@ -46,15 +46,19 @@ func _build_blueprints():
 			_pa(AffordanceTypes.Primitive.IDLE, {"duration": 8.0}),
 		],
 		"look_out_window": [
-			_pa(AffordanceTypes.Primitive.LOOK_AT, {"target": "window"}),
 			_pa(AffordanceTypes.Primitive.IDLE, {"duration": 3.0}),
 		],
 		"stretch": [
 			_pa(AffordanceTypes.Primitive.IDLE, {"duration": 2.0}),
 		],
 		"wave_at_player": [
-			_pa(AffordanceTypes.Primitive.LOOK_AT, {"target": "player"}),
 			_pa(AffordanceTypes.Primitive.IDLE, {"duration": 1.5}),
+		],
+		"patrol_room": [
+			_pa(AffordanceTypes.Primitive.PATROL, {"route": "room_perimeter", "laps": 1}),
+		],
+		"wander_room": [
+			_pa(AffordanceTypes.Primitive.WANDER, {}),
 		],
 	}
 
@@ -77,7 +81,7 @@ func _validate_blueprints():
 
 # === 核心：将 Goal 展开为 Primitive Action 链 ===
 
-func plan(goal: String) -> Array[AffordanceTypes.PrimitiveAction]:
+func plan(goal: String) -> Array:
 	# 1. 精确匹配
 	if goal_blueprints.has(goal):
 		return goal_blueprints[goal].duplicate()
@@ -95,19 +99,19 @@ func plan(goal: String) -> Array[AffordanceTypes.PrimitiveAction]:
 # === 动态生成 Goal Blueprint（当 LLM 提出新 Goal，而映射表里没有时） ===
 
 func register_blueprint(goal: String, object_id: String, verb: String) -> void:
-	var actions: Array[AffordanceTypes.PrimitiveAction] = []
+	var actions=  []
 	actions.append(_pa(AffordanceTypes.Primitive.NAVIGATE, {"target": object_id}))
 	actions.append(_pa(AffordanceTypes.Primitive.INTERACT, {"object": object_id, "verb": verb}))
 	goal_blueprints[goal] = actions
 
 
 # 使用 affordance 表自动生成 blueprint
-func auto_plan(goal: String, object_id: String) -> Array[AffordanceTypes.PrimitiveAction]:
+func auto_plan(goal: String, object_id: String) -> Array:
 	var obj = SemanticWorld.get_object(object_id)
 	if not obj:
 		return [_pa(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
 
-	var actions: Array[AffordanceTypes.PrimitiveAction] = []
+	var actions=  []
 
 	# 需要接近的物体 → navigate
 	if obj.needs_proximity:

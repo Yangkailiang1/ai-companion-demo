@@ -1,4 +1,4 @@
-# codified_profile.gd — 角色逻辑编码
+# codified_profile.gd — 角色逻辑编码 (Autoload)
 # 设计文档 §十：Codified Profile [CCL §3.2]
 # 用确定性的 check_condition + if-then-else 替代纯 Prompt 描述角色
 
@@ -51,8 +51,8 @@ func _create_default_profile():
 
 # === 核心函数：给定场景和世界状态，输出角色逻辑触发的断言 [CCL §3.2] ===
 
-func parse_by_scene(semantic_snapshot: String, player_message: String = "") -> Array[Dictionary]:
-	var triggered: Array[Dictionary] = []
+func parse_by_scene(semantic_snapshot: String, player_message: String = "") -> Array:
+	var triggered=  []
 
 	for rule in profile_data.get("rules", []):
 		var condition: String = rule["condition"]
@@ -111,7 +111,7 @@ func _check_local_condition(condition: String, semantic_snapshot: String, player
 # === 获取角色身份信息 ===
 
 func get_identity() -> String:
-	var lines: Array[String] = []
+	var lines=  []
 	lines.append("你是%s。" % profile_data.get("name", "未知角色"))
 	lines.append("性格：%s。" % profile_data.get("personality", ""))
 	lines.append("以下是你一直知道的事情：")
@@ -122,10 +122,10 @@ func get_identity() -> String:
 
 # === 获取已触发的角色逻辑描述（给 LLM 看） ===
 
-func get_triggered_log(triggered: Array[Dictionary]) -> String:
+func get_triggered_log(triggered: Array) -> String:
 	if triggered.is_empty():
 		return ""
-	var lines: Array[String] = []
+	var lines=  []
 	lines.append("[自动触发的角色反应]")
 	for t in triggered:
 		lines.append("- " + t["reaction"])

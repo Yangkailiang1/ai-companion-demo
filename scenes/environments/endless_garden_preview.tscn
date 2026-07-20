@@ -1,0 +1,60 @@
+[gd_scene load_steps=6 format=3 uid="uid://garden_preview01"]
+
+[ext_resource type="PackedScene" path="res://assets/environments/endless_garden/garden.glb" id="1_garden"]
+[ext_resource type="Script" path="res://scripts/environments/garden_preview.gd" id="2_preview"]
+
+[sub_resource type="Environment" id="Environment_garden"]
+background_mode = 1
+background_color = Color(0.055, 0.07, 0.11, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.5, 0.7, 1)
+ambient_light_energy = 0.45
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="mat_grid"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+roughness = 0.9
+
+[sub_resource type="PlaneMesh" id="mesh_ground"]
+size = Vector2(40, 40)
+
+[node name="EndlessGardenPreview" type="Node3D"]
+script = ExtResource("2_preview")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_garden")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 15, 0)
+shadow_enabled = true
+light_energy = 1.2
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 8, 12)
+fov = 55.0
+far = 200.0
+
+[node name="GardenRoot" type="Node3D" parent="."]
+
+[node name="GardenModel" parent="GardenRoot" instance=ExtResource("1_garden")]
+
+; Reference ground plane for orientation
+[node name="ReferenceGround" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+mesh = SubResource("mesh_ground")
+surface_material_override/0 = SubResource("mat_grid")
+
+; NavigationRegion3D placeholder for future NavMesh baking
+[node name="NavigationPlaceholder" type="Node3D" parent="."]
+
+; Info label
+[node name="InfoLabel" type="Label3D" parent="."]
+position = Vector3(0, 5, 0)
+text = "终幕喑哑之庭 — Preview
+独立场景预览（暂未接入客厅玩法）
+叶片透明材质需要继续人工校色"
+font_size = 28
+outline_size = 6
+modulate = Color(0.8, 0.8, 0.9, 0.7)
+outline_modulate = Color(0.02, 0.05, 0.1, 0.9)
+billboard = 1

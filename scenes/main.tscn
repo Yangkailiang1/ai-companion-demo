@@ -1,51 +1,201 @@
-[gd_scene load_steps=3 format=3 uid="uid://main001"]
+[gd_scene load_steps=4 format=3 uid="uid://main001"]
 
 [ext_resource type="PackedScene" uid="uid://livingroom01" path="res://scenes/living_room.tscn" id="1_room"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
 
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0.055, 0.07, 0.1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.72, 0.78, 0.9, 1)
+ambient_light_energy = 0.55
+tonemap_mode = 2
+
 [node name="Main" type="Node3D"]
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 6)
-fov = 60
+[node name="WorldRoot" type="Node3D" parent="."]
 
-[node name="LivingRoom" parent="." instance=ExtResource("1_room")]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="WorldRoot"]
+environment = SubResource("Environment_main")
 
-[node name="UI" type="Control" parent="."]
+[node name="Camera3D" type="Camera3D" parent="WorldRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.766044, 0.642788, 0, -0.642788, 0.766044, 0, 7.5, 9.5)
+fov = 52.0
+
+[node name="LivingRoom" parent="WorldRoot" instance=ExtResource("1_room")]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="UILayer"]
 layout_mode = 3
 anchors_preset = 15
+mouse_filter = 2
 script = ExtResource("2_chat")
 
-[node name="Panel" type="Panel" parent="UI"]
+[node name="HUD" type="Panel" parent="UILayer/UI"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 0.85
+anchors_preset = 0
+offset_left = 10
+offset_top = 10
+offset_right = 230
+offset_bottom = 160
+mouse_filter = 2
+
+[node name="HUDLayout" type="VBoxContainer" parent="UILayer/UI/HUD"]
+layout_mode = 1
+anchors_preset = 15
+offset_left = 8
+offset_top = 8
+offset_right = -8
+offset_bottom = -8
+
+[node name="AgentName" type="Label" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+text = "小叶子"
+
+[node name="TimeDisplay" type="Label" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+text = "Day 1 Morning (8:00)"
+
+[node name="HSeparator" type="HSeparator" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+
+[node name="HungerRow" type="HBoxContainer" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+
+[node name="HungerLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/HungerRow"]
+layout_mode = 2
+text = "饥饿"
+custom_minimum_size = Vector2(40, 0)
+
+[node name="HungerBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/HungerRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="EnergyRow" type="HBoxContainer" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+
+[node name="EnergyLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/EnergyRow"]
+layout_mode = 2
+text = "精力"
+custom_minimum_size = Vector2(40, 0)
+
+[node name="EnergyBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/EnergyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="FunRow" type="HBoxContainer" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+
+[node name="FunLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/FunRow"]
+layout_mode = 2
+text = "娱乐"
+custom_minimum_size = Vector2(40, 0)
+
+[node name="FunBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/FunRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="SocialRow" type="HBoxContainer" parent="UILayer/UI/HUD/HUDLayout"]
+layout_mode = 2
+
+[node name="SocialLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/SocialRow"]
+layout_mode = 2
+text = "社交"
+custom_minimum_size = Vector2(40, 0)
+
+[node name="SocialBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/SocialRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="ChatPanel" type="Panel" parent="UILayer/UI"]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.0
 anchor_bottom = 1.0
-offset_top = -40
-offset_bottom = 0
+offset_left = 10
+offset_top = 360
+offset_right = 420
+offset_bottom = -60
+mouse_filter = 2
 
-[node name="LineEdit" type="LineEdit" parent="UI/Panel"]
+[node name="ChatLog" type="RichTextLabel" parent="UILayer/UI/ChatPanel"]
 layout_mode = 1
 anchors_preset = 15
-anchor_right = 0.85
-offset_right = -10
-offset_top = 5
-offset_bottom = -5
-placeholder_text = "输入你想说的话... (以 ! 开头发送指令)"
-
-[node name="SendButton" type="Button" parent="UI/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_left = 0.85
-offset_left = 5
-offset_top = 5
-offset_bottom = -5
-text = "发送"
-
-[node name="ChatLog" type="RichTextLabel" parent="UI"]
-layout_mode = 1
-anchors_preset = 15
-anchor_bottom = 0.85
-offset_bottom = -50
+offset_left = 8
+offset_top = 8
+offset_right = -8
+offset_bottom = -8
 bbcode_enabled = true
 scroll_following = true
+theme_override_font_sizes/normal_font_size = 21
+
+[node name="InputArea" type="Panel" parent="UILayer/UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10
+offset_right = -10
+offset_top = -50
+offset_bottom = -10
+mouse_filter = 0
+
+[node name="LineEdit" type="LineEdit" parent="UILayer/UI/InputArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 0.82
+offset_left = 8
+offset_top = 8
+offset_right = -8
+offset_bottom = -8
+placeholder_text = "输入你想说的话..."
+caret_blink = true
+theme_override_font_sizes/font_size = 21
+
+[node name="SendButton" type="Button" parent="UILayer/UI/InputArea"]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.83
+anchor_right = 1.0
+offset_left = 8
+offset_top = 8
+offset_right = -8
+offset_bottom = -8
+text = "发送"
+theme_override_font_sizes/font_size = 20
+
+[node name="StatusPanel" type="Panel" parent="UILayer/UI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -410.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 58.0
+mouse_filter = 2
+
+[node name="StatusLabel" type="Label" parent="UILayer/UI/StatusPanel"]
+layout_mode = 1
+anchors_preset = 15
+offset_left = 12.0
+offset_top = 8.0
+offset_right = -12.0
+offset_bottom = -8.0
+text = "AI 状态：准备就绪"
+horizontal_alignment = 2
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 18

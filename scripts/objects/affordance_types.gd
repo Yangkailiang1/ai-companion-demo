@@ -3,9 +3,12 @@
 
 class_name AffordanceTypes
 
-# 8 个 Primitive Actions — 所有行为由这些原子操作组合
+# 11 个 Primitive Actions — 所有行为由这些原子操作组合
 enum Primitive {
 	NAVIGATE,    # 移动到目标
+	NAVIGATE_POSITION, # 移动到安全的任意/命名位置
+	PATROL,      # 按一组路径点巡逻
+	WANDER,      # 在安全点中选择一个闲逛目标
 	INTERACT,    # 对物体执行操作（动词来自 Affordance 表）
 	SPEAK,       # 说话 + 显示气泡
 	IDLE,        # 待机/微小动作
@@ -74,7 +77,7 @@ class NeedsState:
 		return {
 			"hunger": hunger,
 			"energy": energy,
-			"socail": social,
+			"social": social,
 			"fun": fun,
 			"bladder": bladder,
 		}
