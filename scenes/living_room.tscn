@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=27 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/characters/character_animation_driver.gd" id="5_anim_driver"]
 [ext_resource type="PackedScene" path="res://assets/characters/penguin/penguin.glb" id="6_penguin"]
 [ext_resource type="Script" path="res://scripts/navigation/room_navigation_region.gd" id="7_navigation_region"]
+[ext_resource type="Script" path="res://scripts/characters/expression_driver.gd" id="8_expression_driver"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -217,6 +218,9 @@ height = 1.25
 
 [node name="CharacterAnimationDriver" type="Node" parent="Agent"]
 script = ExtResource("5_anim_driver")
+
+[node name="CharacterExpressionDriver" type="Node" parent="Agent"]
+script = ExtResource("8_expression_driver")
 
 [node name="IdleTimer" type="Timer" parent="Agent"]
 

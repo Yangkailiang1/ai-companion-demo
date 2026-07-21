@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "source_skeleton": "HumanML3D 22-joint canonical skeleton",
+  "target_skeleton": "penguin 64-bone armature",
+  "joints": [
+    {"index": 0, "source": "pelvis", "target": "hips", "approximate": false},
+    {"index": 1, "source": "left_hip", "target": "upper_leg.L", "approximate": false},
+    {"index": 2, "source": "right_hip", "target": "upper_leg.R", "approximate": false},
+    {"index": 3, "source": "spine1", "target": "spine", "approximate": false, "mapping_mode": "torso_chain_resample"},
+    {"index": 4, "source": "left_knee", "target": "lower_leg.L", "approximate": false},
+    {"index": 5, "source": "right_knee", "target": "lower_leg.R", "approximate": false},
+    {"index": 6, "source": "spine2", "target": "chest", "approximate": true, "mapping_mode": "torso_chain_resample"},
+    {"index": 7, "source": "left_ankle", "target": "foot.L", "approximate": false},
+    {"index": 8, "source": "right_ankle", "target": "foot.R", "approximate": false},
+    {"index": 9, "source": "spine3", "target": "chest", "approximate": true, "mapping_mode": "torso_chain_direction_only"},
+    {"index": 10, "source": "left_foot", "target": "toes.L", "approximate": false},
+    {"index": 11, "source": "right_foot", "target": "toes.R", "approximate": false},
+    {"index": 12, "source": "neck", "target": "neck", "approximate": false},
+    {"index": 13, "source": "left_collar", "target": "shoulder.L", "approximate": false},
+    {"index": 14, "source": "right_collar", "target": "shoulder.R", "approximate": false},
+    {"index": 15, "source": "head", "target": "head", "approximate": false},
+    {"index": 16, "source": "left_shoulder", "target": "upper_arm.L", "approximate": false},
+    {"index": 17, "source": "right_shoulder", "target": "upper_arm.R", "approximate": false},
+    {"index": 18, "source": "left_elbow", "target": "lower_arm.L", "approximate": false},
+    {"index": 19, "source": "right_elbow", "target": "lower_arm.R", "approximate": false},
+    {"index": 20, "source": "left_wrist", "target": "hand.L", "approximate": false},
+    {"index": 21, "source": "right_wrist", "target": "hand.R", "approximate": false}
+  ],
+  "retarget_notes": {
+    "coordinate_system": "Calibrate source axes to Godot Y-up and this penguin's visual +Z forward. Do not assume a universal forward axis.",
+    "root_motion": "Keep generated root translation separate; AgentBase/NavMesh owns world locomotion.",
+    "scale": "Normalize by source hip-to-head height, then apply target rest-pose bone lengths.",
+    "ik": "Apply foot locking after retargeting to reduce sliding.",
+    "torso": "spine1/spine2/spine3 form one source chain. Resample and distribute rotations across target spine/chest; never assign duplicate chest entries sequentially."
+  }
+}

@@ -4,6 +4,8 @@
 
 extends Node
 
+const MotionIntentRouterScript = preload("res://scripts/characters/motion_intent_router.gd")
+
 # LLM API 配置
 var llm_api_url: String = ""
 var llm_api_key: String = ""
@@ -22,6 +24,7 @@ var http_request: HTTPRequest
 
 # 当前触发上下文
 var current_trigger: Dictionary = {}
+var _motion_router
 
 # 本地 fallback 响应库（无 LLM 时使用）
 const FALLBACK_GREETINGS = [
@@ -48,6 +51,9 @@ const FALLBACK_BORED_COMMENTS = [
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_motion_router = MotionIntentRouterScript.new()
+	if not _motion_router.is_ready():
+		push_warning("CognitiveCycle: motion router catalog unavailable: %s" % _motion_router.load_error)
 	_load_llm_config()
 
 	# 创建 HTTP 请求节点
@@ -297,6 +303,7 @@ func _handle_decision(decision: Dictionary) -> void:
 	var emotion: String = decision.get("emotion", "neutral")
 	var thought: String = decision.get("thought", "")
 	var gesture: String = decision.get("gesture", "idle")
+	var emotion_intensity: float = clampf(float(decision.get("emotion_intensity", 0.65)), 0.0, 1.0)
 	var player_message: String = current_trigger.get("data", {}).get("text", "")
 
 	# 校验并净化 gesture
@@ -310,6 +317,9 @@ func _handle_decision(decision: Dictionary) -> void:
 	else:
 		compiled_plan = PlanValidator.new().compile(decision.get("plan", []))
 
+	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
+	gesture = performance["gesture"]
+
 	# 记录记忆
 	if not thought.is_empty():
 		MemorySystem.add_episode("[思考] " + thought, 4.0)
@@ -318,7 +328,16 @@ func _handle_decision(decision: Dictionary) -> void:
 	MessageBus.route_agent_output("main_agent", speech, emotion)
 
 	# 发出表现层 cue
-	MessageBus.performance_cue.emit(gesture, {"source": "llm", "emotion": emotion})
+	MessageBus.performance_cue.emit(gesture, {
+		"source": "llm",
+		"emotion": emotion,
+		"motion_provider": performance["provider"],
+		"generation_prompt": performance["generation_prompt"],
+	})
+	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
+		"source": "llm",
+		"motion_provider": performance["provider"],
+	})
 
 	# Goal → GOAP 分解
 	var goap = GOAPPlanner.new()
@@ -368,6 +387,7 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 	var emotion = "neutral"
 	var goal = "idle"
 	var gesture = "idle"
+	var emotion_intensity := 0.65
 
 	var sim = WorldSimulator.get_state_snapshot()
 	var needs = sim["needs"]
@@ -469,12 +489,24 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 		elif randf() < 0.1:
 			speech = FALLBACK_IDLE_COMMENTS[randi() % FALLBACK_IDLE_COMMENTS.size()]
 
+	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
+	gesture = performance["gesture"]
+
 	# 输出
 	if not speech.is_empty():
 		MessageBus.route_agent_output("main_agent", speech, emotion)
 
 	# 发出表现层 cue
-	MessageBus.performance_cue.emit(gesture, {"source": "local", "emotion": emotion})
+	MessageBus.performance_cue.emit(gesture, {
+		"source": "local",
+		"emotion": emotion,
+		"motion_provider": performance["provider"],
+		"generation_prompt": performance["generation_prompt"],
+	})
+	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
+		"source": "local",
+		"motion_provider": performance["provider"],
+	})
 
 	# GOAP 分解。纯聊天/无决定时只短暂停顿，不交给规划器制造未知 Goal 警告。
 	var actions: Array
@@ -513,6 +545,39 @@ func _validate_and_sanitize_gesture(gesture: String) -> String:
 		push_warning("CognitiveCycle: unknown gesture '%s' from LLM, falling back to idle" % gesture)
 		return "idle"
 	return normalized
+
+
+func _resolve_player_performance(player_message: String, fallback_gesture: String, emotion: String, intensity: float) -> Dictionary:
+	var safe_gesture := _validate_and_sanitize_gesture(fallback_gesture)
+	var safe_expression := emotion.strip_edges().to_lower()
+	if safe_expression not in ["neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk"]:
+		safe_expression = "neutral"
+	if player_message.strip_edges().is_empty() or not _motion_router or not _motion_router.is_ready():
+		return {
+			"gesture": safe_gesture,
+			"expression": safe_expression,
+			"provider": "library",
+			"generation_prompt": "",
+		}
+
+	var routed: Dictionary = _motion_router.route(player_message, {
+		"gesture": safe_gesture,
+		"emotion": safe_expression,
+		"intensity": intensity,
+	})
+	var routed_clip := String(routed.get("clip", safe_gesture))
+	if routed.get("action_id", "") == "talk" and float(routed.get("confidence", 0.0)) <= 0.25:
+		routed_clip = safe_gesture
+	if routed.get("provider", "library") == "light_t2m":
+		routed_clip = String(routed.get("fallback_clip", safe_gesture))
+	if not PerformanceCueTypes.is_valid_gesture(routed_clip):
+		routed_clip = safe_gesture
+	return {
+		"gesture": routed_clip,
+		"expression": String(routed.get("expression", safe_expression)),
+		"provider": String(routed.get("provider", "library")),
+		"generation_prompt": String(routed.get("generation_prompt", "")),
+	}
 
 
 func _infer_explicit_player_goal(player_message: String) -> String:

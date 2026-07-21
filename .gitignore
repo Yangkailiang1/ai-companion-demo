@@ -17,3 +17,19 @@ data/llm_config.json
 *.exe
 *.dll
 *.pck
+
+# Motion ML lab — keep reproducible configs/scripts, never commit heavy artifacts.
+motion_lab/.venv/
+motion_lab/vendor/
+motion_lab/datasets/*
+!motion_lab/datasets/README.md
+motion_lab/checkpoints/*
+!motion_lab/checkpoints/README.md
+motion_lab/generated/*
+!motion_lab/generated/README.md
+motion_lab/cache/
+motion_lab/**/*.npy
+motion_lab/**/*.npz
+motion_lab/**/*.ckpt
+motion_lab/**/*.pt
+motion_lab/**/*.pth

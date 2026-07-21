@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "expressions": {
+    "neutral": {
+      "aliases": ["平静", "普通", "neutral", "calm"],
+      "morph_weights": {},
+      "bone_fallback": {}
+    },
+    "happy": {
+      "aliases": ["开心", "高兴", "微笑", "快乐", "happy", "smile", "glad"],
+      "morph_weights": {"joy": 1.0},
+      "bone_fallback": {"head_pitch_degrees": -3.0}
+    },
+    "angry": {
+      "aliases": ["生气", "愤怒", "不高兴", "angry", "mad"],
+      "morph_weights": {"angry": 1.0},
+      "bone_fallback": {"head_pitch_degrees": 3.0}
+    },
+    "sad": {
+      "aliases": ["难过", "伤心", "沮丧", "sad", "upset"],
+      "morph_weights": {"blink": 0.12, "angry": 0.08},
+      "bone_fallback": {"head_pitch_degrees": 10.0, "eye_pitch_degrees": -4.0},
+      "approximate": true
+    },
+    "surprised": {
+      "aliases": ["惊讶", "吃惊", "意外", "surprised", "wow"],
+      "morph_weights": {"a": 0.25},
+      "bone_fallback": {"head_pitch_degrees": -7.0},
+      "approximate": true
+    },
+    "excited": {
+      "aliases": ["兴奋", "激动", "期待", "excited"],
+      "morph_weights": {"joy": 1.0, "a": 0.15},
+      "bone_fallback": {"head_pitch_degrees": -4.0},
+      "approximate": true
+    },
+    "bored": {
+      "aliases": ["无聊", "没意思", "bored"],
+      "morph_weights": {"blink": 0.2},
+      "bone_fallback": {"head_roll_degrees": 6.0},
+      "approximate": true
+    },
+    "blink": {
+      "aliases": ["眨眼", "眨眨眼", "blink"],
+      "morph_weights": {"blink": 1.0},
+      "bone_fallback": {},
+      "transient_seconds": 0.18
+    },
+    "talk": {
+      "aliases": ["说话", "聊天", "talk", "speak"],
+      "morph_weights": {"a": 0.32},
+      "bone_fallback": {},
+      "approximate": true
+    }
+  }
+}

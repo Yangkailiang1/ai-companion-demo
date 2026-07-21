@@ -1,0 +1,1 @@
+{"request_id":"demo-wave-001","status":"ok","provider":"light_t2m","skeleton":"humanml3d_22","fps":20,"frame_count":60,"motion_file":"generated/demo-wave-001.npy","metadata_file":"generated/demo-wave-001.json","checkpoint":"hml3d.ckpt"}

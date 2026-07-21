@@ -1,0 +1,8 @@
+{"text":"请挥挥手","action_id":"wave","expression":"happy","motion_request":true}
+{"text":"不要挥手","action_id":"talk","expression":"neutral","motion_request":false}
+{"text":"你会侧手翻吗","action_id":"talk","expression":"neutral","motion_request":false}
+{"text":"表演一个侧手翻","action_id":"generated_motion","expression":"neutral","motion_request":true}
+{"text":"我今天很难过","action_id":"talk","expression":"sad","motion_request":false}
+{"text":"点点头表示同意","action_id":"nod","expression":"happy","motion_request":true}
+{"text":"dance in a circle","action_id":"generated_motion","expression":"neutral","motion_request":true}
+{"text":"do not dance","action_id":"talk","expression":"neutral","motion_request":false}

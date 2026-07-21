@@ -36,6 +36,9 @@ signal need_threshold_reached(agent_id: String, need_type: AffordanceTypes.NeedT
 # gesture: "idle"|"walk"|"wave"|"nod"|"think"|"happy"|"sit"|"talk"
 signal performance_cue(gesture: String, context: Dictionary)
 
+# 表情层 cue 独立于身体动画，避免表情切换打断移动/动作。
+signal expression_cue(expression: String, intensity: float, context: Dictionary)
+
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS

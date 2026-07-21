@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "idle",
+      "clip": "idle",
+      "aliases": ["待机", "站着", "别动", "idle", "stand still"],
+      "tags": ["stationary", "calm"],
+      "loop": true,
+      "default_duration": 2.0,
+      "default_expression": "neutral",
+      "prompt_template": "A person stands calmly in place."
+    },
+    {
+      "id": "walk",
+      "clip": "walk",
+      "aliases": ["走路", "走一走", "走过去", "散步", "逛逛", "巡逻", "绕房间", "walk", "walking", "stroll", "patrol"],
+      "tags": ["locomotion", "lower_body"],
+      "loop": true,
+      "default_duration": 2.0,
+      "default_expression": "neutral",
+      "prompt_template": "A person walks forward naturally."
+    },
+    {
+      "id": "wave",
+      "clip": "wave",
+      "aliases": ["挥手", "挥挥手", "打招呼", "招招手", "wave", "wave hello", "say hello"],
+      "tags": ["greeting", "upper_body", "hand"],
+      "loop": false,
+      "default_duration": 2.0,
+      "default_expression": "happy",
+      "prompt_template": "A person raises one arm and waves hello."
+    },
+    {
+      "id": "nod",
+      "clip": "nod",
+      "aliases": ["点头", "点点头", "同意", "赞同", "nod", "agree"],
+      "tags": ["agreement", "head"],
+      "loop": false,
+      "default_duration": 1.5,
+      "default_expression": "happy",
+      "prompt_template": "A person nods their head in agreement."
+    },
+    {
+      "id": "think",
+      "clip": "think",
+      "aliases": ["想一想", "想想", "思考", "考虑", "think", "thinking", "consider"],
+      "tags": ["cognitive", "upper_body"],
+      "loop": false,
+      "default_duration": 2.5,
+      "default_expression": "neutral",
+      "prompt_template": "A person pauses and makes a thoughtful gesture."
+    },
+    {
+      "id": "happy",
+      "clip": "happy",
+      "aliases": ["开心一点", "高兴", "庆祝", "欢呼", "happy", "celebrate", "cheer"],
+      "tags": ["emotion", "full_body"],
+      "loop": false,
+      "default_duration": 2.0,
+      "default_expression": "happy",
+      "prompt_template": "A person makes a cheerful celebratory movement."
+    },
+    {
+      "id": "sit",
+      "clip": "sit",
+      "aliases": ["坐下", "坐着", "休息", "sit", "sit down", "take a seat"],
+      "tags": ["posture", "full_body"],
+      "loop": false,
+      "default_duration": 3.0,
+      "default_expression": "neutral",
+      "prompt_template": "A person naturally sits down."
+    },
+    {
+      "id": "talk",
+      "clip": "talk",
+      "aliases": ["说话", "聊天", "回答", "告诉我", "talk", "speak", "chat", "answer"],
+      "tags": ["conversation", "face"],
+      "loop": false,
+      "default_duration": 1.5,
+      "default_expression": "talk",
+      "prompt_template": "A person talks with subtle conversational gestures."
+    }
+  ],
+  "generative_physical_terms": [
+    "跳舞", "舞蹈", "踢腿", "踢球", "翻跟头", "侧手翻", "拥抱", "抱一下", "捡起来", "拿起来",
+    "dance", "kick", "cartwheel", "somersault", "hug", "pick up", "crawl", "jump"
+  ]
+}

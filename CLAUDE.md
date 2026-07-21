@@ -10,7 +10,7 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
-## 当前状态（v0.2 — 角色模型 + 动作管线）
+## 当前状态（v0.4 — 轻量动作/表情路由 + Light-T2M 实验桥）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
@@ -32,6 +32,8 @@
 | 3D 场景 | done (企鹅 GLB + Skeleton3D + driver；灰盒仅作隐藏 fallback) | `scenes/living_room.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
+| **动作/表情轻量路由** | **done v0.4 baseline** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
+| **Light-T2M 实验桥** | **server scaffold; pretrained generation pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
 | 主场景编排 | done (CanvasLayer UI + WorldRoot) | `scenes/main.tscn` |
@@ -116,6 +118,16 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [ ] 庭院 NavigationRegion3D 烘焙
 - [ ] 添加外部 3D 资产替换灰盒家具（沙发、电视、茶几等）
 
+## v0.4 动作与表情桥
+
+- [x] 动作库/表情库 JSON 与中英文确定性路由
+- [x] HumanML3D 22 关节到企鹅核心骨骼映射（仅重定向输入，不可直接赋值播放）
+- [x] Godot Morph Target 表情驱动：joy/angry/blink/基础口型
+- [x] 未知明确动作生成请求保留 Light-T2M prompt，并使用安全动作回退
+- [x] `motion_lab/` 服务器合同、环境探测、输入/输出校验和官方采样批处理包装
+- [ ] 在 Linux NVIDIA 服务器用官方 `hml3d.ckpt` 生成 5–10 条样本
+- [ ] 完成 `(T,22,3)` 到企鹅骨骼旋转的离线 retarget + 足锁 + GLB 导出
+
 ## 后续版本路线
 
 | 版本 | 内容 |
@@ -123,8 +135,9 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 | v0.1 | 核心闭环 → done（可运行垂直切片） |
 | v0.2 | **角色模型集成 + 动作管线** → **完成并通过 Godot 自动化与截图验收** |
 | v0.3 | **空间自主：NavMesh、巡逻、闲逛、结构化计划** → done |
-| v0.4 | 长期记忆 + Reflection 反思 + 情绪系统 |
-| v0.5 | 多 Agent + CASCADE 协调 + 本地小模型 |
+| v0.4 | **动作/表情库路由 + Light-T2M 服务器实验桥** → baseline done |
+| v0.5 | Light-T2M 离线重定向闭环 + 长期记忆/Reflection |
+| v0.6 | 多 Agent + CASCADE 协调 + 本地小模型 |
 
 ## 知识库
 

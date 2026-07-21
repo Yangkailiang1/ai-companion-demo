@@ -1,0 +1,7 @@
+# Install the CUDA build of torch 2.2.2 appropriate for the server first.
+numpy==1.26.4
+scipy==1.13.1
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+pydantic==2.11.5
+gdown==5.2.0

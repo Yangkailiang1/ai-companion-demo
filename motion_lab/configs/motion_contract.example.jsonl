@@ -1,0 +1,2 @@
+{"request_id":"demo-wave-001","text":"A person waves hello with the right hand.","length_frames":60,"fps":20,"style":"cheerful","seed":42}
+{"request_id":"demo-turn-001","text":"A person walks forward and turns left.","length_frames":100,"fps":20,"style":"natural","seed":7}
