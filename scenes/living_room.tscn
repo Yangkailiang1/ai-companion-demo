@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=71 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -71,6 +71,30 @@ size = Vector3(0.42, 0.28, 0.16)
 
 [sub_resource type="BoxMesh" id="mesh_backdrop"]
 size = Vector3(14, 7.875, 0.02)
+
+[sub_resource type="BoxMesh" id="mesh_wall_shelf"]
+size = Vector3(1.25, 0.08, 0.22)
+
+[sub_resource type="BoxMesh" id="mesh_wall_panel_tall"]
+size = Vector3(0.62, 0.86, 0.035)
+
+[sub_resource type="BoxMesh" id="mesh_wall_panel_wide"]
+size = Vector3(0.86, 0.48, 0.035)
+
+[sub_resource type="BoxMesh" id="mesh_small_book"]
+size = Vector3(0.12, 0.28, 0.08)
+
+[sub_resource type="CylinderMesh" id="mesh_vase"]
+top_radius = 0.07
+bottom_radius = 0.09
+height = 0.24
+
+[sub_resource type="SphereMesh" id="mesh_wall_lamp"]
+radius = 0.12
+height = 0.24
+
+[sub_resource type="BoxMesh" id="mesh_wall_lamp_base"]
+size = Vector3(0.08, 0.22, 0.035)
 
 [sub_resource type="BoxMesh" id="mesh_book"]
 size = Vector3(0.3, 0.05, 0.2)
@@ -185,6 +209,37 @@ albedo_texture = ExtResource("25_backdrop")
 shading_mode = 0
 roughness = 1.0
 
+[sub_resource type="StandardMaterial3D" id="mat_shelf_wood"]
+albedo_color = Color(0.58, 0.34, 0.18, 1)
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="mat_art_sunset"]
+albedo_color = Color(0.86, 0.48, 0.28, 1)
+roughness = 0.86
+
+[sub_resource type="StandardMaterial3D" id="mat_art_leaf"]
+albedo_color = Color(0.48, 0.62, 0.38, 1)
+roughness = 0.86
+
+[sub_resource type="StandardMaterial3D" id="mat_art_cream"]
+albedo_color = Color(0.92, 0.78, 0.55, 1)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="mat_decor_book"]
+albedo_color = Color(0.68, 0.28, 0.18, 1)
+roughness = 0.82
+
+[sub_resource type="StandardMaterial3D" id="mat_decor_vase"]
+albedo_color = Color(0.82, 0.61, 0.42, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_wall_lamp_glow"]
+albedo_color = Color(1, 0.82, 0.52, 1)
+emission_enabled = true
+emission = Color(1, 0.64, 0.32, 1)
+emission_energy_multiplier = 0.9
+roughness = 0.55
+
 [node name="LivingRoom" type="Node3D"]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -240,9 +295,78 @@ surface_material_override/0 = SubResource("mat_wall_art")
 visible = false
 
 [node name="PictureFrameModel" parent="WallArt" instance=ExtResource("15_picture_model")]
-position = Vector3(0, 0, 0.05)
+position = Vector3(0, 0, 0.075)
 rotation = Vector3(1.570796, 0, 0)
-scale = Vector3(0.95, 0.95, 0.95)
+scale = Vector3(0.82, 0.82, 0.82)
+
+[node name="WarmArtPanel" type="MeshInstance3D" parent="."]
+position = Vector3(-2.35, 1.62, -3.86)
+mesh = SubResource("mesh_wall_panel_tall")
+surface_material_override/0 = SubResource("mat_art_sunset")
+
+[node name="LeafArtPanel" type="MeshInstance3D" parent="."]
+position = Vector3(-1.58, 1.78, -3.86)
+mesh = SubResource("mesh_wall_panel_wide")
+surface_material_override/0 = SubResource("mat_art_leaf")
+
+[node name="CreamArtPanel" type="MeshInstance3D" parent="."]
+position = Vector3(-1.58, 1.25, -3.86)
+mesh = SubResource("mesh_wall_panel_wide")
+surface_material_override/0 = SubResource("mat_art_cream")
+
+[node name="BackWallShelf" type="MeshInstance3D" parent="."]
+position = Vector3(0.82, 1.22, -3.83)
+mesh = SubResource("mesh_wall_shelf")
+surface_material_override/0 = SubResource("mat_shelf_wood")
+
+[node name="ShelfBookA" type="MeshInstance3D" parent="."]
+position = Vector3(0.45, 1.43, -3.72)
+rotation = Vector3(0, 0, 0.12)
+mesh = SubResource("mesh_small_book")
+surface_material_override/0 = SubResource("mat_decor_book")
+
+[node name="ShelfBookB" type="MeshInstance3D" parent="."]
+position = Vector3(0.61, 1.43, -3.72)
+rotation = Vector3(0, 0, -0.04)
+mesh = SubResource("mesh_small_book")
+surface_material_override/0 = SubResource("mat_book")
+
+[node name="ShelfVase" type="MeshInstance3D" parent="."]
+position = Vector3(1.18, 1.36, -3.72)
+mesh = SubResource("mesh_vase")
+surface_material_override/0 = SubResource("mat_decor_vase")
+
+[node name="LeftWallLampBase" type="MeshInstance3D" parent="."]
+position = Vector3(-3.86, 1.58, -1.45)
+mesh = SubResource("mesh_wall_lamp_base")
+surface_material_override/0 = SubResource("mat_shelf_wood")
+
+[node name="LeftWallLampGlow" type="MeshInstance3D" parent="."]
+position = Vector3(-3.78, 1.63, -1.45)
+mesh = SubResource("mesh_wall_lamp")
+surface_material_override/0 = SubResource("mat_wall_lamp_glow")
+
+[node name="RightWallLampBase" type="MeshInstance3D" parent="."]
+position = Vector3(3.86, 1.58, -1.05)
+mesh = SubResource("mesh_wall_lamp_base")
+surface_material_override/0 = SubResource("mat_shelf_wood")
+
+[node name="RightWallLampGlow" type="MeshInstance3D" parent="."]
+position = Vector3(3.78, 1.63, -1.05)
+mesh = SubResource("mesh_wall_lamp")
+surface_material_override/0 = SubResource("mat_wall_lamp_glow")
+
+[node name="LeftSconceLight" type="OmniLight3D" parent="."]
+position = Vector3(-3.45, 1.65, -1.45)
+light_color = Color(1, 0.62, 0.34, 1)
+light_energy = 0.65
+omni_range = 2.4
+
+[node name="RightSconceLight" type="OmniLight3D" parent="."]
+position = Vector3(3.45, 1.65, -1.05)
+light_color = Color(1, 0.62, 0.34, 1)
+light_energy = 0.5
+omni_range = 2.2
 
 [node name="WallLeft" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
@@ -371,9 +495,10 @@ rotation = Vector3(0, -1.570796, 0)
 scale = Vector3(1.05, 1.05, 1.05)
 
 [node name="CeilingLampModel" parent="." instance=ExtResource("14_lamp_model")]
-position = Vector3(0.45, 2.2, 0.55)
+position = Vector3(0.45, 2.8, 0.55)
 rotation = Vector3(3.141593, 0, 0)
 scale = Vector3(0.62, 0.62, 0.62)
+visible = false
 
 [node name="Agent" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0, 0.4)
