@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3 uid="uid://xiaoguangpreview01"]
+
+[ext_resource type="PackedScene" path="res://assets/environments/xiaoguang_yishi/xiaoguang_yishi.glb" id="1_scene"]
+[ext_resource type="Script" path="res://scripts/environments/xiaoguang_yishi_preview.gd" id="2_preview"]
+
+[sub_resource type="Environment" id="Environment_xiaoguang"]
+background_mode = 1
+background_color = Color(0.045, 0.04, 0.055, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.72, 0.68, 0.78, 1)
+ambient_light_energy = 0.62
+tonemap_mode = 2
+
+[sub_resource type="PlaneMesh" id="mesh_reference_ground"]
+size = Vector2(40, 40)
+
+[node name="XiaoguangYishiPreview" type="Node3D"]
+script = ExtResource("2_preview")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_xiaoguang")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 12, 0)
+shadow_enabled = true
+light_color = Color(1, 0.88, 0.72, 1)
+light_energy = 1.1
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 8, 12)
+current = true
+fov = 50.0
+far = 180.0
+
+[node name="XiaoguangModel" parent="." instance=ExtResource("1_scene")]
+
+[node name="ReferenceGround" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.06, 0)
+mesh = SubResource("mesh_reference_ground")
+visible = false
+
+[node name="InfoLabel" type="Label3D" parent="."]
+position = Vector3(0, 5, 0)
+text = "晓光忆时 — Preview
+Blender 3.6 source, converted through Blender 5"
+font_size = 28
+outline_size = 6
+modulate = Color(0.9, 0.9, 1, 0.72)
+outline_modulate = Color(0.02, 0.02, 0.04, 0.9)
+billboard = 1

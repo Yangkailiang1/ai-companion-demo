@@ -31,6 +31,7 @@
 | DialogueBubble | done | `scripts/ui/dialogue_bubble.gd` |
 | 3D 场景 | done (企鹅 GLB + warm visual pass；灰盒家具仍待资产替换) | `scenes/living_room.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
+| **晓光忆时摄影棚预览** | **new v0.6 candidate** | `scenes/environments/xiaoguang_yishi_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
 | **动作/表情轻量路由** | **done v0.5** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
@@ -141,11 +142,13 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 ## UI/场景美化方向
 
 - [x] 验证 `终幕喑哑之庭` / `endless_garden_preview.tscn` 在 Godot 中可导入、实例化、渲染
+- [x] 验证 `晓光忆时.zip`：源 `.blend` 可用 Blender 5 打开并导出 GLB，Godot 4.6.1 可导入/实例化/基础渲染
 - [x] 改造主场景 UI：更清晰的聊天面板、状态栏、输入框层级、可读字体与分辨率适配
 - [x] 客厅第一轮美化：暖光、补光、窗光、地毯、柔和材质、相机微调
 - [x] 客厅第二轮美化：默认隐藏空聊天面板、电视屏幕微光、墙面装饰、初始画面更干净
-- [ ] 评估是否把客厅灰盒替换为庭院/新场景，或先作为独立预览/约会地点切换
+- [ ] 评估是否把客厅灰盒替换为庭院/晓光忆时新场景，或先作为独立预览/约会地点切换
 - [ ] 处理庭院材质：透明叶片、贴图色彩、灯光、相机 framing、导航区域/手工 waypoint
+- [ ] 处理晓光忆时材质：源包标注 Blender 3.6 专用；当前 Blender 5 → GLB 只能保留基础几何/部分材质，若要接近原始预览图，需要用 Blender 3.6 重导、烘焙贴图/光照，或在 Godot 手工重建灯光/体积光/窗光
 - [ ] 下一轮 UI：聊天面板折叠/展开、消息气泡化、场景切换入口、移动端比例检查
 
 ## 后续版本路线
@@ -199,6 +202,10 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 /Applications/Blender.app/Contents/MacOS/Blender --background /Users/yangkailiang/Documents/ai_games/scene/extracted/garden.blend --python tools/blender/export_garden.py
 
 # 3. Godot 会自动导入 GLB；两个 PackedScene 已在对应 .tscn 中完成实例化
+
+# 3b. 导出/预览晓光忆时摄影棚（源包 readme 标注 Blender 3.6 专用，Blender 5 导出只作为几何验证）
+/Applications/Blender.app/Contents/MacOS/Blender --background "/private/tmp/xiaoguang_yishi_extract/撮影スタジオblender版 配布用.blend" --python tools/blender/export_xiaoguang_yishi.py
+/Applications/Godot.app/Contents/MacOS/Godot --headless --log-file /private/tmp/ai_companion_godot_xiaoguang.log --path . --script scripts/debug/xiaoguang_scene_check.gd
 
 # 4. 验证
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script scripts/debug/headless_check.gd
