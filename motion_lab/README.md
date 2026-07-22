@@ -15,6 +15,11 @@ motion binaries in Git.
    exports a reviewed animation clip. Generated output is never executed as arbitrary
    code and never bypasses Godot's action validation.
 
+The first reusable offline package format is documented in
+`../docs/OFFLINE_MOTION_LIBRARY.md`. It converts `(T, 22, 3)` HumanML3D joint
+positions into model-adapter-friendly rotation tracks, root motion, foot contacts,
+and quality metadata. A later baker applies that package to a concrete skeleton.
+
 ## Server setup target
 
 - Linux x86_64
