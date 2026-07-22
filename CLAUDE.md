@@ -10,7 +10,7 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
-## 当前状态（v0.4 — 轻量动作/表情路由 + Light-T2M 实验桥）
+## 当前状态（v0.5 — 离线动作库预览 + UI/场景美化准备）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
@@ -32,8 +32,8 @@
 | 3D 场景 | done (企鹅 GLB + Skeleton3D + driver；灰盒仅作隐藏 fallback) | `scenes/living_room.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
-| **动作/表情轻量路由** | **done v0.4 baseline** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
-| **Light-T2M 实验桥** | **server scaffold; pretrained generation pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md` |
+| **动作/表情轻量路由** | **done v0.5** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
+| **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
 | 主场景编排 | done (CanvasLayer UI + WorldRoot) | `scenes/main.tscn` |
@@ -125,8 +125,25 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [x] Godot Morph Target 表情驱动：joy/angry/blink/基础口型
 - [x] 未知明确动作生成请求保留 Light-T2M prompt，并使用安全动作回退
 - [x] `motion_lab/` 服务器合同、环境探测、输入/输出校验和官方采样批处理包装
-- [ ] 在 Linux NVIDIA 服务器用官方 `hml3d.ckpt` 生成 5–10 条样本
-- [ ] 完成 `(T,22,3)` 到企鹅骨骼旋转的离线 retarget + 足锁 + GLB 导出
+- [x] 完成 `(T,22,3)` 到角色无关离线 retarget package 的第一版
+- [x] 烘焙 `offline_smoke_walk` 到 `penguin.glb` 并接入 Router/Godot 白名单
+- [ ] 在 Linux NVIDIA 服务器用官方 `hml3d.ckpt` 生成 5–10 条真实样本
+- [ ] 将真实样本批量 retarget、视觉验收并扩充 `motion_catalog.json`
+
+## 动作库后续任务记录
+
+- [ ] 用真实 HumanML3D/Light-T2M `.npy` 替换 smoke fixture，生成 5–10 个语义明确的动作包
+- [ ] 增强 `tools/blender/bake_retarget_package.py`：目标骨骼 rest-pose 对齐、关节限幅、足锁、root motion 选择
+- [ ] 建立动作验收清单：骨骼长度误差、脚滑、朝向、穿模、循环衔接、表情搭配
+- [ ] 将通过验收的动作加入 `data/motion_catalog.json` 与 `PerformanceCueTypes`
+- [ ] 后续若切换角色/动作模型，只新增对应 bone map 与 baker adapter，不改 Godot Runtime 主链路
+
+## UI/场景美化方向
+
+- [ ] 验证 `终幕喑哑之庭` / `endless_garden_preview.tscn` 在 Godot 中可导入、实例化、渲染
+- [ ] 改造主场景 UI：更清晰的聊天面板、状态栏、输入框层级、可读字体与分辨率适配
+- [ ] 评估是否把客厅灰盒替换为庭院/新场景，或先作为独立预览/约会地点切换
+- [ ] 处理庭院材质：透明叶片、贴图色彩、灯光、相机 framing、导航区域/手工 waypoint
 
 ## 后续版本路线
 
@@ -136,8 +153,9 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 | v0.2 | **角色模型集成 + 动作管线** → **完成并通过 Godot 自动化与截图验收** |
 | v0.3 | **空间自主：NavMesh、巡逻、闲逛、结构化计划** → done |
 | v0.4 | **动作/表情库路由 + Light-T2M 服务器实验桥** → baseline done |
-| v0.5 | Light-T2M 离线重定向闭环 + 长期记忆/Reflection |
-| v0.6 | 多 Agent + CASCADE 协调 + 本地小模型 |
+| v0.5 | Light-T2M 离线重定向闭环 + 动作库预览 → smoke done，真实样本 pending |
+| v0.6 | UI/场景美化 + 长期记忆/Reflection |
+| v0.7 | 多 Agent + CASCADE 协调 + 本地小模型 |
 
 ## 知识库
 
