@@ -29,7 +29,7 @@
 | InteractableObject | done | `scripts/objects/interactable_object.gd` |
 | ChatInput + HUD | done (v0.6 visual pass) | `scripts/ui/chat_input.gd` |
 | DialogueBubble | done | `scripts/ui/dialogue_bubble.gd` |
-| 3D 场景 | done (企鹅 GLB + warm visual pass；灰盒家具仍待资产替换) | `scenes/living_room.tscn` |
+| 3D 场景 | done (企鹅 GLB + Poly Haven 家具/PBR 客厅美化) | `scenes/living_room.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
 | **晓光忆时摄影棚预览** | **new v0.6 candidate** | `scenes/environments/xiaoguang_yishi_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
@@ -146,6 +146,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [x] 改造主场景 UI：更清晰的聊天面板、状态栏、输入框层级、可读字体与分辨率适配
 - [x] 客厅第一轮美化：暖光、补光、窗光、地毯、柔和材质、相机微调
 - [x] 客厅第二轮美化：默认隐藏空聊天面板、电视屏幕微光、墙面装饰、初始画面更干净
+- [x] 客厅第三轮美化：下载 Poly Haven CC0 家具与 PBR 贴图，替换灰盒沙发/茶几/电视/绿植，新增书架/吊灯/相框，地板/墙面/地毯绑定 1K PBR
 - [ ] 评估是否把客厅灰盒替换为庭院/晓光忆时新场景，或先作为独立预览/约会地点切换
 - [ ] 处理庭院材质：透明叶片、贴图色彩、灯光、相机 framing、导航区域/手工 waypoint
 - [ ] 处理晓光忆时材质：源包标注 Blender 3.6 专用；当前 Blender 5 → GLB 只能保留基础几何/部分材质，若要接近原始预览图，需要用 Blender 3.6 重导、烘焙贴图/光照，或在 Godot 手工重建灯光/体积光/窗光
@@ -206,6 +207,11 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 # 3b. 导出/预览晓光忆时摄影棚（源包 readme 标注 Blender 3.6 专用，Blender 5 导出只作为几何验证）
 /Applications/Blender.app/Contents/MacOS/Blender --background "/private/tmp/xiaoguang_yishi_extract/撮影スタジオblender版 配布用.blend" --python tools/blender/export_xiaoguang_yishi.py
 /Applications/Godot.app/Contents/MacOS/Godot --headless --log-file /private/tmp/ai_companion_godot_xiaoguang.log --path . --script scripts/debug/xiaoguang_scene_check.gd
+
+# 3c. 下载客厅家具与 PBR 贴图（Poly Haven CC0, 1K）
+python3 tools/assets/download_polyhaven_models.py
+python3 tools/assets/download_polyhaven_textures.py
+/Applications/Godot.app/Contents/MacOS/Godot --headless --log-file /private/tmp/ai_companion_polyhaven_bounds.log --path . --script scripts/debug/polyhaven_asset_bounds_check.gd
 
 # 4. 验证
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script scripts/debug/headless_check.gd

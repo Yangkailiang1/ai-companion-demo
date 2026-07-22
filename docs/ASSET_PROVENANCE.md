@@ -1,10 +1,12 @@
 # ASSET_PROVENANCE.md — 资产来源记录
 
-> v0.2 | 最后更新: 2026-07-20
+> v0.6 | 最后更新: 2026-07-22
 
 ## 免责声明
 
-所有第三方资产 **许可证未确认**。仅用于 private prototype development，不得声称可商用。
+本地用户提供的角色/场景资产许可证仍按 **unknown / private prototype only** 处理。
+
+Poly Haven 下载的家具模型与 PBR 贴图按 Poly Haven 公示许可证记录为 **CC0**，可用于当前 demo 原型与后续重混/改造；仍建议发布前保留来源清单与下载 manifest。
 
 ## 资产清单
 
@@ -62,6 +64,36 @@
 | **导航** | 未烘焙 NavMesh，详见 `assets/environments/endless_garden/NAVIGATION_NOTES.md` |
 | **验收状态** | 几何与独立预览可加载；源材质在 Godot 中偏黑白，仅作为技术预览，不作为正式游戏场景 |
 
+### 4. Poly Haven — 客厅家具与 PBR 材质（CC0）
+
+| 用途 | Asset | 项目路径 | 来源 |
+|------|-------|----------|------|
+| 沙发 | `Sofa_01` | `assets/props/polyhaven/Sofa_01/Sofa_01_1k.gltf` | `https://polyhaven.com/a/Sofa_01` |
+| 茶几 | `modern_coffee_table_01` | `assets/props/polyhaven/modern_coffee_table_01/modern_coffee_table_01_1k.gltf` | `https://polyhaven.com/a/modern_coffee_table_01` |
+| 电视 | `Television_01` | `assets/props/polyhaven/Television_01/Television_01_1k.gltf` | `https://polyhaven.com/a/Television_01` |
+| 盆栽 | `potted_plant_01` | `assets/props/polyhaven/potted_plant_01/potted_plant_01_1k.gltf` | `https://polyhaven.com/a/potted_plant_01` |
+| 书架 | `Shelf_01` | `assets/props/polyhaven/Shelf_01/Shelf_01_1k.gltf` | `https://polyhaven.com/a/Shelf_01` |
+| 吊灯 | `modern_ceiling_lamp_01` | `assets/props/polyhaven/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.gltf` | `https://polyhaven.com/a/modern_ceiling_lamp_01` |
+| 相框 | `hanging_picture_frame_01` | `assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf` | `https://polyhaven.com/a/hanging_picture_frame_01` |
+| 木地板 PBR | `herringbone_parquet` | `assets/materials/polyhaven/herringbone_parquet/` | `https://polyhaven.com/a/herringbone_parquet` |
+| 墙面 PBR | `plastered_wall_04` | `assets/materials/polyhaven/plastered_wall_04/` | `https://polyhaven.com/a/plastered_wall_04` |
+| 地毯 PBR | `dirty_carpet` | `assets/materials/polyhaven/dirty_carpet/` | `https://polyhaven.com/a/dirty_carpet` |
+
+下载脚本：
+
+- `tools/assets/download_polyhaven_models.py`
+- `tools/assets/download_polyhaven_textures.py`
+
+Manifest：
+
+- `assets/props/polyhaven/polyhaven_manifest.json`
+- `assets/materials/polyhaven/polyhaven_texture_manifest.json`
+
+Godot 接入状态：
+
+- `scenes/living_room.tscn` 已用真实模型替换灰盒视觉；原交互节点/碰撞保持不变。
+- 地板、墙面、地毯已绑定 1K PBR diffuse / normal / ARM 贴图。
+
 ## 导出脚本
 
 | 脚本 | 位置 | 说明 |
@@ -69,6 +101,8 @@
 | `export_penguin.py` | `tools/blender/export_penguin.py` | 清理 helper objects、Shape Keys，导出 penguin.glb |
 | `generate_penguin_animations.py` | `tools/blender/generate_penguin_animations.py` | 生成 7 个程序化骨骼动画并导出 |
 | `export_garden.py` | `tools/blender/export_garden.py` | 清理灯光/相机、修复 alpha 材质、缩放导出 garden.glb |
+| `download_polyhaven_models.py` | `tools/assets/download_polyhaven_models.py` | 下载 Poly Haven 1K glTF 家具模型 |
+| `download_polyhaven_textures.py` | `tools/assets/download_polyhaven_textures.py` | 下载 Poly Haven 1K PBR 纹理 |
 
 运行方式（Blender headless）：
 ```bash
@@ -81,6 +115,7 @@
 |---------|---------|-----------|
 | `assets/characters/penguin/penguin.glb` | `res://assets/characters/penguin/` | `.import` 文件 + 可实例化的 packed scene |
 | `assets/environments/endless_garden/garden.glb` | `res://assets/environments/endless_garden/` | `.import` 文件 + 可实例化的 packed scene |
+| `assets/props/polyhaven/**/*.gltf` | `res://assets/props/polyhaven/` | `.import` 文件 + 可实例化 furniture packed scenes |
 
 ## 审查人员
 

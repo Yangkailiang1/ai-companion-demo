@@ -1,0 +1,35 @@
+[
+  {
+    "asset": "herringbone_parquet",
+    "source": "https://polyhaven.com/a/herringbone_parquet",
+    "license": "CC0",
+    "resolution": "1k",
+    "maps": {
+      "diff": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_diff_1k.jpg",
+      "normal_gl": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_nor_gl_1k.jpg",
+      "arm": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_arm_1k.jpg"
+    }
+  },
+  {
+    "asset": "plastered_wall_04",
+    "source": "https://polyhaven.com/a/plastered_wall_04",
+    "license": "CC0",
+    "resolution": "1k",
+    "maps": {
+      "diff": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_diff_1k.jpg",
+      "normal_gl": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_nor_gl_1k.jpg",
+      "arm": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_arm_1k.jpg"
+    }
+  },
+  {
+    "asset": "dirty_carpet",
+    "source": "https://polyhaven.com/a/dirty_carpet",
+    "license": "CC0",
+    "resolution": "1k",
+    "maps": {
+      "diff": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/dirty_carpet/dirty_carpet_diff_1k.jpg",
+      "normal_gl": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/dirty_carpet/dirty_carpet_nor_gl_1k.jpg",
+      "arm": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/materials/polyhaven/dirty_carpet/dirty_carpet_arm_1k.jpg"
+    }
+  }
+]

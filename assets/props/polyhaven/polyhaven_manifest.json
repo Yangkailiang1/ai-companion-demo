@@ -1,0 +1,65 @@
+[
+  {
+    "asset": "Sofa_01",
+    "source": "https://polyhaven.com/a/Sofa_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/Sofa_01/Sofa_01_1k.gltf",
+    "declared_size_bytes": 517935,
+    "file_count": 5
+  },
+  {
+    "asset": "modern_coffee_table_01",
+    "source": "https://polyhaven.com/a/modern_coffee_table_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/modern_coffee_table_01/modern_coffee_table_01_1k.gltf",
+    "declared_size_bytes": 1331297,
+    "file_count": 5
+  },
+  {
+    "asset": "Television_01",
+    "source": "https://polyhaven.com/a/Television_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/Television_01/Television_01_1k.gltf",
+    "declared_size_bytes": 531294,
+    "file_count": 5
+  },
+  {
+    "asset": "potted_plant_01",
+    "source": "https://polyhaven.com/a/potted_plant_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/potted_plant_01/potted_plant_01_1k.gltf",
+    "declared_size_bytes": 6325139,
+    "file_count": 8
+  },
+  {
+    "asset": "Shelf_01",
+    "source": "https://polyhaven.com/a/Shelf_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/Shelf_01/Shelf_01_1k.gltf",
+    "declared_size_bytes": 605448,
+    "file_count": 5
+  },
+  {
+    "asset": "modern_ceiling_lamp_01",
+    "source": "https://polyhaven.com/a/modern_ceiling_lamp_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.gltf",
+    "declared_size_bytes": 436065,
+    "file_count": 5
+  },
+  {
+    "asset": "hanging_picture_frame_01",
+    "source": "https://polyhaven.com/a/hanging_picture_frame_01",
+    "license": "CC0",
+    "resolution": "1k",
+    "entry": "/Users/yangkailiang/Documents/ai_games/ai_companion_demo/assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf",
+    "declared_size_bytes": 397466,
+    "file_count": 8
+  }
+]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=51 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -8,6 +8,22 @@
 [ext_resource type="PackedScene" path="res://assets/characters/penguin/penguin.glb" id="6_penguin"]
 [ext_resource type="Script" path="res://scripts/navigation/room_navigation_region.gd" id="7_navigation_region"]
 [ext_resource type="Script" path="res://scripts/characters/expression_driver.gd" id="8_expression_driver"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/Sofa_01/Sofa_01_1k.gltf" id="9_sofa_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/modern_coffee_table_01/modern_coffee_table_01_1k.gltf" id="10_table_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/Television_01/Television_01_1k.gltf" id="11_tv_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/potted_plant_01/potted_plant_01_1k.gltf" id="12_plant_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/Shelf_01/Shelf_01_1k.gltf" id="13_shelf_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.gltf" id="14_lamp_model"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf" id="15_picture_model"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_diff_1k.jpg" id="16_floor_diff"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_nor_gl_1k.jpg" id="17_floor_norm"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/herringbone_parquet/herringbone_parquet_arm_1k.jpg" id="18_floor_arm"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_diff_1k.jpg" id="19_wall_diff"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_nor_gl_1k.jpg" id="20_wall_norm"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/plastered_wall_04/plastered_wall_04_arm_1k.jpg" id="21_wall_arm"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_diff_1k.jpg" id="22_rug_diff"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_nor_gl_1k.jpg" id="23_rug_norm"]
+[ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_arm_1k.jpg" id="24_rug_arm"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -69,11 +85,21 @@ height = 0.4
 
 [sub_resource type="StandardMaterial3D" id="mat_floor"]
 albedo_color = Color(0.58, 0.54, 0.49, 1)
+albedo_texture = ExtResource("16_floor_diff")
+orm_texture = ExtResource("18_floor_arm")
 roughness = 0.86
+normal_enabled = true
+normal_texture = ExtResource("17_floor_norm")
+uv1_scale = Vector3(2.8, 2.8, 1)
 
 [sub_resource type="StandardMaterial3D" id="mat_wall"]
-albedo_color = Color(0.78, 0.76, 0.72, 1)
+albedo_color = Color(0.82, 0.76, 0.66, 1)
+albedo_texture = ExtResource("19_wall_diff")
+orm_texture = ExtResource("21_wall_arm")
 roughness = 0.9
+normal_enabled = true
+normal_texture = ExtResource("20_wall_norm")
+uv1_scale = Vector3(1.8, 1.2, 1)
 
 [sub_resource type="StandardMaterial3D" id="mat_sofa"]
 albedo_color = Color(0.54, 0.58, 0.64, 1)
@@ -104,7 +130,12 @@ roughness = 0.75
 
 [sub_resource type="StandardMaterial3D" id="mat_rug"]
 albedo_color = Color(0.26, 0.36, 0.42, 1)
+albedo_texture = ExtResource("22_rug_diff")
+orm_texture = ExtResource("24_rug_arm")
 roughness = 0.95
+normal_enabled = true
+normal_texture = ExtResource("23_rug_norm")
+uv1_scale = Vector3(1.4, 1.0, 1)
 
 [sub_resource type="StandardMaterial3D" id="mat_window_glow"]
 albedo_color = Color(0.62, 0.76, 0.9, 1)
@@ -159,6 +190,12 @@ surface_material_override/0 = SubResource("mat_window_glow")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.75, 1.65, -3.88)
 mesh = SubResource("mesh_wall_art")
 surface_material_override/0 = SubResource("mat_wall_art")
+visible = false
+
+[node name="PictureFrameModel" parent="WallArt" instance=ExtResource("15_picture_model")]
+position = Vector3(0, 0, 0.05)
+rotation = Vector3(1.570796, 0, 0)
+scale = Vector3(0.95, 0.95, 0.95)
 
 [node name="WallLeft" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
@@ -179,6 +216,12 @@ object_name = "沙发"
 [node name="SofaMesh" type="MeshInstance3D" parent="Sofa"]
 mesh = SubResource("mesh_sofa")
 surface_material_override/0 = SubResource("mat_sofa")
+visible = false
+
+[node name="SofaModel" parent="Sofa" instance=ExtResource("9_sofa_model")]
+position = Vector3(0, -0.25, 0)
+rotation = Vector3(0, 3.141593, 0)
+scale = Vector3(1.25, 1.25, 1.25)
 
 [node name="SofaCollision" type="CollisionShape3D" parent="Sofa"]
 shape = SubResource("shape_sofa")
@@ -192,16 +235,29 @@ object_name = "电视机"
 [node name="TVMesh" type="MeshInstance3D" parent="TV"]
 mesh = SubResource("mesh_tv")
 surface_material_override/0 = SubResource("mat_tv")
+visible = false
 
 [node name="TVScreenGlow" type="MeshInstance3D" parent="TV"]
 position = Vector3(0, 0, 0.07)
 mesh = SubResource("mesh_tv_screen")
 surface_material_override/0 = SubResource("mat_tv_screen")
+visible = false
+
+[node name="TelevisionModel" parent="TV" instance=ExtResource("11_tv_model")]
+position = Vector3(0, -0.55, 0.27)
+rotation = Vector3(0, 3.141593, 0)
+scale = Vector3(1.75, 1.75, 1.75)
 
 [node name="CoffeeTable" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.175, 0.7)
 mesh = SubResource("mesh_table")
 surface_material_override/0 = SubResource("mat_table")
+visible = false
+
+[node name="CoffeeTableModel" parent="CoffeeTable" instance=ExtResource("10_table_model")]
+position = Vector3(0, -0.175, 0)
+rotation = Vector3(0, 1.570796, 0)
+scale = Vector3(1.55, 1.55, 1.55)
 
 [node name="Rug" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.005, 0.95)
@@ -237,6 +293,20 @@ object_name = "绿植小绿"
 [node name="PlantMesh" type="MeshInstance3D" parent="Plant"]
 mesh = SubResource("mesh_plant")
 surface_material_override/0 = SubResource("mat_plant")
+visible = false
+
+[node name="PottedPlantModel" parent="Plant" instance=ExtResource("12_plant_model")]
+position = Vector3(0, -0.3, 0)
+scale = Vector3(0.82, 0.82, 0.82)
+
+[node name="BookshelfModel" parent="." instance=ExtResource("13_shelf_model")]
+position = Vector3(3.18, 0, -2.15)
+rotation = Vector3(0, -1.570796, 0)
+scale = Vector3(1.05, 1.05, 1.05)
+
+[node name="CeilingLampModel" parent="." instance=ExtResource("14_lamp_model")]
+position = Vector3(0.65, 1.62, 0.55)
+scale = Vector3(0.78, 0.78, 0.78)
 
 [node name="Agent" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0, 0.4)
