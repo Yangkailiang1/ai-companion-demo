@@ -309,16 +309,23 @@ func _handle_decision(decision: Dictionary) -> void:
 	# 校验并净化 gesture
 	gesture = _validate_and_sanitize_gesture(gesture)
 
-	var explicit_goal = _infer_explicit_player_goal(player_message)
+	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
+	gesture = performance["gesture"]
+
+	var router_goal := String(performance.get("goal", ""))
+	var explicit_goal = router_goal if not router_goal.is_empty() else _infer_explicit_player_goal(player_message)
 	var compiled_plan: Array = []
 	if not explicit_goal.is_empty():
 		goal = explicit_goal
-		speech = _ensure_relevant_acknowledgement(explicit_goal, speech)
+		var router_reply := String(performance.get("reply", ""))
+		speech = router_reply if not router_reply.is_empty() else _ensure_relevant_acknowledgement(explicit_goal, speech)
+	elif performance.get("plan", []) is Array and not performance.get("plan", []).is_empty():
+		compiled_plan = PlanValidator.new().compile(performance.get("plan", []))
+		var router_reply := String(performance.get("reply", ""))
+		if not router_reply.is_empty():
+			speech = router_reply
 	else:
 		compiled_plan = PlanValidator.new().compile(decision.get("plan", []))
-
-	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
-	gesture = performance["gesture"]
 
 	# 记录记忆
 	if not thought.is_empty():
@@ -333,10 +340,13 @@ func _handle_decision(decision: Dictionary) -> void:
 		"emotion": emotion,
 		"motion_provider": performance["provider"],
 		"generation_prompt": performance["generation_prompt"],
+		"router_action_id": performance.get("action_id", ""),
+		"router_target": performance.get("target", ""),
 	})
 	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
 		"source": "llm",
 		"motion_provider": performance["provider"],
+		"router_action_id": performance.get("action_id", ""),
 	})
 
 	# Goal → GOAP 分解
@@ -388,6 +398,7 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 	var goal = "idle"
 	var gesture = "idle"
 	var emotion_intensity := 0.65
+	var compiled_plan: Array = []
 
 	var sim = WorldSimulator.get_state_snapshot()
 	var needs = sim["needs"]
@@ -395,13 +406,25 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 	# 玩家说话 → 给一个温和回应
 	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT and not player_message.is_empty():
 		var msg_lower = player_message.to_lower()
+		var routed := _route_player_intent(player_message, gesture, emotion, emotion_intensity)
+		var routed_is_actionable := _is_actionable_router_decision(routed)
 
 		# 检查触发规则中的情绪
 		if not triggered.is_empty():
 			emotion = triggered[0].get("emotion", "neutral")
 
 		# B7: 显式 gesture 测试句
-		if ("绕" in msg_lower or "转" in msg_lower) and "房间" in msg_lower and ("一圈" in msg_lower or "巡逻" in msg_lower):
+		if routed_is_actionable:
+			speech = String(routed.get("reply", ""))
+			if speech.is_empty():
+				speech = _ensure_relevant_acknowledgement(String(routed.get("goal", "")), "")
+			goal = String(routed.get("goal", goal))
+			gesture = String(routed.get("clip", gesture))
+			emotion = String(routed.get("expression", emotion))
+			emotion_intensity = clampf(float(routed.get("intensity", emotion_intensity)), 0.0, 1.0)
+			if routed.get("plan", []) is Array and not routed.get("plan", []).is_empty():
+				compiled_plan = PlanValidator.new().compile(routed.get("plan", []))
+		elif ("绕" in msg_lower or "转" in msg_lower) and "房间" in msg_lower and ("一圈" in msg_lower or "巡逻" in msg_lower):
 			speech = "好呀，我去绕房间走一圈！"
 			goal = "patrol_room"
 			gesture = "walk"
@@ -502,15 +525,20 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 		"emotion": emotion,
 		"motion_provider": performance["provider"],
 		"generation_prompt": performance["generation_prompt"],
+		"router_action_id": performance.get("action_id", ""),
+		"router_target": performance.get("target", ""),
 	})
 	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
 		"source": "local",
 		"motion_provider": performance["provider"],
+		"router_action_id": performance.get("action_id", ""),
 	})
 
 	# GOAP 分解。纯聊天/无决定时只短暂停顿，不交给规划器制造未知 Goal 警告。
 	var actions: Array
-	if goal == "idle" or goal == "chat_with_player":
+	if not compiled_plan.is_empty():
+		actions = compiled_plan
+	elif goal == "idle" or goal == "chat_with_player":
 		actions = [AffordanceTypes.PrimitiveAction.new(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
 	else:
 		var goap = GOAPPlanner.new()
@@ -558,13 +586,14 @@ func _resolve_player_performance(player_message: String, fallback_gesture: Strin
 			"expression": safe_expression,
 			"provider": "library",
 			"generation_prompt": "",
+			"goal": "",
+			"plan": [],
+			"reply": "",
+			"target": "",
+			"action_id": "",
 		}
 
-	var routed: Dictionary = _motion_router.route(player_message, {
-		"gesture": safe_gesture,
-		"emotion": safe_expression,
-		"intensity": intensity,
-	})
+	var routed: Dictionary = _route_player_intent(player_message, safe_gesture, safe_expression, intensity)
 	var routed_clip := String(routed.get("clip", safe_gesture))
 	if routed.get("action_id", "") == "talk" and float(routed.get("confidence", 0.0)) <= 0.25:
 		routed_clip = safe_gesture
@@ -577,10 +606,40 @@ func _resolve_player_performance(player_message: String, fallback_gesture: Strin
 		"expression": String(routed.get("expression", safe_expression)),
 		"provider": String(routed.get("provider", "library")),
 		"generation_prompt": String(routed.get("generation_prompt", "")),
+		"goal": String(routed.get("goal", "")),
+		"plan": routed.get("plan", []),
+		"reply": String(routed.get("reply", "")),
+		"target": String(routed.get("target", "")),
+		"action_id": String(routed.get("action_id", "")),
 	}
 
 
+func _route_player_intent(player_message: String, fallback_gesture: String, emotion: String, intensity: float) -> Dictionary:
+	if player_message.strip_edges().is_empty() or not _motion_router or not _motion_router.is_ready():
+		return {}
+	return _motion_router.route(player_message, {
+		"gesture": fallback_gesture,
+		"emotion": emotion,
+		"intensity": intensity,
+	})
+
+
+func _is_actionable_router_decision(routed: Dictionary) -> bool:
+	if routed.is_empty() or float(routed.get("confidence", 0.0)) < 0.5:
+		return false
+	if not String(routed.get("goal", "")).is_empty():
+		return true
+	if routed.get("plan", []) is Array and not routed.get("plan", []).is_empty():
+		return true
+	var locomotion := String(routed.get("locomotion", "none"))
+	return locomotion not in ["", "none"]
+
+
 func _infer_explicit_player_goal(player_message: String) -> String:
+	var routed := _route_player_intent(player_message, "idle", "neutral", 0.5)
+	var routed_goal := String(routed.get("goal", ""))
+	if not routed_goal.is_empty() and float(routed.get("confidence", 0.0)) >= 0.5:
+		return routed_goal
 	var message = player_message.to_lower()
 	if (("绕" in message or "转" in message) and "房间" in message and "一圈" in message) or "巡逻" in message:
 		return "patrol_room"

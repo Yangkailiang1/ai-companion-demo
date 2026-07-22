@@ -5,6 +5,7 @@ const MOTION_CATALOG_PATH := "res://data/motion_catalog.json"
 const EXPRESSION_CATALOG_PATH := "res://data/expression_catalog.json"
 
 var _actions: Array = []
+var _intents: Array = []
 var _physical_terms: Array = []
 var _expressions: Dictionary = {}
 var load_error: String = ""
@@ -13,6 +14,7 @@ var load_error: String = ""
 func _init() -> void:
 	var motion_data := _load_json(MOTION_CATALOG_PATH)
 	var expression_data := _load_json(EXPRESSION_CATALOG_PATH)
+	_intents = motion_data.get("router_intents", [])
 	_actions = motion_data.get("actions", [])
 	_physical_terms = motion_data.get("generative_physical_terms", [])
 	_expressions = expression_data.get("expressions", {})
@@ -21,6 +23,17 @@ func _init() -> void:
 func route(text: String, hints: Dictionary = {}) -> Dictionary:
 	var normalized := _normalize(text)
 	var negated := _contains_negation(normalized)
+	var best_intent: Dictionary = {}
+	var best_intent_score := 0.0
+	for intent_value in _intents:
+		if not intent_value is Dictionary:
+			continue
+		var intent: Dictionary = intent_value
+		var score := _score_terms(normalized, intent.get("aliases", []))
+		if score > best_intent_score:
+			best_intent_score = score
+			best_intent = intent
+
 	var best_action: Dictionary = {}
 	var best_score := 0.0
 	for action_value in _actions:
@@ -35,6 +48,9 @@ func route(text: String, hints: Dictionary = {}) -> Dictionary:
 	var expression := _detect_expression(normalized)
 	if expression == "neutral":
 		expression = _normalize_expression(hints.get("emotion", "neutral"))
+
+	if not best_intent.is_empty() and best_intent_score > 0.0 and not negated:
+		return _build_intent_decision(best_intent, expression, minf(best_intent_score, 1.0), text)
 
 	if not best_action.is_empty() and best_score > 0.0 and not negated:
 		if expression == "neutral":
@@ -68,18 +84,45 @@ func get_expression_names() -> PackedStringArray:
 func _build_decision(action: Dictionary, expression: String, confidence: float, provider: String, source_text: String) -> Dictionary:
 	var clip := String(action.get("clip", "idle"))
 	return {
+		"speech_act": "perform_gesture" if clip != "talk" else "converse",
 		"action_id": String(action.get("id", "idle")),
 		"clip": clip,
 		"expression": expression,
 		"confidence": confidence,
 		"provider": provider,
 		"fallback_clip": clip if clip != "talk" else "idle",
+		"locomotion": "none",
+		"target": "",
+		"goal": "",
+		"plan": [],
+		"reply": "",
 		"style": _style_for_expression(expression),
 		"speed": 1.0,
 		"duration": float(action.get("default_duration", 2.0)),
 		"source_text": source_text,
 		"generation_prompt": String(action.get("prompt_template", "")),
 	}
+
+
+func _build_intent_decision(intent: Dictionary, expression_hint: String, confidence: float, source_text: String) -> Dictionary:
+	var gesture := String(intent.get("gesture", "talk"))
+	var action := _find_action(gesture)
+	var expression := String(intent.get("expression", expression_hint))
+	if expression == "neutral" and expression_hint != "neutral":
+		expression = expression_hint
+	if expression == "neutral":
+		expression = String(action.get("default_expression", "neutral"))
+	var decision := _build_decision(action, expression, confidence, "library", source_text)
+	decision["speech_act"] = String(intent.get("speech_act", decision.get("speech_act", "perform_gesture")))
+	decision["action_id"] = String(intent.get("id", decision.get("action_id", "idle")))
+	decision["goal"] = String(intent.get("goal", ""))
+	decision["locomotion"] = String(intent.get("locomotion", "none"))
+	decision["target"] = String(intent.get("target", ""))
+	decision["plan"] = _duplicate_array(intent.get("plan", []))
+	decision["reply"] = String(intent.get("reply", ""))
+	decision["intensity"] = clampf(float(intent.get("intensity", 0.5)), 0.0, 1.0)
+	decision["duration"] = float(intent.get("duration", decision.get("duration", 2.0)))
+	return decision
 
 
 func _detect_expression(normalized: String) -> String:
@@ -151,6 +194,12 @@ func _style_for_expression(expression: String) -> String:
 func _build_generation_prompt(text: String, hints: Dictionary) -> String:
 	var style := _style_for_expression(_normalize_expression(hints.get("emotion", "neutral")))
 	return "%s Style: %s. Keep the motion safe, balanced, and in place." % [text.strip_edges(), style]
+
+
+func _duplicate_array(value: Variant) -> Array:
+	if value is Array:
+		return value.duplicate(true)
+	return []
 
 
 func _normalize(text: String) -> String:

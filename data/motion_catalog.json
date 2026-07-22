@@ -1,5 +1,103 @@
 {
   "version": 1,
+  "router_intents": [
+    {
+      "id": "watch_tv",
+      "speech_act": "accept_activity",
+      "aliases": ["看电视", "开电视", "电视节目", "一起看电视", "去看电视", "watch tv", "turn on tv"],
+      "goal": "watch_tv",
+      "gesture": "walk",
+      "expression": "happy",
+      "locomotion": "walk_to",
+      "target": "tv",
+      "intensity": 0.55,
+      "reply": "好呀，我们一起看电视吧！"
+    },
+    {
+      "id": "patrol_room",
+      "speech_act": "accept_motion",
+      "aliases": ["绕房间", "绕着房间", "绕着整个房间", "房间转一圈", "巡逻", "绕一圈", "转一圈", "walk around the room", "patrol the room"],
+      "goal": "patrol_room",
+      "gesture": "walk",
+      "expression": "happy",
+      "locomotion": "patrol",
+      "target": "room_perimeter",
+      "intensity": 0.65,
+      "reply": "好呀，我去绕房间走一圈！"
+    },
+    {
+      "id": "wander_room",
+      "speech_act": "accept_motion",
+      "aliases": ["随便走走", "房间逛逛", "在房间里逛逛", "走一走", "散步", "到处看看", "wander", "stroll"],
+      "goal": "wander_room",
+      "gesture": "walk",
+      "expression": "neutral",
+      "locomotion": "wander",
+      "target": "room",
+      "intensity": 0.45,
+      "reply": "好呀，我在房间里随便走走～"
+    },
+    {
+      "id": "come_here",
+      "speech_act": "accept_motion",
+      "aliases": ["过来", "来我这里", "到我这边", "靠近我", "come here", "come closer"],
+      "gesture": "walk",
+      "expression": "happy",
+      "locomotion": "walk_to",
+      "target": "room_center",
+      "plan": [{"action": "navigate_waypoint", "waypoint": "room_center"}],
+      "intensity": 0.55,
+      "reply": "好，我过来啦。"
+    },
+    {
+      "id": "read_book",
+      "speech_act": "accept_activity",
+      "aliases": ["看书", "读书", "读小说", "一起看书", "read book"],
+      "goal": "read_book",
+      "gesture": "walk",
+      "expression": "happy",
+      "locomotion": "walk_to",
+      "target": "book",
+      "intensity": 0.5,
+      "reply": "好呀，我们一起看会儿书吧！"
+    },
+    {
+      "id": "rest_on_sofa",
+      "speech_act": "accept_activity",
+      "aliases": ["坐沙发", "坐下", "休息一下", "去沙发", "sit on sofa", "take a seat"],
+      "goal": "rest_on_sofa",
+      "gesture": "sit",
+      "expression": "neutral",
+      "locomotion": "walk_to",
+      "target": "sofa",
+      "intensity": 0.35,
+      "reply": "好呀，我们去沙发上休息一下吧。"
+    },
+    {
+      "id": "water_plant",
+      "speech_act": "accept_activity",
+      "aliases": ["浇花", "浇水", "浇植物", "给小绿浇水", "water plant"],
+      "goal": "water_plant",
+      "gesture": "walk",
+      "expression": "happy",
+      "locomotion": "walk_to",
+      "target": "plant",
+      "intensity": 0.45,
+      "reply": "好呀，我们一起给小绿浇水吧！"
+    },
+    {
+      "id": "drink_milk_tea",
+      "speech_act": "accept_activity",
+      "aliases": ["喝奶茶", "喝一口", "珍珠奶茶", "drink milk tea"],
+      "goal": "drink_milk_tea",
+      "gesture": "happy",
+      "expression": "excited",
+      "locomotion": "walk_to",
+      "target": "milk_tea",
+      "intensity": 0.7,
+      "reply": "好呀，我们一起喝奶茶吧！"
+    }
+  ],
   "actions": [
     {
       "id": "idle",

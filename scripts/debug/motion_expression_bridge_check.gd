@@ -45,11 +45,26 @@ func _run() -> void:
 			_assert(not String(decision["generation_prompt"]).is_empty(), "generated route needs a provider prompt")
 			_assert(PerformanceCueTypes.is_valid_gesture(decision["fallback_clip"]), "generated route needs a safe fallback")
 
+	_validate_structured_router(router)
 	_validate_bone_map()
 	_validate_expression_catalog()
 	await _validate_scene_driver()
 	print("MOTION_EXPRESSION_BRIDGE_PASS prompts=%d joints=22" % cases.size())
 	quit(0)
+
+
+func _validate_structured_router(router) -> void:
+	var tv: Dictionary = router.route("我们一起去看电视吧")
+	_assert(tv.get("goal", "") == "watch_tv", "TV intent must resolve to watch_tv")
+	_assert(tv.get("target", "") == "tv", "TV intent must target tv")
+	_assert(tv.get("locomotion", "") == "walk_to", "TV intent must request walk_to")
+	var patrol: Dictionary = router.route("请绕着整个房间转一圈")
+	_assert(patrol.get("goal", "") == "patrol_room", "room lap intent must resolve to patrol_room")
+	_assert(patrol.get("target", "") == "room_perimeter", "room lap intent must target room_perimeter")
+	var come_here: Dictionary = router.route("过来一下")
+	_assert(come_here.get("target", "") == "room_center", "come-here intent must use a safe player-area waypoint")
+	var plan: Array = come_here.get("plan", [])
+	_assert(plan.size() == 1 and plan[0].get("waypoint", "") == "room_center", "come-here intent must emit a safe waypoint plan")
 
 
 func _validate_bone_map() -> void:
