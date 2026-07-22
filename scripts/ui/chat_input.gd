@@ -83,6 +83,7 @@ func _on_chat_entry(speaker: String, text: String, is_player: bool) -> void:
 		_chat_entries.pop_front()
 	chat_log.clear()
 	chat_log.append_text("\n".join(_chat_entries) + "\n")
+	_update_chat_panel_presence()
 
 
 func _on_status_changed(message: String, state: String) -> void:
@@ -96,7 +97,7 @@ func _on_status_changed(message: String, state: String) -> void:
 func _apply_visual_style() -> void:
 	theme = Theme.new()
 	_style_panel($HUD, Color(0.045, 0.06, 0.085, 0.78), Color(0.34, 0.48, 0.62, 0.72))
-	_style_panel($ChatPanel, Color(0.035, 0.045, 0.065, 0.58), Color(0.32, 0.48, 0.64, 0.5))
+	_style_panel($ChatPanel, Color(0.035, 0.045, 0.065, 0.38), Color(0.32, 0.48, 0.64, 0.35))
 	_style_panel($InputArea, Color(0.035, 0.045, 0.065, 0.86), Color(0.42, 0.62, 0.78, 0.72))
 	_style_panel($StatusPanel, Color(0.035, 0.045, 0.065, 0.76), Color(0.32, 0.48, 0.64, 0.56))
 	_style_line_edit()
@@ -108,6 +109,7 @@ func _apply_visual_style() -> void:
 		chat_log.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.55))
 		chat_log.add_theme_constant_override("shadow_offset_x", 1)
 		chat_log.add_theme_constant_override("shadow_offset_y", 1)
+	_update_chat_panel_presence()
 
 
 func _style_panel(panel: Panel, bg: Color, border: Color) -> void:
@@ -172,3 +174,15 @@ func _style_progress_bar(bar: ProgressBar) -> void:
 	fill.set_corner_radius_all(4)
 	bar.add_theme_stylebox_override("background", bg)
 	bar.add_theme_stylebox_override("fill", fill)
+
+
+func _update_chat_panel_presence() -> void:
+	var chat_panel := $ChatPanel as Panel
+	if not chat_panel:
+		return
+	if _chat_entries.is_empty():
+		chat_panel.visible = false
+	else:
+		chat_panel.visible = true
+		_style_panel(chat_panel, Color(0.035, 0.045, 0.065, 0.68), Color(0.42, 0.62, 0.78, 0.62))
+		chat_log.modulate = Color(1.0, 1.0, 1.0, 1.0)
