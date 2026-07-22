@@ -112,7 +112,7 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT:
 		MessageBus.ui_status_changed.emit("AI 正在理解：%s" % data.get("text", "").left(24), "thinking")
 	else:
-		MessageBus.ui_status_changed.emit("小叶子正在自主思考…", "thinking")
+		MessageBus.ui_status_changed.emit("咕咕嘎嘎正在自主思考…", "thinking")
 
 	# Step 1: Perception — 世界语义快照
 	var semantic_snapshot = SemanticWorld.generate_semantic_snapshot(agent_id)

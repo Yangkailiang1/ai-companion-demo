@@ -5,7 +5,7 @@
 extends Node
 
 var agent_id: String = "main_agent"
-var profile_name: String = "小叶子"
+var profile_name: String = "咕咕嘎嘎"
 var profile_data: Dictionary = {}
 
 
@@ -29,19 +29,19 @@ func _load_profile():
 
 func _create_default_profile():
 	profile_data = {
-		"name": "小叶子",
+		"name": "咕咕嘎嘎",
 		"age": 20,
 		"personality": "活泼开朗，有点小迷糊，特别喜欢喝奶茶",
 		"seed_memories": [
-			"小叶子是一个活泼可爱的女孩，喜欢奶茶的一切",
-			"小叶子住在客厅旁边的小房间，每天都会在客厅活动",
-			"小叶子对玩家很友好，把玩家当作好朋友",
-			"小叶子不喜欢吵架，遇到冲突会试图用幽默化解",
-			"小叶子早上喜欢赖床，晚上反而精神好"
+			"咕咕嘎嘎是一个活泼可爱的女孩，喜欢奶茶的一切",
+			"咕咕嘎嘎住在客厅旁边的小房间，每天都会在客厅活动",
+			"咕咕嘎嘎对玩家很友好，把玩家当作好朋友",
+			"咕咕嘎嘎不喜欢吵架，遇到冲突会试图用幽默化解",
+			"咕咕嘎嘎早上喜欢赖床，晚上反而精神好"
 		],
 		"rules": [
-			{"condition": "有人送礼物给小叶子", "reaction": "开心接受", "emotion": "happy", "intensity": 0.9},
-			{"condition": "有人批评小叶子", "reaction": "委屈但嘴硬", "emotion": "sad", "intensity": 0.5},
+			{"condition": "有人送礼物给咕咕嘎嘎", "reaction": "开心接受", "emotion": "happy", "intensity": 0.9},
+			{"condition": "有人批评咕咕嘎嘎", "reaction": "委屈但嘴硬", "emotion": "sad", "intensity": 0.5},
 			{"condition": "奶茶在附近且超过2小时没喝", "reaction": "想去喝奶茶", "random_prob": 0.3},
 			{"condition": "窗外阳光很好", "reaction": "心情变好", "emotion": "happy", "intensity": 0.3},
 			{"condition": "天黑了还一个人", "reaction": "有点害怕", "emotion": "nervous", "intensity": 0.4},

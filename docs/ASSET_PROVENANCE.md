@@ -94,6 +94,16 @@ Godot 接入状态：
 - `scenes/living_room.tscn` 已用真实模型替换灰盒视觉；原交互节点/碰撞保持不变。
 - 地板、墙面、地毯已绑定 1K PBR diffuse / normal / ARM 贴图。
 
+### 5. Codex ImageGen — 客厅外部暖色背景图
+
+| 属性 | 值 |
+|------|-----|
+| **生成文件** | `assets/environments/backdrops/cozy_morning_backdrop.png` |
+| **用途** | 替换房间外部黑色背景，提供温暖晨景氛围 |
+| **生成方式** | Codex built-in `image_gen` |
+| **提示词摘要** | warm painterly morning exterior backdrop, pastel sky, soft trees, cozy apartment mood, no text/watermark |
+| **状态** | 已作为项目本地资产引用到 `scenes/living_room.tscn` |
+
 ## 导出脚本
 
 | 脚本 | 位置 | 说明 |

@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=59 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -24,6 +24,8 @@
 [ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_diff_1k.jpg" id="22_rug_diff"]
 [ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_nor_gl_1k.jpg" id="23_rug_norm"]
 [ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_arm_1k.jpg" id="24_rug_arm"]
+[ext_resource type="Texture2D" path="res://assets/environments/backdrops/cozy_morning_backdrop.png" id="25_backdrop"]
+[ext_resource type="Script" path="res://scripts/characters/idle_breath.gd" id="26_idle_breath"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -57,6 +59,18 @@ size = Vector3(2.2, 1.25, 0.04)
 
 [sub_resource type="BoxMesh" id="mesh_wall_art"]
 size = Vector3(1.2, 0.7, 0.035)
+
+[sub_resource type="BoxMesh" id="mesh_baseboard_back"]
+size = Vector3(8.05, 0.12, 0.08)
+
+[sub_resource type="BoxMesh" id="mesh_baseboard_side"]
+size = Vector3(0.08, 0.12, 8.05)
+
+[sub_resource type="BoxMesh" id="mesh_pillow"]
+size = Vector3(0.42, 0.28, 0.16)
+
+[sub_resource type="BoxMesh" id="mesh_backdrop"]
+size = Vector3(14, 7.875, 0.02)
 
 [sub_resource type="BoxMesh" id="mesh_book"]
 size = Vector3(0.3, 0.05, 0.2)
@@ -144,15 +158,32 @@ emission = Color(0.62, 0.76, 0.9, 1)
 emission_energy_multiplier = 0.75
 
 [sub_resource type="StandardMaterial3D" id="mat_tv_screen"]
-albedo_color = Color(0.09, 0.13, 0.17, 1)
+albedo_color = Color(0.025, 0.026, 0.03, 1)
 emission_enabled = true
-emission = Color(0.08, 0.16, 0.22, 1)
-emission_energy_multiplier = 0.55
+emission = Color(0.05, 0.035, 0.025, 1)
+emission_energy_multiplier = 0.28
 roughness = 0.35
 
 [sub_resource type="StandardMaterial3D" id="mat_wall_art"]
 albedo_color = Color(0.36, 0.26, 0.22, 1)
 roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="mat_baseboard"]
+albedo_color = Color(0.62, 0.42, 0.24, 1)
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="mat_pillow_warm"]
+albedo_color = Color(0.9, 0.54, 0.38, 1)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="mat_pillow_cream"]
+albedo_color = Color(0.94, 0.82, 0.64, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="mat_backdrop"]
+albedo_texture = ExtResource("25_backdrop")
+shading_mode = 0
+roughness = 1.0
 
 [node name="LivingRoom" type="Node3D"]
 
@@ -160,13 +191,24 @@ roughness = 0.88
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 8, 0)
 shadow_enabled = true
 light_color = Color(1, 0.88, 0.72, 1)
-light_energy = 1.35
+light_energy = 1.05
 
 [node name="WarmFillLight" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.25, 1.9)
-light_color = Color(0.9, 0.72, 0.52, 1)
-light_energy = 0.85
+light_color = Color(1, 0.72, 0.48, 1)
+light_energy = 1.1
 omni_range = 6.0
+
+[node name="WindowWarmLight" type="OmniLight3D" parent="."]
+position = Vector3(2.55, 1.85, -3.05)
+light_color = Color(1, 0.77, 0.48, 1)
+light_energy = 1.55
+omni_range = 4.5
+
+[node name="ExteriorBackdrop" type="MeshInstance3D" parent="."]
+position = Vector3(0, 2.25, -5.25)
+mesh = SubResource("mesh_backdrop")
+surface_material_override/0 = SubResource("mat_backdrop")
 
 [node name="Floor" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
@@ -180,6 +222,11 @@ script = ExtResource("7_navigation_region")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4)
 mesh = SubResource("mesh_wall")
 surface_material_override/0 = SubResource("mat_wall")
+
+[node name="BaseboardBack" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.08, -3.87)
+mesh = SubResource("mesh_baseboard_back")
+surface_material_override/0 = SubResource("mat_baseboard")
 
 [node name="WindowGlow" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 1.65, -3.88)
@@ -202,13 +249,23 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
 mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
 
+[node name="BaseboardLeft" type="MeshInstance3D" parent="."]
+position = Vector3(-3.87, 0.08, 0)
+mesh = SubResource("mesh_baseboard_side")
+surface_material_override/0 = SubResource("mat_baseboard")
+
 [node name="WallRight" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 0)
 mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
 
+[node name="BaseboardRight" type="MeshInstance3D" parent="."]
+position = Vector3(3.87, 0.08, 0)
+mesh = SubResource("mesh_baseboard_side")
+surface_material_override/0 = SubResource("mat_baseboard")
+
 [node name="Sofa" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.25, 1.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.25, 1.4)
 script = ExtResource("1_interact")
 object_id = "sofa"
 object_name = "沙发"
@@ -222,6 +279,18 @@ visible = false
 position = Vector3(0, -0.25, 0)
 rotation = Vector3(0, 3.141593, 0)
 scale = Vector3(1.25, 1.25, 1.25)
+
+[node name="WarmPillowLeft" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(-0.45, 0.25, -0.13)
+rotation = Vector3(-0.18, 0.12, -0.04)
+mesh = SubResource("mesh_pillow")
+surface_material_override/0 = SubResource("mat_pillow_warm")
+
+[node name="CreamPillowRight" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(0.36, 0.26, -0.12)
+rotation = Vector3(-0.16, -0.16, 0.05)
+mesh = SubResource("mesh_pillow")
+surface_material_override/0 = SubResource("mat_pillow_cream")
 
 [node name="SofaCollision" type="CollisionShape3D" parent="Sofa"]
 shape = SubResource("shape_sofa")
@@ -241,31 +310,28 @@ visible = false
 position = Vector3(0, 0, 0.07)
 mesh = SubResource("mesh_tv_screen")
 surface_material_override/0 = SubResource("mat_tv_screen")
-visible = false
+visible = true
 
 [node name="TelevisionModel" parent="TV" instance=ExtResource("11_tv_model")]
-position = Vector3(0, -0.55, 0.27)
+position = Vector3(0, -0.55, 0.2)
 rotation = Vector3(0, 3.141593, 0)
 scale = Vector3(1.75, 1.75, 1.75)
 
-[node name="CoffeeTable" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.175, 0.7)
-mesh = SubResource("mesh_table")
-surface_material_override/0 = SubResource("mat_table")
-visible = false
+[node name="CoffeeTable" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.19, 0.72)
 
 [node name="CoffeeTableModel" parent="CoffeeTable" instance=ExtResource("10_table_model")]
-position = Vector3(0, -0.175, 0)
+position = Vector3(0, -0.19, 0)
 rotation = Vector3(0, 1.570796, 0)
 scale = Vector3(1.55, 1.55, 1.55)
 
 [node name="Rug" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.005, 0.95)
+transform = Transform3D(1.25, 0, 0, 0, 1, 0, 0, 0, 1.2, -0.2, 0.005, 0.9)
 mesh = SubResource("mesh_rug")
 surface_material_override/0 = SubResource("mat_rug")
 
 [node name="Book" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.4, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.46, 0.72)
 script = ExtResource("1_interact")
 object_id = "book"
 object_name = "一本书"
@@ -275,7 +341,7 @@ mesh = SubResource("mesh_book")
 surface_material_override/0 = SubResource("mat_book")
 
 [node name="MilkTea" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.52, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.55, 0.72)
 script = ExtResource("1_interact")
 object_id = "milk_tea"
 object_name = "奶茶"
@@ -300,13 +366,14 @@ position = Vector3(0, -0.3, 0)
 scale = Vector3(0.82, 0.82, 0.82)
 
 [node name="BookshelfModel" parent="." instance=ExtResource("13_shelf_model")]
-position = Vector3(3.18, 0, -2.15)
+position = Vector3(3.72, 0, -2.05)
 rotation = Vector3(0, -1.570796, 0)
 scale = Vector3(1.05, 1.05, 1.05)
 
 [node name="CeilingLampModel" parent="." instance=ExtResource("14_lamp_model")]
-position = Vector3(0.65, 1.62, 0.55)
-scale = Vector3(0.78, 0.78, 0.78)
+position = Vector3(0.45, 2.2, 0.55)
+rotation = Vector3(3.141593, 0, 0)
+scale = Vector3(0.62, 0.62, 0.62)
 
 [node name="Agent" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0, 0.4)
@@ -329,6 +396,7 @@ visible = false
 
 [node name="PenguinModel" parent="Agent" instance=ExtResource("6_penguin")]
 scale = Vector3(1.35, 1.35, 1.35)
+script = ExtResource("26_idle_breath")
 
 [node name="AgentHead" type="MeshInstance3D" parent="Agent/AnimationController"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
@@ -337,7 +405,7 @@ surface_material_override/0 = SubResource("mat_agent")
 
 [node name="AgentNameLabel" type="Label3D" parent="Agent"]
 position = Vector3(0, 1.72, 0)
-text = "小叶子"
+text = "咕咕嘎嘎"
 font_size = 42
 outline_size = 8
 modulate = Color(0.88, 0.95, 1, 1)

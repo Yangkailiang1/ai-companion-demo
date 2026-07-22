@@ -13,7 +13,7 @@ extends Control
 @onready var hud_social: ProgressBar = $HUD/HUDLayout/SocialRow/SocialBar
 @onready var status_label: Label = $StatusPanel/StatusLabel
 
-var display_names = {"main_agent": "小叶子"}
+var display_names = {"main_agent": "咕咕嘎嘎"}
 const PLAYER_NAME := "你"
 const MAX_CHAT_LINES := 18
 const STATE_COLORS := {
@@ -39,7 +39,7 @@ func _ready():
 	MessageBus.ui_add_chat_entry.connect(_on_chat_entry)
 	MessageBus.ui_status_changed.connect(_on_status_changed)
 	_apply_visual_style()
-	line_edit.placeholder_text = "和小叶子说点什么..."
+	line_edit.placeholder_text = "和咕咕嘎嘎说点什么..."
 	line_edit.grab_focus.call_deferred()
 	var mode = "在线 AI：%s/%s" % [CognitiveCycle.llm_provider, CognitiveCycle.llm_model]
 	if CognitiveCycle.llm_api_url.is_empty() or CognitiveCycle.llm_api_key.is_empty():

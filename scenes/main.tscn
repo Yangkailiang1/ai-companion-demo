@@ -1,14 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://main001"]
+[gd_scene load_steps=5 format=3 uid="uid://main001"]
 
 [ext_resource type="PackedScene" uid="uid://livingroom01" path="res://scenes/living_room.tscn" id="1_room"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
+[ext_resource type="Script" path="res://scripts/camera/orbit_room_camera.gd" id="3_orbit_camera"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
-background_color = Color(0.035, 0.045, 0.065, 1)
+background_color = Color(0.74, 0.83, 0.9, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.82, 0.78, 0.7, 1)
-ambient_light_energy = 0.68
+ambient_light_color = Color(0.92, 0.82, 0.68, 1)
+ambient_light_energy = 0.82
 tonemap_mode = 2
 
 [node name="Main" type="Node3D"]
@@ -20,6 +21,7 @@ environment = SubResource("Environment_main")
 
 [node name="Camera3D" type="Camera3D" parent="WorldRoot"]
 transform = Transform3D(1, 0, 0, 0, 0.737277, 0.67559, 0, -0.67559, 0.737277, 0, 6.8, 8.8)
+script = ExtResource("3_orbit_camera")
 fov = 48.0
 
 [node name="LivingRoom" parent="WorldRoot" instance=ExtResource("1_room")]
@@ -51,7 +53,7 @@ offset_bottom = -8
 
 [node name="AgentName" type="Label" parent="UILayer/UI/HUD/HUDLayout"]
 layout_mode = 2
-text = "小叶子"
+text = "咕咕嘎嘎"
 
 [node name="TimeDisplay" type="Label" parent="UILayer/UI/HUD/HUDLayout"]
 layout_mode = 2
@@ -161,7 +163,7 @@ offset_left = 10
 offset_top = 7
 offset_right = -10
 offset_bottom = -7
-placeholder_text = "和小叶子说点什么..."
+placeholder_text = "和咕咕嘎嘎说点什么..."
 caret_blink = true
 theme_override_font_sizes/font_size = 21
 

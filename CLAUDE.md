@@ -5,7 +5,7 @@
 ## 项目定位
 
 **双层架构**：
-- **Demo 层**：客厅养成陪伴游戏（AI 数字人"小叶子"）
+- **Demo 层**：客厅养成陪伴游戏（AI 数字人"咕咕嘎嘎"）
 - **Runtime 层**：Living Agent Runtime — 可复用智能体运行时
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
@@ -147,6 +147,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [x] 客厅第一轮美化：暖光、补光、窗光、地毯、柔和材质、相机微调
 - [x] 客厅第二轮美化：默认隐藏空聊天面板、电视屏幕微光、墙面装饰、初始画面更干净
 - [x] 客厅第三轮美化：下载 Poly Haven CC0 家具与 PBR 贴图，替换灰盒沙发/茶几/电视/绿植，新增书架/吊灯/相框，地板/墙面/地毯绑定 1K PBR
+- [x] 客厅第四轮修正：茶几可见性、桌面物体高度、沙发落地毯、右侧柜靠墙、电视暖暗屏、房间外暖色背景、墙脚线、靠垫、角色改名“咕咕嘎嘎”、右键/滚轮/QE 房间中心环绕相机、轻量待机呼吸
 - [ ] 评估是否把客厅灰盒替换为庭院/晓光忆时新场景，或先作为独立预览/约会地点切换
 - [ ] 处理庭院材质：透明叶片、贴图色彩、灯光、相机 framing、导航区域/手工 waypoint
 - [ ] 处理晓光忆时材质：源包标注 Blender 3.6 专用；当前 Blender 5 → GLB 只能保留基础几何/部分材质，若要接近原始预览图，需要用 Blender 3.6 重导、烘焙贴图/光照，或在 Godot 手工重建灯光/体积光/窗光
@@ -189,7 +190,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 1. 用 Godot 4.6.1 打开 `project.godot`
 2. 按 F5 运行，看到企鹅角色 + 灰盒客厅 + 左上角 HUD + 左下聊天面板 + 底部输入栏
 3. 在底部输入框打字并回车或点"发送"
-4. 小叶子会回复并可能执行动作（喝奶茶、看电视等）
+4. 咕咕嘎嘎会回复并可能执行动作（喝奶茶、看电视等）
 5. 可选：创建 `data/llm_config.json` 启用完整 AI 推理
 
 ### v0.2: Blender 资产管线（已执行）

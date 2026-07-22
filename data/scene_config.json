@@ -79,7 +79,7 @@
     {
       "id": "plant",
       "name": "绿植小绿",
-      "description": "一盆翠绿的室内盆栽，小叶子给它取名叫小绿，看起来需要浇水了",
+      "description": "一盆翠绿的室内盆栽，咕咕嘎嘎给它取名叫小绿，看起来需要浇水了",
       "state": "需要浇水",
       "affordances": ["water", "prune", "look_at"],
       "position": [2.75, 0.3, -2.65],
