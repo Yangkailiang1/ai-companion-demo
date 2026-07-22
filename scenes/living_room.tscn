@@ -284,7 +284,7 @@ mesh = SubResource("mesh_baseboard_back")
 surface_material_override/0 = SubResource("mat_baseboard")
 
 [node name="WindowGlow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 1.65, -3.88)
+transform = Transform3D(0.86, 0, 0, 0, 0.9, 0, 0, 0, 1, 2.12, 1.66, -3.88)
 mesh = SubResource("mesh_window_glow")
 surface_material_override/0 = SubResource("mat_window_glow")
 
@@ -315,24 +315,24 @@ mesh = SubResource("mesh_wall_panel_wide")
 surface_material_override/0 = SubResource("mat_art_cream")
 
 [node name="BackWallShelf" type="MeshInstance3D" parent="."]
-position = Vector3(0.82, 1.22, -3.83)
+position = Vector3(0.55, 1.18, -3.83)
 mesh = SubResource("mesh_wall_shelf")
 surface_material_override/0 = SubResource("mat_shelf_wood")
 
 [node name="ShelfBookA" type="MeshInstance3D" parent="."]
-position = Vector3(0.45, 1.43, -3.72)
+position = Vector3(0.2, 1.39, -3.72)
 rotation = Vector3(0, 0, 0.12)
 mesh = SubResource("mesh_small_book")
 surface_material_override/0 = SubResource("mat_decor_book")
 
 [node name="ShelfBookB" type="MeshInstance3D" parent="."]
-position = Vector3(0.61, 1.43, -3.72)
+position = Vector3(0.36, 1.39, -3.72)
 rotation = Vector3(0, 0, -0.04)
 mesh = SubResource("mesh_small_book")
 surface_material_override/0 = SubResource("mat_book")
 
 [node name="ShelfVase" type="MeshInstance3D" parent="."]
-position = Vector3(1.18, 1.36, -3.72)
+position = Vector3(0.88, 1.32, -3.72)
 mesh = SubResource("mesh_vase")
 surface_material_override/0 = SubResource("mat_decor_vase")
 
@@ -434,11 +434,11 @@ visible = false
 position = Vector3(0, 0, 0.07)
 mesh = SubResource("mesh_tv_screen")
 surface_material_override/0 = SubResource("mat_tv_screen")
-visible = true
+visible = false
 
 [node name="TelevisionModel" parent="TV" instance=ExtResource("11_tv_model")]
-position = Vector3(0, -0.55, 0.2)
-rotation = Vector3(0, 3.141593, 0)
+position = Vector3(0, -0.55, 0.18)
+rotation = Vector3(0, 0, 0)
 scale = Vector3(1.75, 1.75, 1.75)
 
 [node name="CoffeeTable" type="Node3D" parent="."]
