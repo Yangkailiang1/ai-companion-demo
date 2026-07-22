@@ -31,14 +31,22 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+			if mouse_event.pressed and _is_pointer_over_ui(mouse_event.position):
+				_is_orbiting = false
+				_orbit_button = MOUSE_BUTTON_NONE
+				return
 			_is_orbiting = mouse_event.pressed
 			_orbit_button = mouse_event.button_index if mouse_event.pressed else MOUSE_BUTTON_NONE
 			get_viewport().set_input_as_handled()
 		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			if _is_pointer_over_ui(mouse_event.position):
+				return
 			distance = maxf(min_distance, distance - zoom_step)
 			_update_camera()
 			get_viewport().set_input_as_handled()
 		elif mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			if _is_pointer_over_ui(mouse_event.position):
+				return
 			distance = minf(max_distance, distance + zoom_step)
 			_update_camera()
 			get_viewport().set_input_as_handled()
@@ -51,6 +59,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
+	if _is_text_input_focused():
+		return
 	var direction := 0.0
 	if Input.is_key_pressed(KEY_Q) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		direction += 1.0
@@ -70,3 +80,30 @@ func _update_camera() -> void:
 	)
 	global_position = target + offset
 	look_at(target, Vector3.UP)
+
+
+func _is_text_input_focused() -> bool:
+	var focused := get_viewport().gui_get_focus_owner()
+	return focused is LineEdit or focused is TextEdit
+
+
+func _is_pointer_over_ui(pointer_position: Vector2) -> bool:
+	var root := get_tree().current_scene
+	if root == null:
+		return false
+	var ui := root.find_child("UI", true, false) as Control
+	if ui == null:
+		return false
+	var blockers := [
+		ui.find_child("InputArea", true, false),
+		ui.find_child("ChatPanel", true, false),
+		ui.find_child("HUD", true, false),
+		ui.find_child("StatusPanel", true, false),
+		ui.find_child("CameraHint", true, false),
+	]
+	for node in blockers:
+		if node is Control and (node as Control).visible:
+			var rect := (node as Control).get_global_rect()
+			if rect.has_point(pointer_position):
+				return true
+	return false

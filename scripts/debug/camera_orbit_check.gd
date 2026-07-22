@@ -26,15 +26,18 @@ func _run() -> void:
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_RIGHT
 	press.pressed = true
+	press.position = Vector2(640, 360)
 	camera._input(press)
 
 	var drag := InputEventMouseMotion.new()
 	drag.relative = Vector2(180, -40)
+	drag.position = Vector2(820, 320)
 	camera._input(drag)
 
 	var release := InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_RIGHT
 	release.pressed = false
+	release.position = Vector2(820, 320)
 	camera._input(release)
 
 	await process_frame
@@ -42,7 +45,37 @@ func _run() -> void:
 	_assert(moved_distance > 0.5, "camera did not orbit enough: %.3f" % moved_distance)
 	_assert(camera.global_position.distance_to(Vector3(0.15, 0.78, 0.35)) > 5.0, "camera too close to orbit target")
 
-	print("CAMERA_ORBIT_PASS moved=%.3f pos=%s" % [moved_distance, camera.global_position])
+	var after_orbit_position := camera.global_position
+
+	var blocked_press := InputEventMouseButton.new()
+	blocked_press.button_index = MOUSE_BUTTON_RIGHT
+	blocked_press.pressed = true
+	blocked_press.position = Vector2(100, 685)
+	camera._input(blocked_press)
+
+	var blocked_drag := InputEventMouseMotion.new()
+	blocked_drag.relative = Vector2(240, 0)
+	blocked_drag.position = Vector2(340, 685)
+	camera._input(blocked_drag)
+	await process_frame
+	var blocked_movement := camera.global_position.distance_to(after_orbit_position)
+	_assert(blocked_movement < 0.05, "camera orbited while pointer was over input UI: %.3f" % blocked_movement)
+
+	var line_edit := scene.find_child("LineEdit", true, false) as LineEdit
+	_assert(line_edit != null, "line edit missing")
+	line_edit.grab_focus()
+	var before_focused_keyboard := camera.global_position
+	var input := InputEventKey.new()
+	input.keycode = KEY_A
+	input.physical_keycode = KEY_A
+	input.pressed = true
+	Input.parse_input_event(input)
+	for _frame in range(3):
+		await process_frame
+	var after_focused_keyboard := camera.global_position
+	_assert(after_focused_keyboard.distance_to(before_focused_keyboard) < 0.05, "camera rotated while text input was focused")
+
+	print("CAMERA_ORBIT_PASS moved=%.3f ui_blocked=%.3f pos=%s" % [moved_distance, blocked_movement, camera.global_position])
 	scene.free()
 	quit(0)
 

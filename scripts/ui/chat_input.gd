@@ -41,6 +41,9 @@ func _ready():
 	MessageBus.ui_status_changed.connect(_on_status_changed)
 	_apply_visual_style()
 	line_edit.placeholder_text = "和咕咕嘎嘎说点什么..."
+	line_edit.focus_mode = Control.FOCUS_CLICK
+	line_edit.mouse_default_cursor_shape = Control.CURSOR_IBEAM
+	line_edit.caret_blink = true
 	line_edit.grab_focus.call_deferred()
 	var mode = "在线 AI：%s/%s" % [CognitiveCycle.llm_provider, CognitiveCycle.llm_model]
 	if CognitiveCycle.llm_api_url.is_empty() or CognitiveCycle.llm_api_key.is_empty():
@@ -146,6 +149,7 @@ func _style_line_edit() -> void:
 	normal.content_margin_bottom = 7
 	var focus := normal.duplicate() as StyleBoxFlat
 	focus.border_color = Color(0.96, 0.62, 0.28, 1.0)
+	focus.set_border_width_all(2)
 	line_edit.add_theme_stylebox_override("normal", normal)
 	line_edit.add_theme_stylebox_override("focus", focus)
 	line_edit.add_theme_color_override("font_color", Color(0.22, 0.13, 0.08, 1.0))
