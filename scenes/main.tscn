@@ -37,19 +37,20 @@ script = ExtResource("2_chat")
 [node name="HUD" type="Panel" parent="UILayer/UI"]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 16
-offset_top = 14
-offset_right = 270
-offset_bottom = 176
+offset_left = 18
+offset_top = 16
+offset_right = 306
+offset_bottom = 198
 mouse_filter = 2
 
 [node name="HUDLayout" type="VBoxContainer" parent="UILayer/UI/HUD"]
 layout_mode = 1
 anchors_preset = 15
-offset_left = 8
-offset_top = 8
-offset_right = -8
-offset_bottom = -8
+offset_left = 14
+offset_top = 12
+offset_right = -14
+offset_bottom = -12
+theme_override_constants/separation = 5
 
 [node name="AgentName" type="Label" parent="UILayer/UI/HUD/HUDLayout"]
 layout_mode = 2
@@ -68,7 +69,7 @@ layout_mode = 2
 [node name="HungerLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/HungerRow"]
 layout_mode = 2
 text = "饥饿"
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(48, 0)
 
 [node name="HungerBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/HungerRow"]
 layout_mode = 2
@@ -83,7 +84,7 @@ layout_mode = 2
 [node name="EnergyLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/EnergyRow"]
 layout_mode = 2
 text = "精力"
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(48, 0)
 
 [node name="EnergyBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/EnergyRow"]
 layout_mode = 2
@@ -98,7 +99,7 @@ layout_mode = 2
 [node name="FunLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/FunRow"]
 layout_mode = 2
 text = "娱乐"
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(48, 0)
 
 [node name="FunBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/FunRow"]
 layout_mode = 2
@@ -113,7 +114,7 @@ layout_mode = 2
 [node name="SocialLabel" type="Label" parent="UILayer/UI/HUD/HUDLayout/SocialRow"]
 layout_mode = 2
 text = "社交"
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(48, 0)
 
 [node name="SocialBar" type="ProgressBar" parent="UILayer/UI/HUD/HUDLayout/SocialRow"]
 layout_mode = 2
@@ -149,10 +150,10 @@ layout_mode = 1
 anchors_preset = 0
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -190.0
-offset_top = 16.0
-offset_right = 190.0
-offset_bottom = 42.0
+offset_left = -220.0
+offset_top = 18.0
+offset_right = 220.0
+offset_bottom = 48.0
 mouse_filter = 2
 text = "右键拖拽 / 滚轮 / Q E 调整视角"
 horizontal_alignment = 1
@@ -165,18 +166,18 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24
 offset_right = -24
-offset_top = -64
-offset_bottom = -14
+offset_top = -70
+offset_bottom = -12
 mouse_filter = 0
 
 [node name="LineEdit" type="LineEdit" parent="UILayer/UI/InputArea"]
 layout_mode = 1
 anchors_preset = 15
-anchor_right = 0.82
-offset_left = 14
-offset_top = 9
-offset_right = -12
-offset_bottom = -9
+anchor_right = 0.81
+offset_left = 16
+offset_top = 11
+offset_right = -14
+offset_bottom = -11
 placeholder_text = "和咕咕嘎嘎说点什么..."
 caret_blink = true
 theme_override_font_sizes/font_size = 21
@@ -184,12 +185,12 @@ theme_override_font_sizes/font_size = 21
 [node name="SendButton" type="Button" parent="UILayer/UI/InputArea"]
 layout_mode = 1
 anchors_preset = 0
-anchor_left = 0.83
+anchor_left = 0.825
 anchor_right = 1.0
-offset_left = 8
-offset_top = 9
-offset_right = -10
-offset_bottom = -9
+offset_left = 10
+offset_top = 11
+offset_right = -14
+offset_bottom = -11
 text = "发送"
 theme_override_font_sizes/font_size = 20
 
@@ -198,19 +199,19 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -440.0
-offset_top = 14.0
-offset_right = -16.0
-offset_bottom = 60.0
+offset_left = -510.0
+offset_top = 16.0
+offset_right = -18.0
+offset_bottom = 68.0
 mouse_filter = 2
 
 [node name="StatusLabel" type="Label" parent="UILayer/UI/StatusPanel"]
 layout_mode = 1
 anchors_preset = 15
-offset_left = 12.0
-offset_top = 8.0
-offset_right = -12.0
-offset_bottom = -8.0
+offset_left = 18.0
+offset_top = 10.0
+offset_right = -18.0
+offset_bottom = -10.0
 text = "AI 状态：准备就绪"
 horizontal_alignment = 2
 vertical_alignment = 1

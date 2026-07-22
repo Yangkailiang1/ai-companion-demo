@@ -125,10 +125,10 @@ func _style_panel(panel: Panel, bg: Color, border: Color, radius: int = 10) -> v
 	style.shadow_color = Color(0.22, 0.12, 0.04, 0.22)
 	style.shadow_size = 8
 	style.shadow_offset = Vector2(0, 3)
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
 	panel.add_theme_stylebox_override("panel", style)
 
 
@@ -140,8 +140,10 @@ func _style_line_edit() -> void:
 	normal.border_color = Color(0.76, 0.48, 0.24, 0.72)
 	normal.set_border_width_all(1)
 	normal.set_corner_radius_all(12)
-	normal.content_margin_left = 14
-	normal.content_margin_right = 14
+	normal.content_margin_left = 18
+	normal.content_margin_right = 18
+	normal.content_margin_top = 7
+	normal.content_margin_bottom = 7
 	var focus := normal.duplicate() as StyleBoxFlat
 	focus.border_color = Color(0.96, 0.62, 0.28, 1.0)
 	line_edit.add_theme_stylebox_override("normal", normal)
