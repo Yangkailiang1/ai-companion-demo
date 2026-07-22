@@ -27,9 +27,9 @@
 | **PerformanceCueTypes** | **new v0.2** | `scripts/core/performance_cue_types.gd` |
 | AnimationController | done (程序化 fallback) | `scripts/characters/animation_controller.gd` |
 | InteractableObject | done | `scripts/objects/interactable_object.gd` |
-| ChatInput + HUD | done | `scripts/ui/chat_input.gd` |
+| ChatInput + HUD | done (v0.6 visual pass) | `scripts/ui/chat_input.gd` |
 | DialogueBubble | done | `scripts/ui/dialogue_bubble.gd` |
-| 3D 场景 | done (企鹅 GLB + Skeleton3D + driver；灰盒仅作隐藏 fallback) | `scenes/living_room.tscn` |
+| 3D 场景 | done (企鹅 GLB + warm visual pass；灰盒家具仍待资产替换) | `scenes/living_room.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
 | **动作/表情轻量路由** | **done v0.5** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
@@ -140,10 +140,12 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 ## UI/场景美化方向
 
-- [ ] 验证 `终幕喑哑之庭` / `endless_garden_preview.tscn` 在 Godot 中可导入、实例化、渲染
-- [ ] 改造主场景 UI：更清晰的聊天面板、状态栏、输入框层级、可读字体与分辨率适配
+- [x] 验证 `终幕喑哑之庭` / `endless_garden_preview.tscn` 在 Godot 中可导入、实例化、渲染
+- [x] 改造主场景 UI：更清晰的聊天面板、状态栏、输入框层级、可读字体与分辨率适配
+- [x] 客厅第一轮美化：暖光、补光、窗光、地毯、柔和材质、相机微调
 - [ ] 评估是否把客厅灰盒替换为庭院/新场景，或先作为独立预览/约会地点切换
 - [ ] 处理庭院材质：透明叶片、贴图色彩、灯光、相机 framing、导航区域/手工 waypoint
+- [ ] 下一轮 UI：聊天面板折叠/展开、消息气泡化、场景切换入口、移动端比例检查
 
 ## 后续版本路线
 

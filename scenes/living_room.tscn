@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=31 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -27,8 +27,14 @@ size = Vector3(2, 0.5, 0.8)
 [sub_resource type="BoxMesh" id="mesh_table"]
 size = Vector3(2.1, 0.35, 1.1)
 
+[sub_resource type="BoxMesh" id="mesh_rug"]
+size = Vector3(3.2, 0.025, 2.0)
+
 [sub_resource type="BoxMesh" id="mesh_tv"]
 size = Vector3(2.5, 1.2, 0.1)
+
+[sub_resource type="BoxMesh" id="mesh_window_glow"]
+size = Vector3(2.2, 1.25, 0.04)
 
 [sub_resource type="BoxMesh" id="mesh_book"]
 size = Vector3(0.3, 0.05, 0.2)
@@ -56,13 +62,16 @@ radius = 0.2
 height = 0.4
 
 [sub_resource type="StandardMaterial3D" id="mat_floor"]
-albedo_color = Color(0.85, 0.82, 0.75, 1)
+albedo_color = Color(0.58, 0.54, 0.49, 1)
+roughness = 0.86
 
 [sub_resource type="StandardMaterial3D" id="mat_wall"]
-albedo_color = Color(0.95, 0.93, 0.88, 1)
+albedo_color = Color(0.78, 0.76, 0.72, 1)
+roughness = 0.9
 
 [sub_resource type="StandardMaterial3D" id="mat_sofa"]
-albedo_color = Color(0.75, 0.68, 0.6, 1)
+albedo_color = Color(0.54, 0.58, 0.64, 1)
+roughness = 0.82
 
 [sub_resource type="StandardMaterial3D" id="mat_tv"]
 albedo_color = Color(0.15, 0.15, 0.15, 1)
@@ -83,14 +92,32 @@ albedo_color = Color(0.85, 0.48, 0.22, 1)
 albedo_color = Color(0.18, 0.62, 0.3, 1)
 
 [sub_resource type="StandardMaterial3D" id="mat_table"]
-albedo_color = Color(0.38, 0.22, 0.12, 1)
+albedo_color = Color(0.31, 0.2, 0.14, 1)
 roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="mat_rug"]
+albedo_color = Color(0.26, 0.36, 0.42, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="mat_window_glow"]
+albedo_color = Color(0.62, 0.76, 0.9, 1)
+emission_enabled = true
+emission = Color(0.62, 0.76, 0.9, 1)
+emission_energy_multiplier = 0.75
 
 [node name="LivingRoom" type="Node3D"]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 8, 0)
 shadow_enabled = true
+light_color = Color(1, 0.88, 0.72, 1)
+light_energy = 1.35
+
+[node name="WarmFillLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.25, 1.9)
+light_color = Color(0.9, 0.72, 0.52, 1)
+light_energy = 0.85
+omni_range = 6.0
 
 [node name="Floor" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
@@ -104,6 +131,11 @@ script = ExtResource("7_navigation_region")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4)
 mesh = SubResource("mesh_wall")
 surface_material_override/0 = SubResource("mat_wall")
+
+[node name="WindowGlow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 1.65, -3.88)
+mesh = SubResource("mesh_window_glow")
+surface_material_override/0 = SubResource("mat_window_glow")
 
 [node name="WallLeft" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
@@ -142,6 +174,11 @@ surface_material_override/0 = SubResource("mat_tv")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.175, 0.7)
 mesh = SubResource("mesh_table")
 surface_material_override/0 = SubResource("mat_table")
+
+[node name="Rug" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.005, 0.95)
+mesh = SubResource("mesh_rug")
+surface_material_override/0 = SubResource("mat_rug")
 
 [node name="Book" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.4, 0.7)
