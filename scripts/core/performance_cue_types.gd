@@ -14,6 +14,7 @@ enum Gesture {
 	HAPPY,   # 开心 (bounce + arms up)
 	SIT,     # 坐下 (leg fold)
 	TALK,    # 说话 (mouth/mild body animation — 本轮用 idle 变体)
+	OFFLINE_SMOKE_WALK, # 离线 HumanML3D retarget smoke clip
 }
 
 # gesture 名称到枚举值字符串的映射（供校验和序列化）
@@ -26,11 +27,12 @@ const GESTURE_NAMES: Dictionary = {
 	"happy": Gesture.HAPPY,
 	"sit":   Gesture.SIT,
 	"talk":  Gesture.TALK,
+	"offline_smoke_walk": Gesture.OFFLINE_SMOKE_WALK,
 }
 
 # 有效的 gesture 名称列表（供 JSON schema 生成和校验）
 const VALID_GESTURES: PackedStringArray = [
-	"idle", "walk", "wave", "nod", "think", "happy", "sit", "talk"
+	"idle", "walk", "wave", "nod", "think", "happy", "sit", "talk", "offline_smoke_walk"
 ]
 
 
@@ -57,4 +59,5 @@ static func gesture_to_string(gesture: int) -> String:
 		Gesture.HAPPY: return "happy"
 		Gesture.SIT:   return "sit"
 		Gesture.TALK:  return "talk"
+		Gesture.OFFLINE_SMOKE_WALK: return "offline_smoke_walk"
 	return "idle"

@@ -56,3 +56,17 @@ baker that reads `target_rotations.npy`, applies each rotation delta to a concre
 target skeleton rest pose, keyframes the pose bones, and exports a reviewed GLB or
 Godot animation clip. After visual review, the clip can be added to `motion_catalog.json`
 and selected by the action router.
+
+The first penguin baker is available at `tools/blender/bake_retarget_package.py`:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background \
+  --python tools/blender/bake_retarget_package.py -- \
+  --input-glb assets/characters/penguin/penguin.glb \
+  --package motion_lab/generated/library/smoke_walk \
+  --output-glb assets/characters/penguin/penguin.glb \
+  --action-name offline_smoke_walk
+```
+
+For production clips, use a reviewed motion package and a semantic action name, then
+add the exported clip to `data/motion_catalog.json` and `PerformanceCueTypes`.

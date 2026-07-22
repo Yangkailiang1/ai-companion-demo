@@ -31,6 +31,7 @@ func _run() -> void:
 		["我现在很生气", "talk", "library", "angry"],
 		["眨眨眼", "talk", "library", "blink"],
 		["今天天气怎么样", "talk", "library", "talk"],
+		["测试离线动作", "offline_smoke_walk", "library", "happy"],
 		["表演一个侧手翻", "idle", "light_t2m", "neutral"],
 		["dance in a circle", "idle", "light_t2m", "neutral"],
 		["不要挥手", "talk", "library", "talk"],

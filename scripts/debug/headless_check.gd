@@ -30,7 +30,7 @@ func _run_check() -> void:
 		push_error("Penguin AnimationPlayer not found")
 		quit(1)
 		return
-	var required := ["idle", "walk", "wave", "nod", "think", "happy", "sit"]
+	var required := ["idle", "walk", "wave", "nod", "think", "happy", "sit", "offline_smoke_walk"]
 	for animation_name in required:
 		if not player.has_animation(animation_name):
 			push_error("Missing penguin animation: %s" % animation_name)

@@ -45,6 +45,7 @@ func _run() -> void:
 		"请点点头": "nod",
 		"先想一想": "think",
 		"开心一点": "happy",
+		"测试离线动作": "offline_smoke_walk",
 	}
 	for input_text in gesture_cases:
 		received_cues.clear()

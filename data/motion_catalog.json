@@ -178,6 +178,16 @@
       "default_duration": 1.5,
       "default_expression": "talk",
       "prompt_template": "A person talks with subtle conversational gestures."
+    },
+    {
+      "id": "offline_smoke_walk",
+      "clip": "offline_smoke_walk",
+      "aliases": ["离线动作", "离线库", "HumanML3D动作", "测试离线动作", "动作库测试", "offline motion", "humanml3d motion"],
+      "tags": ["offline_library", "retargeted", "preview"],
+      "loop": false,
+      "default_duration": 3.6,
+      "default_expression": "happy",
+      "prompt_template": "A HumanML3D retargeted smoke-test walking motion."
     }
   ],
   "generative_physical_terms": [
