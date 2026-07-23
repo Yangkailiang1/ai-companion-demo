@@ -48,6 +48,9 @@ func _validate_character(room: Node, registry: Node, path: String, agent_id: Str
 		var aliases: Dictionary = skeleton_adapter.get("bone_aliases", {})
 		for semantic_bone in aliases:
 			_assert(_resolve_alias(skeleton, aliases[semantic_bone]) != "", "%s unresolved semantic bone: %s" % [agent_id, semantic_bone])
+	else:
+		if String(motion_adapter.get("type", "")) == "animation_player":
+			_assert(not String(skeleton_adapter.get("reason", "")).is_empty(), "%s disabled skeleton adapter should explain why" % agent_id)
 
 	var expression_adapter: Dictionary = registry.get_expression_adapter(agent_id)
 	var channel_map: Dictionary = expression_adapter.get("channel_map", {})

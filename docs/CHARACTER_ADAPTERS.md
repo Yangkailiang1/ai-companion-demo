@@ -33,6 +33,8 @@ The adapter has two separate mapping layers:
 
 - Motion: real `AnimationPlayer` clips from `penguin.glb`.
 - Expression: blend shapes such as `joy`, `angry`, `blink`, `a/i/u/e/o`.
+- Skeleton overlay: disabled because this character already has reviewed clips; the
+  overlay should not fight the `AnimationPlayer`.
 - This is the current best-supported character.
 
 ### 诀 (`jue_agent`)

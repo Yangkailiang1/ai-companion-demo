@@ -19,7 +19,8 @@
         }
       },
       "skeleton_adapter": {
-        "enabled": true,
+        "enabled": false,
+        "reason": "Penguin already has reviewed AnimationPlayer clips; do not overlay bones on top of real clips.",
         "bone_aliases": {
           "hips": ["hips"],
           "spine": ["spine"],

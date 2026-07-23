@@ -54,6 +54,29 @@ func _load_adapter() -> void:
 	_expression_bone_map = _adapter.get("expression_bone_map", {})
 
 
+func is_overlay_enabled() -> bool:
+	return enabled
+
+
+func get_current_overlay_gesture() -> String:
+	return _gesture_name
+
+
+func get_resolved_bone_names() -> Dictionary:
+	var result := {}
+	if not _skeleton:
+		return result
+	for semantic_bone in _bone_aliases:
+		var resolved := _resolve_bone_name(String(semantic_bone))
+		if not resolved.is_empty():
+			result[semantic_bone] = resolved
+	return result
+
+
+func get_active_expression_pose_keys() -> PackedStringArray:
+	return PackedStringArray(_expression_pose.keys())
+
+
 func _apply_runtime_pose() -> void:
 	var now_msec := Time.get_ticks_msec()
 	var pose := _copy_pose(_rest_pose)
