@@ -22,9 +22,13 @@ func _run() -> void:
 
 	var main_driver = main_agent.get_node_or_null("CharacterAnimationDriver")
 	var jue_driver = jue_agent.get_node_or_null("CharacterAnimationDriver")
+	var penguin_animation_adapter = main_agent.get_node_or_null("PenguinAnimationAdapter")
 	var jue_pose_overlay = jue_agent.get_node_or_null("CharacterPoseOverlay")
 	var jue_model_root: Node3D = jue_agent.get_node_or_null("JueModelRoot")
 	_assert(main_driver != null and jue_driver != null, "both agents need animation drivers")
+	_assert(penguin_animation_adapter != null, "main agent needs relaxed idle clip adapter")
+	_assert(penguin_animation_adapter.is_relaxed_idle_applied(), "penguin relaxed idle must be installed")
+	_assert(penguin_animation_adapter.get_adjusted_track_count() == 2, "penguin relaxed idle must adjust both upper-arm tracks")
 	_assert(jue_pose_overlay != null, "Jue needs skeleton pose overlay")
 	_assert(jue_pose_overlay.is_overlay_enabled(), "Jue skeleton pose overlay should be enabled")
 	_assert(jue_pose_overlay.get_resolved_bone_names().has("head"), "Jue pose overlay should resolve head bone")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=75 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" path="res://assets/characters/jue/source/chr_0036_jsspsi_postmodel.fbx" id="27_jue_model"]
 [ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="28_jue_visual"]
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="29_pose_overlay"]
+[ext_resource type="Script" path="res://scripts/characters/penguin_animation_adapter.gd" id="30_penguin_anim_adapter"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -546,6 +547,9 @@ path_desired_distance = 0.3
 target_desired_distance = 0.45
 radius = 0.36
 height = 1.25
+
+[node name="PenguinAnimationAdapter" type="Node" parent="Agent"]
+script = ExtResource("30_penguin_anim_adapter")
 
 [node name="CharacterAnimationDriver" type="Node" parent="Agent"]
 script = ExtResource("5_anim_driver")

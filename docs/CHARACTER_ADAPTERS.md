@@ -32,6 +32,10 @@ The adapter has two separate mapping layers:
 ### 咕咕嘎嘎 (`main_agent`)
 
 - Motion: real `AnimationPlayer` clips from `penguin.glb`.
+- Idle: the runtime makes a local copy of the imported `idle` animation and applies
+  a model-specific `-52°` local-X correction to both upper-arm tracks. This removes
+  the source clip's T-pose silhouette without changing `walk`, `wave`, `happy`, or
+  any other imported clip.
 - Expression: blend shapes such as `joy`, `angry`, `blink`, `a/i/u/e/o`.
 - Skeleton overlay: disabled because this character already has reviewed clips; the
   overlay should not fight the `AnimationPlayer`.
