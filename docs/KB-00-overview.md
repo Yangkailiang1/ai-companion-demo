@@ -9,6 +9,7 @@
 | [KB-01 系统架构](./KB-01-architecture.md) | Autoload 依赖图、数据流、设计来源 | ~60 |
 | [KB-02 论文引用](./KB-02-papers.md) | 10 篇核心论文与设计决策映射 | ~80 |
 | [KB-03 实现细节](./KB-03-implementation.md) | 各模块关键实现、数据结构、协议 | ~80 |
+| [长期开发规划树](./DEVELOPMENT_ROADMAP_TREE.md) | 场景、角色、玩家、剧情、开源生态与版本切片 | 持续更新 |
 
 ## 关键概念速查
 

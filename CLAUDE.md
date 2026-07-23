@@ -10,7 +10,7 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
-## 当前状态（v0.5 — 离线动作库预览 + UI/场景美化准备）
+## 当前状态（v0.5+ Demo 基线；下一版本切片为 v0.6）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
@@ -34,6 +34,8 @@
 | **晓光忆时摄影棚预览** | **new v0.6 candidate** | `scenes/environments/xiaoguang_yishi_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
 | **动作/表情轻量路由** | **done v0.5** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
+| **双角色与角色适配器** | **done baseline，持续扩展** | `character_runtime_adapters.json`, `CHARACTER_ADAPTERS.md` |
+| **异步 TTS** | **done baseline（句子分块近流式播放）** | `tts_service.gd`, `docs/TTS_INTEGRATION.md` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
@@ -160,15 +162,13 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 ## 后续版本路线
 
-| 版本 | 内容 |
-|------|------|
-| v0.1 | 核心闭环 → done（可运行垂直切片） |
-| v0.2 | **角色模型集成 + 动作管线** → **完成并通过 Godot 自动化与截图验收** |
-| v0.3 | **空间自主：NavMesh、巡逻、闲逛、结构化计划** → done |
-| v0.4 | **动作/表情库路由 + Light-T2M 服务器实验桥** → baseline done |
-| v0.5 | Light-T2M 离线重定向闭环 + 动作库预览 → smoke done，真实样本 pending |
-| v0.6 | UI/场景美化 + 长期记忆/Reflection |
-| v0.7 | 多 Agent + CASCADE 协调 + 本地小模型 |
+长期路线不再维护为单一线性表格。统一规划入口：
+
+- **[AI Living Town 长期开发规划树](./docs/DEVELOPMENT_ROADMAP_TREE.md)**
+
+规划树使用稳定分支编号组织场景、AI 角色、玩家、剧情导演、开源生态和
+横向工程能力。每个版本从多个分支选择节点组成一个可交付的“版本切片”。
+当前建议从 `v0.6` 的存档、盆栽物体状态、统一表现意图和 UI 适配开始。
 
 ## 知识库
 
@@ -178,6 +178,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [KB-03 实现细节](./docs/KB-03-implementation.md)
 - **[PROJECT_ARCHITECTURE](./docs/PROJECT_ARCHITECTURE.md)** — 完整架构文档 (v0.1 新增)
 - **[ASSET_REQUIREMENTS](./docs/ASSET_REQUIREMENTS.md)** — 资产需求清单 (v0.1 新增)
+- **[DEVELOPMENT_ROADMAP_TREE](./docs/DEVELOPMENT_ROADMAP_TREE.md)** — 长期规划树与版本切片
 
 ## LLM 配置（可选）
 

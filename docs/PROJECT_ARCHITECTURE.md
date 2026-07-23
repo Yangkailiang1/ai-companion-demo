@@ -166,13 +166,13 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 ## 七、阶段路线图
 
-| 版本 | 目标 | 新增内容 |
-|------|------|---------|
-| **v0.1** (current) | 核心闭环 可运行 | 6 Autoload Runtime + Demo 3D 灰盒 + 聊天 UI + 本地 fallback 决策 |
-| v0.2 | 长期记忆 + 情绪 | Reflection 反思模块、Emotion 系统积分、Semantic Memory 生成 |
-| v0.3 | 空间自主 | NavigationMesh、动态位置导航、巡逻、闲逛、结构化计划 |
-| v0.4 | 长期记忆 | Reflection、情绪连续性、日程与好奇心目标 |
-| v0.5 | 多 Agent | CASCADE 协调、Agent 间自发对话、Social Events |
+项目已不再使用单一线性路线表。权威规划入口为：
+
+- [AI Living Town 长期开发规划树](./DEVELOPMENT_ROADMAP_TREE.md)
+
+规划树使用稳定节点编号，并允许每个版本同时从场景、角色、玩家、剧情和
+工程底座等分支选择任务，组成可独立验收的版本切片。本文件只描述系统
+架构，不再重复维护版本优先级。
 
 ---
 
