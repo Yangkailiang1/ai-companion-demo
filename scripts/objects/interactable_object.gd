@@ -36,3 +36,12 @@ func get_interaction_point() -> Vector3:
 
 func get_object_id() -> String:
 	return object_id
+
+
+func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
+	for child in get_children():
+		if child.has_method("perform_interaction"):
+			var result: Dictionary = child.perform_interaction(verb, actor_id)
+			if bool(result.get("handled", false)):
+				return result
+	return {"handled": false}

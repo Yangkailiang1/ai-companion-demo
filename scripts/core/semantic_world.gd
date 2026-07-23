@@ -26,6 +26,7 @@ class ObjectData:
 	var needs_proximity: bool = true
 	var consumable: bool = false
 	var effects: Dictionary = {}  # 交互对需求的影响 {need_type: delta}
+	var properties: Dictionary = {}
 	var occupied_by: String = ""  # 当前占用者（null/agent_id）
 	var godot_node: Node3D = null  # 指向 Godot 场景节点的引用
 
@@ -36,12 +37,13 @@ class ObjectData:
 			"description": description,
 			"state": state,
 			"affordances": affordances,
+			"properties": properties.duplicate(true),
 		}
 
 	func to_nl() -> String:
 		var base = "%s（%s）" % [name, state]
 		if description:
-			base = "%s：%s" % [name, description]
+			base = "%s（%s）：%s" % [name, state, description]
 		return base
 
 
@@ -71,6 +73,7 @@ func _load_scene_config() -> void:
 		obj.needs_proximity = obj_data.get("needs_proximity", true)
 		obj.consumable = obj_data.get("consumable", false)
 		obj.effects = obj_data.get("effects", {})
+		obj.properties = obj_data.get("properties", {}).duplicate(true)
 		objects[obj.id] = obj
 
 
@@ -117,6 +120,38 @@ func update_object_state(obj_id: String, new_state: String) -> void:
 			"object_id": obj_id,
 			"new_state": new_state
 		})
+
+
+func update_object_properties(obj_id: String, properties: Dictionary, new_state: String = "") -> void:
+	if not objects.has(obj_id):
+		return
+	objects[obj_id].properties.merge(properties, true)
+	if not new_state.is_empty():
+		objects[obj_id].state = new_state
+	MessageBus.world_state_changed.emit("object_properties_changed", {
+		"object_id": obj_id,
+		"state": objects[obj_id].state,
+		"properties": objects[obj_id].properties.duplicate(true),
+	})
+
+
+func export_save_state() -> Dictionary:
+	var result := {}
+	for obj_id in objects:
+		result[obj_id] = {
+			"state": objects[obj_id].state,
+			"properties": objects[obj_id].properties.duplicate(true),
+		}
+	return result
+
+
+func import_save_state(data: Dictionary) -> void:
+	for obj_id in data:
+		if not objects.has(obj_id) or not data[obj_id] is Dictionary:
+			continue
+		var saved: Dictionary = data[obj_id]
+		objects[obj_id].state = String(saved.get("state", objects[obj_id].state))
+		objects[obj_id].properties = saved.get("properties", {}).duplicate(true)
 
 # 查看某个 affordance 动词是否可用
 func can_interact(obj_id: String, verb: String) -> bool:

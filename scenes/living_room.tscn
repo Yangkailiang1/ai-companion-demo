@@ -1,4 +1,4 @@
-[gd_scene load_steps=75 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=76 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -30,6 +30,7 @@
 [ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="28_jue_visual"]
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="29_pose_overlay"]
 [ext_resource type="Script" path="res://scripts/characters/penguin_animation_adapter.gd" id="30_penguin_anim_adapter"]
+[ext_resource type="Script" path="res://scripts/objects/plant_state.gd" id="31_plant_state"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -492,6 +493,19 @@ visible = false
 [node name="PottedPlantModel" parent="Plant" instance=ExtResource("12_plant_model")]
 position = Vector3(0, -0.3, 0)
 scale = Vector3(0.82, 0.82, 0.82)
+
+[node name="PlantState" type="Node" parent="Plant"]
+script = ExtResource("31_plant_state")
+
+[node name="PlantStatusLabel" type="Label3D" parent="Plant"]
+position = Vector3(0.42, 1.08, 0)
+text = "💧需要浇水"
+font_size = 26
+outline_size = 5
+modulate = Color(0.72, 0.9, 1, 1)
+outline_modulate = Color(0.05, 0.08, 0.12, 0.95)
+billboard = 1
+no_depth_test = true
 
 [node name="BookshelfModel" parent="." instance=ExtResource("13_shelf_model")]
 position = Vector3(3.72, 0, -2.05)

@@ -4,6 +4,8 @@
 
 extends Node
 
+signal game_hour_advanced(day: int, hour: float)
+
 # 时间系统
 var game_time: float = 8.0        # 游戏小时（0-24，8 = 早上8点）
 var day_number: int = 1           # 游戏天数
@@ -73,6 +75,7 @@ func _advance_one_game_hour() -> void:
 
 	# 检查是否需要触发 Agent（需求低于阈值，带冷却）
 	_check_need_thresholds()
+	game_hour_advanced.emit(day_number, game_time)
 
 
 func _apply_need_decay() -> void:
@@ -154,3 +157,25 @@ func get_state_snapshot() -> Dictionary:
 		"time_of_day": _time_of_day_str(),
 		"needs": agent_needs.to_dict(),
 	}
+
+
+func export_save_state() -> Dictionary:
+	return {
+		"game_time": game_time,
+		"day_number": day_number,
+		"time_accumulator": time_accumulator,
+		"needs": agent_needs.to_dict(),
+	}
+
+
+func import_save_state(data: Dictionary) -> void:
+	game_time = clampf(float(data.get("game_time", game_time)), 0.0, 23.999)
+	day_number = maxi(int(data.get("day_number", day_number)), 1)
+	time_accumulator = clampf(float(data.get("time_accumulator", 0.0)), 0.0, 0.999)
+	var needs: Dictionary = data.get("needs", {})
+	agent_needs.hunger = clampf(float(needs.get("hunger", agent_needs.hunger)), 0.0, 100.0)
+	agent_needs.energy = clampf(float(needs.get("energy", agent_needs.energy)), 0.0, 100.0)
+	agent_needs.social = clampf(float(needs.get("social", agent_needs.social)), 0.0, 100.0)
+	agent_needs.fun = clampf(float(needs.get("fun", agent_needs.fun)), 0.0, 100.0)
+	agent_needs.bladder = clampf(float(needs.get("bladder", agent_needs.bladder)), 0.0, 100.0)
+	time_of_day = _calculate_time_of_day()

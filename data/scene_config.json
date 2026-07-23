@@ -82,6 +82,7 @@
       "description": "一盆翠绿的室内盆栽，咕咕嘎嘎给它取名叫小绿，看起来需要浇水了",
       "state": "需要浇水",
       "affordances": ["water", "prune", "look_at"],
+      "properties": {"moisture": 28.0, "health": 82.0, "growth_stage": 1, "healthy_hours": 0},
       "position": [2.75, 0.3, -2.65],
       "interaction_point": [2.2, 0.0, -2.0],
       "needs_proximity": true

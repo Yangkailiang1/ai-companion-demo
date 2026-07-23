@@ -36,6 +36,7 @@
 | **动作/表情轻量路由** | **done v0.5** | `motion_intent_router.gd`, `expression_driver.gd`, `data/*catalog.json` |
 | **双角色与角色适配器** | **done baseline，持续扩展** | `character_runtime_adapters.json`, `CHARACTER_ADAPTERS.md` |
 | **异步 TTS** | **done baseline（句子分块近流式播放）** | `tts_service.gd`, `docs/TTS_INTEGRATION.md` |
+| **版本化存档 + 盆栽状态机** | **new v0.6 baseline** | `save_system.gd`, `plant_state.gd`, `docs/SAVE_AND_OBJECT_STATE.md` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |

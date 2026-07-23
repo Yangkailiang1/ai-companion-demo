@@ -159,6 +159,8 @@ func _interact(params: Dictionary) -> void:
 
 	var obj = SemanticWorld.get_object(obj_id)
 	if obj:
+		if is_instance_valid(obj.godot_node) and obj.godot_node.has_method("perform_interaction"):
+			obj.godot_node.perform_interaction(verb, _agent_id())
 		# 应用交互效果到 World Simulator
 		for effect_key in obj.effects:
 			var need_type = _str_to_need_type(effect_key)
