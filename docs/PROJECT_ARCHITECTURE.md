@@ -27,6 +27,7 @@ Runtime 层不依赖任何 Demo 层的表现细节，可单独提取为 Godot �
 | **MemorySystem** | `scripts/core/memory_system.gd` | 结构化记忆：Episode 记忆存储/检索（加权 recency+importance+relevance）、Semantic/Relationship 记忆、触发 Reflection |
 | **CodifiedProfile** | `scripts/core/codified_profile.gd` | 角色逻辑编码 [CCL §3.2]：确定性角色规则匹配（送礼反应、奶茶依赖、情绪变化），生成角色身份提示 |
 | **CognitiveCycle** | `scripts/core/cognitive_cycle.gd` | 认知循环主控：感知→记忆检索→Codified→LLM/fallback→GOAP→执行 的完整流程。无 LLM 时使用本地关键词 fallback |
+| **AutonomousBehaviorSystem** | `scripts/core/autonomous_behavior_system.gd` | 环境状态驱动的自主任务调度：优先级、冷却、GOAP 组合任务、玩家打断与多角色结果记忆 |
 
 ### 非 Autoload 类（Runtime 层）
 
@@ -63,12 +64,20 @@ Runtime 层不依赖任何 Demo 层的表现细节，可单独提取为 Godot �
 │  route_player_input()      ←  ChatInput UI                  │
 │  route_simulation_event()  ←  WorldSimulator                │
 │  route_idle_wake()         ←  AgentBase IdleTimer           │
+│  player_message_received   →  autonomous task interruption  │
 │                                                              │
 │  agent_trigger_cycle       →  CognitiveCycle                │
 │  emit_actions              →  AgentBase                     │
+│  action_queue_completed    →  AutonomousBehaviorSystem      │
 │  ui_add_chat_entry         →  ChatInput UI                  │
 │  ui_show_bubble            →  DialogueBubble                │
 └──────────────────────────┬──────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────────┐
+│               AutonomousBehaviorSystem                       │
+│  Semantic object change → policy/priority check → GOAP chain │
+│  completion → per-Agent episode + relationship observation   │
+└──────────────────────────┬───────────────────────────────────┘
                            ↓
 ┌──────────────────────────────────────────────────────────────┐
 │                    CognitiveCycle                             │
@@ -155,9 +164,10 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 | 扩展点 | 当前状态 | 扩展方式 |
 |--------|---------|---------|
-| 新 Agent | AgentBase 通过 event `agent_id` 过滤 | 场景中添加新 CharacterBody3D+AgentBase，设置不同 `agent_name` |
+| 新 Agent | AgentBase 通过 event `agent_id` 过滤 | 场景中添加新 CharacterBody3D+AgentBase，设置不同 `agent_name`；记忆按相同 ID 隔离 |
 | 新物体 | SemanticWorld 的 ObjectData 表 | scene_config.json 添加条目 + 场景添加 StaticBody3D+InteractableObject |
 | 新 Goal | GOAP Goal Blueprint | GOAPPlanner._build_blueprints() 添加新映射 |
+| 新自主活动 | 状态策略 + GOAP + 完成条件 | 参考 `docs/AUTONOMOUS_LIFE_RUNTIME.md`，必须有冷却、打断和验收 |
 | 新角色反应 | Codified Profile Rules | character_config.json 规则数组添加新规则 |
 | LLM 切换 | CognitiveCycle._send_llm_request | 修改 provider/url，支持 OpenAI & Anthropic 格式 |
 | 导航升级 | 客厅完成 | 程序化 NavigationRegion3D + 家具障碍 + patrol/wander；庭院待烘焙 |

@@ -215,6 +215,7 @@ func _on_idle_timer() -> void:
 func _on_actions_finished() -> void:
 	current_activity = "idle"
 	idle_timer.start()
+	MessageBus.action_queue_completed.emit(agent_name)
 
 
 func _find_animation_driver() -> Node:

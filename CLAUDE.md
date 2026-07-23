@@ -37,6 +37,7 @@
 | **双角色与角色适配器** | **done baseline，持续扩展** | `character_runtime_adapters.json`, `CHARACTER_ADAPTERS.md` |
 | **异步 TTS** | **done baseline（句子分块近流式播放）** | `tts_service.gd`, `docs/TTS_INTEGRATION.md` |
 | **版本化存档 + 盆栽状态机** | **new v0.6 baseline** | `save_system.gd`, `plant_state.gd`, `docs/SAVE_AND_OBJECT_STATE.md` |
+| **环境驱动自主生活** | **new v0.6 baseline** | `autonomous_behavior_system.gd`, `docs/AUTONOMOUS_LIFE_RUNTIME.md` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
@@ -77,10 +78,12 @@ AgentBase: navigate (NavMesh or direct-fallback) / interact / speak / idle
 UI: ChatLog + HUD (needs bars) + 3D Bubble
 ```
 
-## Autoload（6 个）
+## 核心 Autoload
 
 ```
-MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedProfile → CognitiveCycle
+MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedProfile
+→ CognitiveCycle / SocialSystem / AutonomousBehaviorSystem
+→ TTSService / CharacterAdapterRegistry / SaveSystem
 ```
 
 ## 已完成验证

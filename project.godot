@@ -31,6 +31,7 @@ TTSService="*res://scripts/core/tts_service.gd"
 SocialSystem="*res://scripts/core/social_system.gd"
 CharacterAdapterRegistry="*res://scripts/core/character_adapter_registry.gd"
 SaveSystem="*res://scripts/core/save_system.gd"
+AutonomousBehaviorSystem="*res://scripts/core/autonomous_behavior_system.gd"
 
 [display]
 

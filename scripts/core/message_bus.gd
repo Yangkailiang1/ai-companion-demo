@@ -16,6 +16,7 @@ signal agent_trigger_cycle(agent_id: String, source: AffordanceTypes.TriggerSour
 
 # 信号：Agent 完成动作
 signal agent_action_completed(agent_id: String, action: Dictionary)
+signal action_queue_completed(agent_id: String)
 
 # 信号：GOAP Action Chain 下发（原 SignalBus.emit_actions）
 signal emit_actions(agent_id: String, actions: Array)
@@ -61,6 +62,7 @@ func route_player_input(text: String) -> void:
 
 	ui_add_chat_entry.emit("玩家", clean_text, true)
 	ui_status_changed.emit("消息已发送，等待 AI 处理…", "pending")
+	player_message_received.emit(clean_text, is_command)
 
 	var trigger_source = AffordanceTypes.TriggerSource.PLAYER_INPUT
 	var data = {"text": clean_text, "is_command": is_command}
