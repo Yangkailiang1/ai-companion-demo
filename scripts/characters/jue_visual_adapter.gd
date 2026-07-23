@@ -29,6 +29,12 @@ func _adapt_mesh(mesh_instance: MeshInstance3D) -> void:
 	if "shadowproxy" in name or "_lod1" in name or "_lod2" in name or "_lod3" in name:
 		mesh_instance.visible = false
 		return
+	if "vfxpart" in name:
+		mesh_instance.visible = false
+		return
+	if "cloth_04" in name or "cloth_05" in name or "cloth_06" in name or "cloth_07" in name or "cloth_08" in name or "cloth_09" in name:
+		mesh_instance.visible = false
+		return
 	if not "_lod0" in name:
 		return
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON

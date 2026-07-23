@@ -48,6 +48,7 @@ func _run() -> void:
 
 	_validate_structured_router(router)
 	_validate_bone_map()
+	_validate_jue_bone_map()
 	_validate_expression_catalog()
 	await _validate_scene_driver()
 	print("MOTION_EXPRESSION_BRIDGE_PASS prompts=%d joints=22" % cases.size())
@@ -77,6 +78,38 @@ func _validate_bone_map() -> void:
 		var joint: Dictionary = joints[index]
 		_assert(joint.get("index", -1) == index, "bone map indices must be contiguous")
 		_assert(joint.get("target", "") in PENGUIN_BONES, "unknown penguin target bone: %s" % joint.get("target", ""))
+
+
+func _validate_jue_bone_map() -> void:
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://data/humanml3d_jue_bone_map.json"))
+	_assert(parsed is Dictionary, "Jue bone map must be valid JSON")
+	var joints: Array = parsed.get("joints", [])
+	_assert(joints.size() == 22, "Jue bone map must contain exactly 22 joints")
+	var required_targets := [
+		"Bip001_Pelvis",
+		"Bip001_Spine",
+		"Bip001_Spine2",
+		"Bip001_Head",
+		"Bip001_L_UpperArm",
+		"Bip001_R_UpperArm",
+		"Bip001_L_Hand",
+		"Bip001_R_Hand",
+		"Bip001_L_Foot",
+		"Bip001_R_Foot",
+	]
+	for index in range(joints.size()):
+		var joint: Dictionary = joints[index]
+		_assert(joint.get("index", -1) == index, "Jue bone map indices must be contiguous")
+	for target in required_targets:
+		_assert(_jue_map_has_target(joints, target), "Jue bone map missing required target: %s" % target)
+
+
+func _jue_map_has_target(joints: Array, target: String) -> bool:
+	for joint_value in joints:
+		var joint: Dictionary = joint_value
+		if joint.get("target", "") == target:
+			return true
+	return false
 
 
 func _validate_expression_catalog() -> void:

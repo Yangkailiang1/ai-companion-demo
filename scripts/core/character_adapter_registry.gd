@@ -21,6 +21,10 @@ func get_motion_adapter(agent_id: String) -> Dictionary:
 	return get_character_adapter(agent_id).get("motion_adapter", {})
 
 
+func get_skeleton_adapter(agent_id: String) -> Dictionary:
+	return get_character_adapter(agent_id).get("skeleton_adapter", {})
+
+
 func get_expression_adapter(agent_id: String) -> Dictionary:
 	return get_character_adapter(agent_id).get("expression_adapter", {})
 

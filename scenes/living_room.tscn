@@ -1,4 +1,4 @@
-[gd_scene load_steps=73 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=74 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -28,6 +28,7 @@
 [ext_resource type="Script" path="res://scripts/characters/idle_breath.gd" id="26_idle_breath"]
 [ext_resource type="PackedScene" path="res://assets/characters/jue/source/chr_0036_jsspsi_postmodel.fbx" id="27_jue_model"]
 [ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="28_jue_visual"]
+[ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="29_pose_overlay"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -549,6 +550,9 @@ height = 1.25
 [node name="CharacterAnimationDriver" type="Node" parent="Agent"]
 script = ExtResource("5_anim_driver")
 
+[node name="CharacterPoseOverlay" type="Node" parent="Agent"]
+script = ExtResource("29_pose_overlay")
+
 [node name="CharacterExpressionDriver" type="Node" parent="Agent"]
 script = ExtResource("8_expression_driver")
 
@@ -578,7 +582,7 @@ shape = SubResource("shape_agent")
 
 [node name="JueModelRoot" type="Node3D" parent="JueAgent"]
 position = Vector3(0, 0.02, 0)
-rotation = Vector3(0.035, 0, -0.035)
+rotation = Vector3(0.035, 3.141593, -0.035)
 scale = Vector3(145, 145, 145)
 script = ExtResource("28_jue_visual")
 
@@ -604,6 +608,10 @@ height = 1.85
 script = ExtResource("5_anim_driver")
 agent_id = "jue_agent"
 procedural_root = NodePath("../JueModelRoot")
+
+[node name="CharacterPoseOverlay" type="Node" parent="JueAgent"]
+script = ExtResource("29_pose_overlay")
+agent_id = "jue_agent"
 
 [node name="CharacterExpressionDriver" type="Node" parent="JueAgent"]
 script = ExtResource("8_expression_driver")

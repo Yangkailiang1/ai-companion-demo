@@ -18,6 +18,49 @@
           "offline_smoke_walk": "offline_smoke_walk"
         }
       },
+      "skeleton_adapter": {
+        "enabled": true,
+        "bone_aliases": {
+          "hips": ["hips"],
+          "spine": ["spine"],
+          "chest": ["chest"],
+          "neck": ["neck"],
+          "head": ["head"],
+          "left_upper_arm": ["upper_arm.L"],
+          "left_lower_arm": ["lower_arm.L"],
+          "right_upper_arm": ["upper_arm.R"],
+          "right_lower_arm": ["lower_arm.R"]
+        },
+        "rest_pose_degrees": {
+          "left_upper_arm": [0, 0, -10],
+          "right_upper_arm": [0, 0, 10],
+          "left_lower_arm": [0, 0, -4],
+          "right_lower_arm": [0, 0, 4]
+        },
+        "idle_motion": {
+          "breath_hz": 0.24,
+          "breath_degrees": {
+            "chest": [-1.2, 0, 0],
+            "head": [0.6, 0, 0]
+          },
+          "sway_degrees": {
+            "hips": [0, 0, 1.2],
+            "head": [0, 0, -1.0]
+          }
+        },
+        "gesture_overlays": {
+          "talk": {
+            "duration": 0.65,
+            "cycles": 2.0,
+            "oscillate_degrees": {"head": [0, 2, 0], "chest": [0, 0, 1.2]}
+          }
+        },
+        "expression_bone_map": {
+          "head_pitch_degrees": "head",
+          "head_roll_degrees": "head",
+          "head_yaw_degrees": "head"
+        }
+      },
       "expression_adapter": {
         "type": "blend_shapes",
         "supported_morphs": ["joy", "angry", "blink", "a", "i", "u", "e", "o"],
@@ -54,13 +97,101 @@
         },
         "next_step": "retarget baked HumanML3D/motion-library clips to Jue skeleton and export named Godot clips"
       },
+      "skeleton_adapter": {
+        "enabled": true,
+        "bone_aliases": {
+          "hips": ["Bip001_Pelvis"],
+          "spine": ["Bip001_Spine"],
+          "chest": ["Bip001_Spine2", "Bip001_Spine1"],
+          "neck": ["Bip001_Neck"],
+          "head": ["Bip001_Head", "face_Head"],
+          "left_clavicle": ["Bip001_L_Clavicle"],
+          "left_upper_arm": ["Bip001_L_UpperArm"],
+          "left_lower_arm": ["Bip001_L_Forearm"],
+          "left_hand": ["Bip001_L_Hand"],
+          "right_clavicle": ["Bip001_R_Clavicle"],
+          "right_upper_arm": ["Bip001_R_UpperArm"],
+          "right_lower_arm": ["Bip001_R_Forearm"],
+          "right_hand": ["Bip001_R_Hand"]
+        },
+        "rest_pose_degrees": {
+          "left_clavicle": [0, 0, 0],
+          "left_upper_arm": [0, 0, 0],
+          "left_lower_arm": [0, 0, 0],
+          "left_hand": [0, 0, 0],
+          "right_clavicle": [0, 0, 0],
+          "right_upper_arm": [0, 0, 0],
+          "right_lower_arm": [0, 0, 0],
+          "right_hand": [0, 0, 0],
+          "head": [-2, 0, 0]
+        },
+        "idle_motion": {
+          "breath_hz": 0.22,
+          "breath_degrees": {
+            "chest": [-1.0, 0, 0],
+            "head": [0.55, 0, 0],
+            "left_lower_arm": [0, 0, -1.8],
+            "right_lower_arm": [0, 0, 1.8]
+          },
+          "sway_degrees": {
+            "hips": [0, 0, 1.0],
+            "head": [0, 0, -0.8]
+          }
+        },
+        "gesture_overlays": {
+          "wave": {
+            "duration": 1.25,
+            "cycles": 3.0,
+            "degrees": {
+              "right_upper_arm": [0, 0, 0],
+              "right_lower_arm": [0, 0, 0]
+            },
+            "oscillate_degrees": {
+              "right_hand": [0, 0, 18],
+              "right_lower_arm": [0, 0, 18]
+            }
+          },
+          "nod": {
+            "duration": 0.8,
+            "cycles": 2.0,
+            "oscillate_degrees": {"head": [8, 0, 0]}
+          },
+          "think": {
+            "duration": 1.2,
+            "degrees": {
+              "head": [5, 0, -4],
+              "right_upper_arm": [0, 0, 0],
+              "right_lower_arm": [0, 0, 0]
+            }
+          },
+          "happy": {
+            "duration": 0.95,
+            "cycles": 2.0,
+            "degrees": {
+              "left_upper_arm": [0, 0, -18],
+              "right_upper_arm": [0, 0, 18]
+            },
+            "oscillate_degrees": {"chest": [-3, 0, 0], "head": [-2, 0, 0]}
+          },
+          "talk": {
+            "duration": 0.65,
+            "cycles": 2.0,
+            "oscillate_degrees": {"head": [0, 2.2, 0], "chest": [0, 0, 1.0]}
+          }
+        },
+        "expression_bone_map": {
+          "head_pitch_degrees": "head",
+          "head_roll_degrees": "head",
+          "head_yaw_degrees": "head"
+        }
+      },
       "expression_adapter": {
         "type": "blend_shapes_partial",
         "supported_morphs": "detected_from_import",
         "channel_map": {
           "joy": ["joy", "smile", "happy", "mouth_smile", "face_smile"],
-          "angry": ["angry", "mad", "brow_angry"],
-          "blink": ["blink", "eye_close", "eyes_closed", "eyeclose", "close"],
+          "angry": ["S_actor_jsspsi_brow_01_LX", "S_actor_jsspsi_brow_01_RX", "angry", "mad", "brow_angry"],
+          "blink": ["S_actor_jsspsi_eyebrow_01_L_close", "S_actor_jsspsi_eyebrow_01_R_close", "blink", "eye_close", "eyes_closed", "eyeclose", "close"],
           "a": ["a", "mouth_a", "aa", "open"],
           "i": ["i", "mouth_i"],
           "u": ["u", "mouth_u"],

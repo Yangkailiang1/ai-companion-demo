@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "source_skeleton": "HumanML3D 22-joint canonical order",
+  "target_skeleton": "Jue FBX Bip001 humanoid skeleton",
+  "target_character": "jue_agent",
+  "notes": [
+    "This file is the semantic bridge for offline HumanML3D/Light-T2M motions.",
+    "Runtime pose overlays use the same target bone names so retargeted clips can replace procedural fallbacks without changing the router.",
+    "Finger, cloth, hair, sleeve, tail, and VFX bones are intentionally excluded from the 22-joint body map."
+  ],
+  "joints": [
+    {"index": 0, "source": "pelvis", "target": "Bip001_Pelvis"},
+    {"index": 1, "source": "left_hip", "target": "Bip001_L_Thigh"},
+    {"index": 2, "source": "right_hip", "target": "Bip001_R_Thigh"},
+    {"index": 3, "source": "spine1", "target": "Bip001_Spine"},
+    {"index": 4, "source": "left_knee", "target": "Bip001_L_Calf"},
+    {"index": 5, "source": "right_knee", "target": "Bip001_R_Calf"},
+    {"index": 6, "source": "spine2", "target": "Bip001_Spine1"},
+    {"index": 7, "source": "left_ankle", "target": "Bip001_L_Foot"},
+    {"index": 8, "source": "right_ankle", "target": "Bip001_R_Foot"},
+    {"index": 9, "source": "spine3", "target": "Bip001_Spine2"},
+    {"index": 10, "source": "left_foot", "target": "Bip001_L_Toe0"},
+    {"index": 11, "source": "right_foot", "target": "Bip001_R_Toe0"},
+    {"index": 12, "source": "neck", "target": "Bip001_Neck"},
+    {"index": 13, "source": "left_collar", "target": "Bip001_L_Clavicle"},
+    {"index": 14, "source": "right_collar", "target": "Bip001_R_Clavicle"},
+    {"index": 15, "source": "head", "target": "Bip001_Head"},
+    {"index": 16, "source": "left_shoulder", "target": "Bip001_L_UpperArm"},
+    {"index": 17, "source": "right_shoulder", "target": "Bip001_R_UpperArm"},
+    {"index": 18, "source": "left_elbow", "target": "Bip001_L_Forearm"},
+    {"index": 19, "source": "right_elbow", "target": "Bip001_R_Forearm"},
+    {"index": 20, "source": "left_wrist", "target": "Bip001_L_Hand"},
+    {"index": 21, "source": "right_wrist", "target": "Bip001_R_Hand"}
+  ],
+  "retarget_policy": {
+    "scale": "Normalize source root height to target pelvis-to-head height.",
+    "root_motion": "Keep world locomotion under AgentBase; bake in-place body motion first.",
+    "rest_pose": "Solve target rest-pose correction in Blender before exporting Godot clips.",
+    "clip_names": ["idle", "walk", "wave", "nod", "think", "happy", "sit", "talk"]
+  }
+}

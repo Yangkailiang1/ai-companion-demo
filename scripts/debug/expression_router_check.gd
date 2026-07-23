@@ -30,6 +30,11 @@ func _run() -> void:
 	await create_timer(0.32).timeout
 	_assert(_max_morph_value(room, "joy") > 0.2, "expression blend cue must drive joy morph")
 	_assert(_max_morph_value(room, "blink") > 0.02, "expression blend cue must drive blink morph")
+	var angry := {"expression": "angry", "morph_weights": {"angry": 1.0}, "intensity": 0.8, "fade_duration": 0.08}
+	message_bus.emit_signal("expression_blend_cue", angry, {"source": "expression_router_check", "agent_id": "jue_agent"})
+	await create_timer(0.16).timeout
+	_assert(_max_morph_value(room, "s_actor_jsspsi_brow_01_lx") > 0.3, "Jue angry cue must drive left brow morph through adapter")
+	_assert(_max_morph_value(room, "s_actor_jsspsi_brow_01_rx") > 0.3, "Jue angry cue must drive right brow morph through adapter")
 	room.queue_free()
 	await process_frame
 	print("EXPRESSION_ROUTER_CHECK_PASS shy=%s confused=%s" % [shy.get("provider", ""), confused.get("provider", "")])

@@ -22,8 +22,10 @@ func _run() -> void:
 
 	var main_driver = main_agent.get_node_or_null("CharacterAnimationDriver")
 	var jue_driver = jue_agent.get_node_or_null("CharacterAnimationDriver")
+	var jue_pose_overlay = jue_agent.get_node_or_null("CharacterPoseOverlay")
 	var jue_model_root: Node3D = jue_agent.get_node_or_null("JueModelRoot")
 	_assert(main_driver != null and jue_driver != null, "both agents need animation drivers")
+	_assert(jue_pose_overlay != null, "Jue needs skeleton pose overlay")
 	_assert(jue_model_root != null, "Jue needs procedural model root")
 	var adapter_registry := root.get_node_or_null("CharacterAdapterRegistry")
 	_assert(adapter_registry != null, "CharacterAdapterRegistry autoload must exist")
