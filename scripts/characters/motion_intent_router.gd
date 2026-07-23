@@ -3,11 +3,13 @@ extends RefCounted
 
 const MOTION_CATALOG_PATH := "res://data/motion_catalog.json"
 const EXPRESSION_CATALOG_PATH := "res://data/expression_catalog.json"
+const TRAINED_ROUTER_PATH := "res://data/router_model.json"
 
 var _actions: Array = []
 var _intents: Array = []
 var _physical_terms: Array = []
 var _expressions: Dictionary = {}
+var _trained_router: Dictionary = {}
 var load_error: String = ""
 
 
@@ -18,6 +20,7 @@ func _init() -> void:
 	_actions = motion_data.get("actions", [])
 	_physical_terms = motion_data.get("generative_physical_terms", [])
 	_expressions = expression_data.get("expressions", {})
+	_trained_router = _load_optional_json(TRAINED_ROUTER_PATH)
 
 
 func route(text: String, hints: Dictionary = {}) -> Dictionary:
@@ -56,6 +59,10 @@ func route(text: String, hints: Dictionary = {}) -> Dictionary:
 		if expression == "neutral":
 			expression = best_action.get("default_expression", "neutral")
 		return _build_decision(best_action, expression, minf(best_score, 1.0), "library", text)
+
+	var trained_decision := _route_with_trained_model(normalized, expression, negated, text)
+	if not trained_decision.is_empty():
+		return trained_decision
 
 	if _contains_any(normalized, _physical_terms) and _is_explicit_motion_request(normalized) and not negated:
 		var fallback := _find_action("idle")
@@ -102,6 +109,106 @@ func _build_decision(action: Dictionary, expression: String, confidence: float, 
 		"source_text": source_text,
 		"generation_prompt": String(action.get("prompt_template", "")),
 	}
+
+
+func _route_with_trained_model(normalized: String, expression_hint: String, negated: bool, source_text: String) -> Dictionary:
+	if negated or normalized.is_empty() or _trained_router.is_empty():
+		return {}
+	if String(_trained_router.get("feature_provider", "")) != "hash":
+		return {}
+	var dimensions := int(_trained_router.get("dimensions", 0))
+	if dimensions <= 0:
+		return {}
+	var centroids: Dictionary = _trained_router.get("centroids", {})
+	var action_centroids: Dictionary = centroids.get("actions", {})
+	if action_centroids.is_empty():
+		return {}
+	var vector := _hash_char_ngram_vector(normalized, dimensions)
+	var action_match := _nearest_centroid(vector, action_centroids)
+	var action_id := String(action_match.get("label", ""))
+	var confidence := float(action_match.get("score", 0.0))
+	var accept_threshold := float(_trained_router.get("accept_threshold", 0.48))
+	if action_id.is_empty() or confidence < accept_threshold:
+		return {}
+	if action_id in ["talk", "idle"]:
+		return {}
+
+	var expression := expression_hint
+	var expression_match := _nearest_centroid(vector, centroids.get("expressions", {}))
+	var model_expression := String(expression_match.get("label", "neutral"))
+	if expression == "neutral" and not model_expression.is_empty():
+		expression = model_expression
+	var action := _find_action(action_id)
+	if action.get("id", "idle") == "idle" and action_id != "idle":
+		return {}
+	if expression == "neutral":
+		expression = String(action.get("default_expression", "neutral"))
+	var decision := _build_decision(action, expression, clampf(confidence, 0.0, 1.0), "trained_router", source_text)
+	decision["router_model"] = String(_trained_router.get("embedding_model", "hash_char_ngram_v1"))
+	return decision
+
+
+func _nearest_centroid(vector: PackedFloat32Array, centroids: Dictionary) -> Dictionary:
+	var best_label := ""
+	var best_score := -1.0
+	for label in centroids:
+		var score := _cosine_dense(vector, centroids[label])
+		if score > best_score:
+			best_label = String(label)
+			best_score = score
+	return {"label": best_label, "score": best_score}
+
+
+func _cosine_dense(vector: PackedFloat32Array, centroid: Variant) -> float:
+	if not centroid is Array:
+		return -1.0
+	var total := 0.0
+	var count = mini(vector.size(), centroid.size())
+	for index in range(count):
+		total += vector[index] * float(centroid[index])
+	return total
+
+
+func _hash_char_ngram_vector(text: String, dimensions: int) -> PackedFloat32Array:
+	var vector := PackedFloat32Array()
+	vector.resize(dimensions)
+	var normalized := _normalize(text)
+	var compact := normalized.replace(" ", "")
+	var sources: Array[String] = [compact]
+	for token in normalized.split(" ", false):
+		if not token.is_empty():
+			sources.append(token)
+	var added := false
+	for source in sources:
+		for ngram_size in [1, 2, 3]:
+			if source.length() < ngram_size:
+				continue
+			for index in range(0, source.length() - ngram_size + 1):
+				var gram := source.substr(index, ngram_size)
+				var hash_value := _fnv_hash(gram)
+				var bucket := int(hash_value % dimensions)
+				var sign := 1.0 if hash_value % 2 == 0 else -1.0
+				vector[bucket] += sign
+				added = true
+	if not added and not normalized.is_empty():
+		var hash_value := _fnv_hash(normalized)
+		vector[int(hash_value % dimensions)] += 1.0
+	var norm := 0.0
+	for value in vector:
+		norm += value * value
+	norm = sqrt(norm)
+	if norm <= 0.000001:
+		return vector
+	for index in range(vector.size()):
+		vector[index] = vector[index] / norm
+	return vector
+
+
+func _fnv_hash(value: String) -> int:
+	var hash_value := 2166136261
+	for index in range(value.length()):
+		hash_value = int((hash_value ^ value.unicode_at(index)) * 16777619) % 2147483647
+	return hash_value
 
 
 func _build_intent_decision(intent: Dictionary, expression_hint: String, confidence: float, source_text: String) -> Dictionary:
@@ -217,5 +324,18 @@ func _load_json(path: String) -> Dictionary:
 	var parsed = JSON.parse_string(file.get_as_text())
 	if not parsed is Dictionary:
 		load_error = "invalid catalog: %s" % path
+		return {}
+	return parsed
+
+
+func _load_optional_json(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if not file:
+		return {}
+	var parsed = JSON.parse_string(file.get_as_text())
+	if not parsed is Dictionary:
+		push_warning("invalid optional router model: %s" % path)
 		return {}
 	return parsed

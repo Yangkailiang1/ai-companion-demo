@@ -17,6 +17,8 @@ data/llm_config.json
 *.exe
 *.dll
 *.pck
+__pycache__/
+*.pyc
 
 # Motion ML lab — keep reproducible configs/scripts, never commit heavy artifacts.
 motion_lab/.venv/

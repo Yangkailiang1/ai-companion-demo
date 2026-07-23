@@ -167,7 +167,7 @@ func build_prompt(semantic: String, memory: String, codified: String, triggered:
 如果玩家跟你说话了，本轮玩家消息拥有最高优先级。先直接回应玩家当前所说的内容，不要被角色偏好或旧记忆带偏，也不要无故转移到奶茶。
 
 你必须回复一个 JSON 对象，格式如下：
-{"thought": "你的内心想法", "goal": "一个简洁的目标名称(如drink_milk_tea/watch_tv/read_book/rest_on_sofa/patrol_room/wander_room/chat_with_player)", "goal_reason": "为什么做这个决定", "emotion": "情绪(happy/sad/angry/surprised/neutral/bored/excited)", "emotion_intensity": 0.5, "speech": "你说的话（可以为空字符串）", "speech_tone": "语气(cheerful/neutral/nervous/sad/angry)", "gesture": "身体动作(必须从以下选择一个:idle/walk/wave/nod/think/happy/sit/talk)", "plan": [{"action": "patrol", "route": "room_perimeter", "laps": 1}]}
+{"thought": "你的内心想法", "goal": "一个简洁的目标名称(如drink_milk_tea/watch_tv/read_book/rest_on_sofa/patrol_room/wander_room/chat_with_player)", "goal_reason": "为什么做这个决定", "emotion": "情绪(happy/sad/angry/surprised/neutral/bored/excited)", "emotion_intensity": 0.5, "speech": "你说的话（可以为空字符串）", "speech_tone": "语气(cheerful/neutral/nervous/sad/angry)", "gesture": "身体动作兜底(必须从以下选择一个:idle/walk/wave/nod/think/happy/sit/talk)", "motion_query": "用于动作库语义检索的短句，例如'开心地挥手问候'或'自然地走向电视'", "plan": [{"action": "patrol", "route": "room_perimeter", "laps": 1}]}
 
 plan 是可选字段，最多 6 步。action 只能是 navigate_object/navigate_waypoint/patrol/wander/look_at/interact/wait；目标只能引用当前场景已有物体或已知路径点。不要输出坐标。"""
 
@@ -305,11 +305,12 @@ func _handle_decision(decision: Dictionary) -> void:
 	var gesture: String = decision.get("gesture", "idle")
 	var emotion_intensity: float = clampf(float(decision.get("emotion_intensity", 0.65)), 0.0, 1.0)
 	var player_message: String = current_trigger.get("data", {}).get("text", "")
+	var motion_query: String = decision.get("motion_query", player_message)
 
 	# 校验并净化 gesture
 	gesture = _validate_and_sanitize_gesture(gesture)
 
-	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
+	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity, motion_query)
 	gesture = performance["gesture"]
 
 	var router_goal := String(performance.get("goal", ""))
@@ -575,7 +576,7 @@ func _validate_and_sanitize_gesture(gesture: String) -> String:
 	return normalized
 
 
-func _resolve_player_performance(player_message: String, fallback_gesture: String, emotion: String, intensity: float) -> Dictionary:
+func _resolve_player_performance(player_message: String, fallback_gesture: String, emotion: String, intensity: float, motion_query: String = "") -> Dictionary:
 	var safe_gesture := _validate_and_sanitize_gesture(fallback_gesture)
 	var safe_expression := emotion.strip_edges().to_lower()
 	if safe_expression not in ["neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk"]:
@@ -593,7 +594,8 @@ func _resolve_player_performance(player_message: String, fallback_gesture: Strin
 			"action_id": "",
 		}
 
-	var routed: Dictionary = _route_player_intent(player_message, safe_gesture, safe_expression, intensity)
+	var route_text := motion_query.strip_edges() if not motion_query.strip_edges().is_empty() else player_message
+	var routed: Dictionary = _route_player_intent(route_text, safe_gesture, safe_expression, intensity)
 	var routed_clip := String(routed.get("clip", safe_gesture))
 	if routed.get("action_id", "") == "talk" and float(routed.get("confidence", 0.0)) <= 0.25:
 		routed_clip = safe_gesture
