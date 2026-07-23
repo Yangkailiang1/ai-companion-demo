@@ -18,6 +18,7 @@ var time_accumulator: float = 0.0
 
 # Agent Needs 状态
 var agent_needs: AffordanceTypes.NeedsState
+var agent_needs_by_id: Dictionary = {}
 
 # 每游戏小时的变化量
 const NEED_DECAY := {
@@ -44,6 +45,10 @@ var _last_threshold_trigger: Dictionary = {}
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	agent_needs = AffordanceTypes.NeedsState.new()
+	agent_needs_by_id = {
+		"main_agent": agent_needs,
+		"jue_agent": AffordanceTypes.NeedsState.new(),
+	}
 
 
 func _process(delta: float) -> void:
@@ -79,11 +84,13 @@ func _advance_one_game_hour() -> void:
 
 
 func _apply_need_decay() -> void:
-	agent_needs.hunger = clamp(agent_needs.hunger - NEED_DECAY[AffordanceTypes.NeedType.HUNGER], 0, 100)
-	agent_needs.energy = clamp(agent_needs.energy - NEED_DECAY[AffordanceTypes.NeedType.ENERGY], 0, 100)
-	agent_needs.social = clamp(agent_needs.social - NEED_DECAY[AffordanceTypes.NeedType.SOCIAL], 0, 100)
-	agent_needs.fun = clamp(agent_needs.fun - NEED_DECAY[AffordanceTypes.NeedType.FUN], 0, 100)
-	agent_needs.bladder = clamp(agent_needs.bladder + NEED_DECAY[AffordanceTypes.NeedType.BLADDER], 0, 100)
+	for state_value in agent_needs_by_id.values():
+		var state: AffordanceTypes.NeedsState = state_value
+		state.hunger = clamp(state.hunger - NEED_DECAY[AffordanceTypes.NeedType.HUNGER], 0, 100)
+		state.energy = clamp(state.energy - NEED_DECAY[AffordanceTypes.NeedType.ENERGY], 0, 100)
+		state.social = clamp(state.social - NEED_DECAY[AffordanceTypes.NeedType.SOCIAL], 0, 100)
+		state.fun = clamp(state.fun - NEED_DECAY[AffordanceTypes.NeedType.FUN], 0, 100)
+		state.bladder = clamp(state.bladder + NEED_DECAY[AffordanceTypes.NeedType.BLADDER], 0, 100)
 
 
 func _check_need_thresholds() -> void:
@@ -142,11 +149,19 @@ func _time_of_day_str() -> String:
 
 # 外部调用：某个动作对需求的影响
 func apply_effect(need_type: AffordanceTypes.NeedType, delta_val: float, agent_id: String = "main_agent") -> void:
+	var needs := get_needs_for_agent(agent_id)
 	match need_type:
-		AffordanceTypes.NeedType.HUNGER: agent_needs.hunger = clamp(agent_needs.hunger + delta_val, 0, 100)
-		AffordanceTypes.NeedType.ENERGY: agent_needs.energy = clamp(agent_needs.energy + delta_val, 0, 100)
-		AffordanceTypes.NeedType.SOCIAL: agent_needs.social = clamp(agent_needs.social + delta_val, 0, 100)
-		AffordanceTypes.NeedType.FUN: agent_needs.fun = clamp(agent_needs.fun + delta_val, 0, 100)
+		AffordanceTypes.NeedType.HUNGER: needs.hunger = clamp(needs.hunger + delta_val, 0, 100)
+		AffordanceTypes.NeedType.ENERGY: needs.energy = clamp(needs.energy + delta_val, 0, 100)
+		AffordanceTypes.NeedType.SOCIAL: needs.social = clamp(needs.social + delta_val, 0, 100)
+		AffordanceTypes.NeedType.FUN: needs.fun = clamp(needs.fun + delta_val, 0, 100)
+
+
+func get_needs_for_agent(agent_id: String) -> AffordanceTypes.NeedsState:
+	var normalized := agent_id if not agent_id.is_empty() else "main_agent"
+	if not agent_needs_by_id.has(normalized):
+		agent_needs_by_id[normalized] = AffordanceTypes.NeedsState.new()
+	return agent_needs_by_id[normalized]
 
 
 # 获取当前世界状态快照（给 SemanticWorld 使用）
@@ -156,6 +171,7 @@ func get_state_snapshot() -> Dictionary:
 		"day": day_number,
 		"time_of_day": _time_of_day_str(),
 		"needs": agent_needs.to_dict(),
+		"agent_needs": _serialize_agent_needs(),
 	}
 
 
@@ -165,6 +181,7 @@ func export_save_state() -> Dictionary:
 		"day_number": day_number,
 		"time_accumulator": time_accumulator,
 		"needs": agent_needs.to_dict(),
+		"agent_needs": _serialize_agent_needs(),
 	}
 
 
@@ -178,4 +195,23 @@ func import_save_state(data: Dictionary) -> void:
 	agent_needs.social = clampf(float(needs.get("social", agent_needs.social)), 0.0, 100.0)
 	agent_needs.fun = clampf(float(needs.get("fun", agent_needs.fun)), 0.0, 100.0)
 	agent_needs.bladder = clampf(float(needs.get("bladder", agent_needs.bladder)), 0.0, 100.0)
+	var saved_agent_needs: Dictionary = data.get("agent_needs", {})
+	for saved_agent_id in saved_agent_needs:
+		_import_needs_state(get_needs_for_agent(String(saved_agent_id)), saved_agent_needs[saved_agent_id])
 	time_of_day = _calculate_time_of_day()
+
+
+func _serialize_agent_needs() -> Dictionary:
+	var serialized := {}
+	for saved_agent_id in agent_needs_by_id:
+		var state: AffordanceTypes.NeedsState = agent_needs_by_id[saved_agent_id]
+		serialized[String(saved_agent_id)] = state.to_dict()
+	return serialized
+
+
+func _import_needs_state(state: AffordanceTypes.NeedsState, data: Dictionary) -> void:
+	state.hunger = clampf(float(data.get("hunger", state.hunger)), 0.0, 100.0)
+	state.energy = clampf(float(data.get("energy", state.energy)), 0.0, 100.0)
+	state.social = clampf(float(data.get("social", state.social)), 0.0, 100.0)
+	state.fun = clampf(float(data.get("fun", state.fun)), 0.0, 100.0)
+	state.bladder = clampf(float(data.get("bladder", state.bladder)), 0.0, 100.0)

@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "evaluation_interval_seconds": 6.0,
+  "agents": {
+    "main_agent": {
+      "preferences": {
+        "plant_care": 1.3,
+        "read_book": 0.85,
+        "rest_on_sofa": 0.9,
+        "wander_room": 1.15
+      },
+      "micro_behaviors": ["look_plant", "look_tv", "think"]
+    },
+    "jue_agent": {
+      "preferences": {
+        "plant_care": 0.85,
+        "read_book": 1.4,
+        "rest_on_sofa": 1.05,
+        "wander_room": 0.7
+      },
+      "micro_behaviors": ["look_book", "look_window", "think"]
+    }
+  },
+  "activities": [
+    {
+      "id": "plant_care",
+      "condition": "plant_dry",
+      "base_score": 0.72,
+      "condition_weight": 0.28,
+      "minimum_score": 0.45,
+      "cooldown_seconds": 60.0,
+      "focus_target": "plant",
+      "goals": ["water_plant", "rest_on_sofa"],
+      "resources": ["plant", "sofa"],
+      "start_memory": "注意到小绿缺水，决定先去浇水再到沙发休息。",
+      "completion_memory": "发现小绿缺水后主动浇了水，并去沙发休息。",
+      "start_line": "小绿看起来有点渴，我去给它浇水。",
+      "completion_line": "小绿喝饱水啦，我也休息一会儿。",
+      "emotion": "happy"
+    },
+    {
+      "id": "read_book",
+      "base_score": 0.16,
+      "need": "fun",
+      "need_weight": 0.5,
+      "minimum_score": 0.22,
+      "cooldown_seconds": 55.0,
+      "focus_target": "book",
+      "goals": ["read_book"],
+      "resources": ["book"],
+      "start_memory": "想安静地读一会儿茶几上的书。",
+      "completion_memory": "在客厅读了一会儿书，记住了故事的新进展。",
+      "emotion": "neutral"
+    },
+    {
+      "id": "rest_on_sofa",
+      "base_score": 0.12,
+      "need": "energy",
+      "need_weight": 0.58,
+      "minimum_score": 0.2,
+      "cooldown_seconds": 50.0,
+      "focus_target": "sofa",
+      "goals": ["rest_on_sofa"],
+      "resources": ["sofa"],
+      "start_memory": "感觉有些疲惫，决定去沙发坐一会儿。",
+      "completion_memory": "在沙发上安静休息了一会儿。",
+      "emotion": "neutral"
+    },
+    {
+      "id": "wander_room",
+      "base_score": 0.19,
+      "minimum_score": 0.18,
+      "cooldown_seconds": 42.0,
+      "goals": ["wander_room"],
+      "resources": [],
+      "start_memory": "想在房间里随意走走，看看周围。",
+      "completion_memory": "在客厅里走动并观察了一下周围。",
+      "emotion": "neutral"
+    }
+  ]
+}

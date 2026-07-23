@@ -11,6 +11,8 @@ user://world_save_v1.json
 Schema version 1 contains:
 
 - world time, day, time accumulator and Agent needs;
+- independent needs for each known `agent_id` (with the original main-Agent field
+  retained for backward-compatible saves and HUD access);
 - each semantic object's state and structured properties;
 - each loaded Agent's identity, position, rotation, activity and emotion.
 

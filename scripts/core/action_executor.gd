@@ -161,11 +161,7 @@ func _interact(params: Dictionary) -> void:
 	if obj:
 		if is_instance_valid(obj.godot_node) and obj.godot_node.has_method("perform_interaction"):
 			obj.godot_node.perform_interaction(verb, _agent_id())
-		# 应用交互效果到 World Simulator
-		for effect_key in obj.effects:
-			var need_type = _str_to_need_type(effect_key)
-			if need_type != null:
-				WorldSimulator.apply_effect(need_type, obj.effects[effect_key] as float)
+		_apply_object_effects(obj)
 
 		# 如果是消耗品 → 更新状态
 		if obj.consumable and verb in ["drink", "eat"]:
@@ -213,6 +209,10 @@ func _put_down(params: Dictionary) -> void:
 
 func _sit(params: Dictionary) -> void:
 	MessageBus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
+	var object_id := String(params.get("object", ""))
+	var object = SemanticWorld.get_object(object_id)
+	if object:
+		_apply_object_effects(object)
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
 
@@ -246,6 +246,13 @@ func _agent_id() -> String:
 	if is_instance_valid(agent_node) and agent_node.get("agent_name") != null:
 		return String(agent_node.get("agent_name"))
 	return ""
+
+
+func _apply_object_effects(object) -> void:
+	for effect_key in object.effects:
+		var need_type = _str_to_need_type(effect_key)
+		if need_type != null:
+			WorldSimulator.apply_effect(need_type, object.effects[effect_key] as float, _agent_id())
 
 
 func _str_to_need_type(str: String):

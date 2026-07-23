@@ -20,6 +20,7 @@ func _run() -> void:
 
 	var bus := root.get_node("MessageBus")
 	var autonomy := root.get_node("AutonomousBehaviorSystem")
+	autonomy.set_scheduler_enabled(false)
 	var memory := root.get_node("MemorySystem")
 	var plant := scene.get_node("WorldRoot/LivingRoom/Plant")
 	var plant_state := plant.get_node("PlantState")
@@ -49,13 +50,14 @@ func _run() -> void:
 	)
 	_assert(autonomy.evaluate_now(), "dry plant did not start an autonomous routine")
 	_assert(autonomy.get_active_agent_id() == "main_agent", "main agent was not selected")
-	_assert(captured_actions.size() == 5, "routine must contain five primitive actions")
-	_assert(captured_actions[0].type == AffordanceTypes.Primitive.NAVIGATE, "routine must navigate first")
-	_assert(String(captured_actions[0].params.get("target", "")) == "plant", "first target must be plant")
-	_assert(captured_actions[1].type == AffordanceTypes.Primitive.INTERACT, "second action must interact")
-	_assert(String(captured_actions[1].params.get("verb", "")) == "water", "plant interaction must water")
-	_assert(String(captured_actions[2].params.get("target", "")) == "sofa", "rest target must be sofa")
-	_assert(captured_actions[3].type == AffordanceTypes.Primitive.SIT, "routine must sit after navigation")
+	_assert(captured_actions.size() == 6, "routine must contain transition plus five primitive actions")
+	_assert(captured_actions[0].type == AffordanceTypes.Primitive.LOOK_AT, "routine must orient to its focus first")
+	_assert(captured_actions[1].type == AffordanceTypes.Primitive.NAVIGATE, "routine must navigate after orienting")
+	_assert(String(captured_actions[1].params.get("target", "")) == "plant", "first target must be plant")
+	_assert(captured_actions[2].type == AffordanceTypes.Primitive.INTERACT, "third action must interact")
+	_assert(String(captured_actions[2].params.get("verb", "")) == "water", "plant interaction must water")
+	_assert(String(captured_actions[3].params.get("target", "")) == "sofa", "rest target must be sofa")
+	_assert(captured_actions[4].type == AffordanceTypes.Primitive.SIT, "routine must sit after navigation")
 
 	var started_at := Time.get_ticks_msec()
 	while not routine_completed and Time.get_ticks_msec() - started_at < 15000:
@@ -75,8 +77,13 @@ func _run() -> void:
 	_assert(float(relationship.get("respect", 0.0)) > respect_before, "companion respect did not change")
 
 	# A player's interaction claims priority immediately, even during an autonomous queue.
+	bus.player_message_received.emit("测试准备", false)
+	await process_frame
+	autonomy._last_player_input_msec = -10000
+	autonomy._agent_available_after_msec.clear()
+	autonomy._activity_last_started.clear()
+	autonomy._last_global_start_msec = -2000
 	plant_state.advance_hours(12)
-	autonomy._last_routine_msec = -45000
 	routine_completed = false
 	_assert(autonomy.evaluate_now(), "second routine did not start for interruption test")
 	bus.player_message_received.emit("先和我说话", false)
