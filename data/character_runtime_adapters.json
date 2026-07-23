@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "characters": {
+    "main_agent": {
+      "display_name": "咕咕嘎嘎",
+      "model_family": "penguin_glb",
+      "motion_adapter": {
+        "type": "animation_player",
+        "clip_map": {
+          "idle": "idle",
+          "walk": "walk",
+          "wave": "wave",
+          "nod": "nod",
+          "think": "think",
+          "happy": "happy",
+          "sit": "sit",
+          "talk": "idle",
+          "offline_smoke_walk": "offline_smoke_walk"
+        }
+      },
+      "expression_adapter": {
+        "type": "blend_shapes",
+        "supported_morphs": ["joy", "angry", "blink", "a", "i", "u", "e", "o"],
+        "channel_map": {
+          "joy": ["joy", "smile", "happy"],
+          "angry": ["angry"],
+          "blink": ["blink", "eye_close", "eyes_closed"],
+          "a": ["a", "mouth_a"],
+          "i": ["i", "mouth_i"],
+          "u": ["u", "mouth_u"],
+          "e": ["e", "mouth_e"],
+          "o": ["o", "mouth_o"]
+        },
+        "fallback": "expression_library_weights"
+      }
+    },
+    "jue_agent": {
+      "display_name": "诀",
+      "model_family": "jue_fbx",
+      "motion_adapter": {
+        "type": "procedural_root_fallback",
+        "reason": "FBX imports with meshes/morphs but no AnimationPlayer clips in Godot.",
+        "supported_gestures": ["idle", "walk", "wave", "nod", "think", "happy", "sit", "talk"],
+        "clip_map": {
+          "idle": "idle",
+          "walk": "walk",
+          "wave": "wave",
+          "nod": "nod",
+          "think": "think",
+          "happy": "happy",
+          "sit": "sit",
+          "talk": "talk",
+          "offline_smoke_walk": "walk"
+        },
+        "next_step": "retarget baked HumanML3D/motion-library clips to Jue skeleton and export named Godot clips"
+      },
+      "expression_adapter": {
+        "type": "blend_shapes_partial",
+        "supported_morphs": "detected_from_import",
+        "channel_map": {
+          "joy": ["joy", "smile", "happy", "mouth_smile", "face_smile"],
+          "angry": ["angry", "mad", "brow_angry"],
+          "blink": ["blink", "eye_close", "eyes_closed", "eyeclose", "close"],
+          "a": ["a", "mouth_a", "aa", "open"],
+          "i": ["i", "mouth_i"],
+          "u": ["u", "mouth_u"],
+          "e": ["e", "mouth_e"],
+          "o": ["o", "mouth_o"]
+        },
+        "fallback": "expression_library_weights_where_channel_names_match"
+      }
+    }
+  }
+}

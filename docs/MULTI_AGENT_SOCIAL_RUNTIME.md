@@ -60,3 +60,6 @@ clips are present in the imported scene. For now she uses procedural fallback
 gestures (`wave`, `nod`, `think`, `happy`, `talk`) and AgentBase locomotion. The next
 deeper animation step is to retarget baked HumanML3D/motion-library clips to her
 skeleton or export a GLB with named animation clips from a stable Blender/MMD pipeline.
+
+See `docs/CHARACTER_ADAPTERS.md` for the shared-library plus per-character-adapter
+plan.

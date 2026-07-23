@@ -22,6 +22,7 @@ var pending_gesture_queue: Array[String] = []
 var _is_talking: bool = false
 var _procedural_base_position := Vector3.ZERO
 var _procedural_base_rotation := Vector3.ZERO
+var _motion_adapter_type := "animation_player"
 const LOOPING_GESTURES := ["idle", "walk"]
 
 # Sound/vocal hook (placeholder for future audio)
@@ -32,6 +33,8 @@ signal gesture_changed(old_gesture: String, new_gesture: String)
 func _ready():
 	if agent_id.is_empty():
 		agent_id = _infer_agent_id()
+	if has_node("/root/CharacterAdapterRegistry"):
+		_motion_adapter_type = get_node("/root/CharacterAdapterRegistry").get_motion_adapter_type(agent_id)
 	if not procedural_root:
 		procedural_root = get_parent() as Node3D
 	if procedural_root:
@@ -84,24 +87,25 @@ func _on_performance_cue(gesture_name: String, context: Dictionary) -> void:
 	if not PerformanceCueTypes.is_valid_gesture(gesture_str):
 		push_warning("CharacterAnimationDriver: unknown gesture '%s', ignoring" % gesture_name)
 		return
+	var playback_name := _map_gesture_for_character(gesture_str)
 
 	# 特殊处理：talk cue
 	if gesture_str == "talk":
 		_is_talking = true
 		# Talk 使用 idle 动画 + 可能的 future 嘴部 blend
 		# 本轮 talk 使用 idle 作为基础动画
-		_play_animation_or_procedural("talk", cross_fade_duration)
+		_play_animation_or_procedural(playback_name, cross_fade_duration)
 		return
 
 	_is_talking = false
 
 	# 检查动画是否存在
-	if not animation_player or not animation_player.has_animation(gesture_str):
-		_play_procedural(gesture_str)
-		current_gesture = PerformanceCueTypes.parse_gesture(gesture_str)
+	if _motion_adapter_type != "animation_player" or not animation_player or not animation_player.has_animation(playback_name):
+		_play_procedural(playback_name)
+		current_gesture = PerformanceCueTypes.parse_gesture(playback_name)
 		return
 
-	_play_animation_or_procedural(gesture_str, cross_fade_duration)
+	_play_animation_or_procedural(playback_name, cross_fade_duration)
 
 
 # --- 内部 ---
@@ -119,13 +123,14 @@ func _play_animation(name: String, blend_time: float = 0.2) -> void:
 
 
 func _play_animation_or_procedural(name: String, blend_time: float = 0.2) -> void:
-	if animation_player and animation_player.has_animation(name):
-		_play_animation(name, blend_time)
+	var playback_name := _map_gesture_for_character(name)
+	if _motion_adapter_type == "animation_player" and animation_player and animation_player.has_animation(playback_name):
+		_play_animation(playback_name, blend_time)
 	else:
 		var old = PerformanceCueTypes.gesture_to_string(current_gesture)
-		current_gesture = PerformanceCueTypes.parse_gesture(name)
-		_play_procedural(name)
-		gesture_changed.emit(old, name)
+		current_gesture = PerformanceCueTypes.parse_gesture(playback_name)
+		_play_procedural(playback_name)
+		gesture_changed.emit(old, playback_name)
 
 
 func _play_procedural(name: String) -> void:
@@ -163,6 +168,14 @@ func _play_procedural(name: String) -> void:
 			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
 		_:
 			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
+
+
+func _map_gesture_for_character(gesture_name: String) -> String:
+	if has_node("/root/CharacterAdapterRegistry"):
+		var mapped := String(get_node("/root/CharacterAdapterRegistry").map_clip(agent_id, gesture_name, gesture_name))
+		if PerformanceCueTypes.is_valid_gesture(mapped):
+			return mapped
+	return gesture_name
 
 
 func _infer_agent_id() -> String:

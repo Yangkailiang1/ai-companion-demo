@@ -7,6 +7,7 @@ extends Node
 var current_expression := "neutral"
 var _catalog: Dictionary = {}
 var _bindings: Dictionary = {}
+var _channel_aliases: Dictionary = {}
 var _all_channels: Array[Dictionary] = []
 var _active_tween: Tween
 var _cue_epoch := 0
@@ -18,6 +19,7 @@ func _ready() -> void:
 	if agent_id.is_empty():
 		agent_id = _infer_agent_id()
 	_catalog = _load_catalog()
+	_channel_aliases = _load_channel_aliases()
 	if MessageBus.has_signal("expression_cue"):
 		MessageBus.expression_cue.connect(_on_expression_cue)
 	else:
@@ -98,9 +100,9 @@ func _apply_custom_morphs(weights: Dictionary, intensity: float, duration: float
 		_active_tween.kill()
 	var target_values: Dictionary = {}
 	for morph_name in weights:
-		var normalized_name := _normalize_morph_name(morph_name)
-		for binding in _bindings.get(normalized_name, []):
-			target_values[_binding_key(binding)] = float(weights[morph_name]) * intensity
+		for normalized_name in _candidate_channel_names(String(morph_name)):
+			for binding in _bindings.get(normalized_name, []):
+				target_values[_binding_key(binding)] = float(weights[morph_name]) * intensity
 
 	_active_tween = create_tween().set_parallel(true)
 	for binding in _all_channels:
@@ -136,6 +138,20 @@ func _normalize_morph_name(value: String) -> String:
 	return value.strip_edges().to_lower().replace(".", "_").replace("-", "_")
 
 
+func _candidate_channel_names(library_name: String) -> Array[String]:
+	var normalized := _normalize_morph_name(library_name)
+	var candidates: Array[String] = [normalized]
+	var mapped = _channel_aliases.get(normalized, [])
+	if mapped is String:
+		mapped = [mapped]
+	if mapped is Array:
+		for value in mapped:
+			var alias := _normalize_morph_name(String(value))
+			if not alias.is_empty() and alias not in candidates:
+				candidates.append(alias)
+	return candidates
+
+
 func _infer_agent_id() -> String:
 	var node := get_parent()
 	while node:
@@ -148,6 +164,25 @@ func _infer_agent_id() -> String:
 func _context_matches_agent(context: Dictionary) -> bool:
 	var target := String(context.get("agent_id", ""))
 	return target.is_empty() or target == agent_id
+
+
+func _load_channel_aliases() -> Dictionary:
+	var aliases := {}
+	if has_node("/root/CharacterAdapterRegistry"):
+		var raw: Dictionary = get_node("/root/CharacterAdapterRegistry").get_expression_channel_map(agent_id)
+		for key in raw:
+			var normalized_key := _normalize_morph_name(String(key))
+			var values = raw[key]
+			if values is String:
+				aliases[normalized_key] = [_normalize_morph_name(values)]
+			elif values is Array:
+				var normalized_values: Array[String] = []
+				for value in values:
+					var alias := _normalize_morph_name(String(value))
+					if not alias.is_empty() and alias not in normalized_values:
+						normalized_values.append(alias)
+				aliases[normalized_key] = normalized_values
+	return aliases
 
 
 func _load_catalog() -> Dictionary:

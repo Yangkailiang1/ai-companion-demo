@@ -25,6 +25,12 @@ func _run() -> void:
 	var jue_model_root: Node3D = jue_agent.get_node_or_null("JueModelRoot")
 	_assert(main_driver != null and jue_driver != null, "both agents need animation drivers")
 	_assert(jue_model_root != null, "Jue needs procedural model root")
+	var adapter_registry := root.get_node_or_null("CharacterAdapterRegistry")
+	_assert(adapter_registry != null, "CharacterAdapterRegistry autoload must exist")
+	_assert(adapter_registry.get_motion_adapter_type("main_agent") == "animation_player", "main agent should use animation clips")
+	_assert(adapter_registry.get_motion_adapter_type("jue_agent") == "procedural_root_fallback", "Jue should use procedural fallback until retargeted clips exist")
+	_assert(adapter_registry.map_clip("main_agent", "talk", "talk") == "idle", "main talk cue should map to idle clip")
+	_assert(adapter_registry.map_clip("jue_agent", "offline_smoke_walk", "offline_smoke_walk") == "walk", "Jue offline clip should safely map to walk")
 	var base_rotation := jue_model_root.rotation
 
 	var bus := root.get_node_or_null("MessageBus")
