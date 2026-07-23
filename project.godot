@@ -27,6 +27,7 @@ SemanticWorld="*res://scripts/core/semantic_world.gd"
 MemorySystem="*res://scripts/core/memory_system.gd"
 CodifiedProfile="*res://scripts/core/codified_profile.gd"
 CognitiveCycle="*res://scripts/core/cognitive_cycle.gd"
+TTSService="*res://scripts/core/tts_service.gd"
 
 [display]
 

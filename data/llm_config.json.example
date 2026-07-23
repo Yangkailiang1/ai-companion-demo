@@ -3,5 +3,15 @@
   "api_key": "YOUR_API_KEY_HERE",
   "model": "ecnu-max",
   "provider": "openai",
+  "tts": {
+    "enabled": false,
+    "api_url": "https://chat.ecnu.edu.cn/open/api/v1/audio/speech",
+    "api_key": "YOUR_API_KEY_HERE",
+    "model": "ecnu-tts",
+    "voice": "liwa",
+    "response_format": "mp3",
+    "speed": 1.0,
+    "interrupt_current": true
+  },
   "comment": "复制为 llm_config.json 并填入你的 API Key。支持任何 OpenAI 兼容接口。"
 }

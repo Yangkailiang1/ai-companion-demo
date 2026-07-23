@@ -26,6 +26,9 @@ signal ui_add_chat_entry(speaker: String, text: String, is_player: bool)
 signal ui_update_hud(hud_data: Dictionary)
 signal ui_status_changed(message: String, state: String)
 
+# 信号：角色语音输出请求。TTSService 监听这个信号并异步播放音频。
+signal tts_speech_requested(text: String, context: Dictionary)
+
 # 信号：GOAP 任务完成
 signal goal_completed(agent_id: String, goal: String)
 
@@ -72,4 +75,8 @@ func route_idle_wake(agent_id: String) -> void:
 func route_agent_output(agent_id: String, speech: String, emotion: String) -> void:
 	if not speech.is_empty():
 		ui_show_bubble.emit(speech, emotion, 5.0)
+		tts_speech_requested.emit(speech, {
+			"agent_id": agent_id,
+			"emotion": emotion,
+		})
 	ui_add_chat_entry.emit(agent_id, speech, false)
