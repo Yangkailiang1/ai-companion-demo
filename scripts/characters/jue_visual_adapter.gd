@@ -40,19 +40,19 @@ func _adapt_mesh(mesh_instance: MeshInstance3D) -> void:
 		mesh_instance.material_override = _eye_mat
 	elif "vfx" in name:
 		mesh_instance.material_override = _fx_mat
-	elif "cloth_01" in name or "cloth_02" in name or "cloth_03" in name:
+	elif "cloth_01" in name or "cloth_02" in name or "cloth_03" in name or "cloth_07" in name or "cloth_08" in name:
 		mesh_instance.material_override = _cloth_dark_mat
 	else:
 		mesh_instance.material_override = _cloth_light_mat
 
 
 func _create_materials() -> void:
-	_skin_mat = _mat(Color(0.92, 0.72, 0.63, 1), 0.72, Color(0.03, 0.015, 0.01, 1), 0.05)
-	_hair_mat = _mat(Color(0.16, 0.12, 0.11, 1), 0.82, Color(0.02, 0.012, 0.01, 1), 0.03)
-	_cloth_dark_mat = _mat(Color(0.27, 0.29, 0.35, 1), 0.86, Color(0.01, 0.015, 0.025, 1), 0.04)
-	_cloth_light_mat = _mat(Color(0.78, 0.70, 0.62, 1), 0.84, Color(0.03, 0.02, 0.015, 1), 0.03)
+	_skin_mat = _mat(Color(0.93, 0.73, 0.65, 1), 0.82, Color(0.015, 0.01, 0.008, 1), 0.02)
+	_hair_mat = _mat(Color(0.11, 0.09, 0.1, 1), 0.9, Color(0.01, 0.008, 0.01, 1), 0.015)
+	_cloth_dark_mat = _mat(Color(0.2, 0.22, 0.28, 1), 0.92, Color(0.006, 0.008, 0.015, 1), 0.018)
+	_cloth_light_mat = _mat(Color(0.72, 0.68, 0.62, 1), 0.92, Color(0.012, 0.01, 0.008, 1), 0.012)
 	_eye_mat = _mat(Color(0.12, 0.16, 0.22, 1), 0.45, Color(0.04, 0.06, 0.08, 1), 0.1)
-	_fx_mat = _mat(Color(0.58, 0.54, 0.68, 0.72), 0.7, Color(0.08, 0.06, 0.12, 1), 0.12)
+	_fx_mat = _mat(Color(0.45, 0.42, 0.52, 0.64), 0.86, Color(0.025, 0.02, 0.04, 1), 0.04)
 	_fx_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 
 

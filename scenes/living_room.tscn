@@ -568,7 +568,7 @@ outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
 no_depth_test = true
 
 [node name="JueAgent" type="CharacterBody3D" parent="."]
-transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 1.45, 0, 0.15)
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 1.62, 0, 0.1)
 script = ExtResource("2_agent")
 agent_name = "jue_agent"
 
@@ -577,14 +577,15 @@ position = Vector3(0, 0.78, 0)
 shape = SubResource("shape_agent")
 
 [node name="JueModelRoot" type="Node3D" parent="JueAgent"]
-position = Vector3(0, 0, 0)
-scale = Vector3(120, 120, 120)
+position = Vector3(0, 0.02, 0)
+rotation = Vector3(0.035, 0, -0.035)
+scale = Vector3(145, 145, 145)
 script = ExtResource("28_jue_visual")
 
 [node name="JueModel" parent="JueAgent/JueModelRoot" instance=ExtResource("27_jue_model")]
 
 [node name="AgentNameLabel" type="Label3D" parent="JueAgent"]
-position = Vector3(0, 1.92, 0)
+position = Vector3(0, 2.18, 0)
 text = "诀"
 font_size = 42
 outline_size = 8
@@ -597,7 +598,7 @@ no_depth_test = true
 path_desired_distance = 0.3
 target_desired_distance = 0.45
 radius = 0.36
-height = 1.55
+height = 1.85
 
 [node name="CharacterAnimationDriver" type="Node" parent="JueAgent" node_paths=PackedStringArray("procedural_root")]
 script = ExtResource("5_anim_driver")
@@ -611,7 +612,7 @@ agent_id = "jue_agent"
 [node name="IdleTimer" type="Timer" parent="JueAgent"]
 
 [node name="DialogueBubble" type="Sprite3D" parent="JueAgent"]
-position = Vector3(0, 2.12, 0)
+position = Vector3(0, 2.38, 0)
 script = ExtResource("4_bubble")
 agent_id = "jue_agent"
 billboard = 1

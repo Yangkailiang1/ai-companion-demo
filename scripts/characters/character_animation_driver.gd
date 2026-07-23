@@ -20,6 +20,8 @@ extends Node
 var current_gesture: int = PerformanceCueTypes.Gesture.IDLE
 var pending_gesture_queue: Array[String] = []
 var _is_talking: bool = false
+var _procedural_base_position := Vector3.ZERO
+var _procedural_base_rotation := Vector3.ZERO
 const LOOPING_GESTURES := ["idle", "walk"]
 
 # Sound/vocal hook (placeholder for future audio)
@@ -32,6 +34,9 @@ func _ready():
 		agent_id = _infer_agent_id()
 	if not procedural_root:
 		procedural_root = get_parent() as Node3D
+	if procedural_root:
+		_procedural_base_position = procedural_root.position
+		_procedural_base_rotation = procedural_root.rotation
 	# 监听 performance cue 信号
 	if not MessageBus.has_signal("performance_cue"):
 		push_warning("CharacterAnimationDriver: performance_cue signal not found on MessageBus")
@@ -128,34 +133,36 @@ func _play_procedural(name: String) -> void:
 		return
 	if name in ["idle", "walk"]:
 		return
-	var original := procedural_root.position
+	var base_position := _procedural_base_position
+	var base_rotation := _procedural_base_rotation
 	var tween := create_tween()
 	match name:
 		"wave":
-			tween.tween_property(procedural_root, "rotation:z", 0.16, 0.16)
-			tween.tween_property(procedural_root, "rotation:z", -0.16, 0.16)
-			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.16)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(-0.04, 0.0, 0.32), 0.16)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(0.02, 0.0, -0.26), 0.16)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(-0.02, 0.0, 0.22), 0.14)
+			tween.tween_property(procedural_root, "rotation", base_rotation, 0.18)
 		"nod":
-			tween.tween_property(procedural_root, "rotation:x", -0.12, 0.14)
-			tween.tween_property(procedural_root, "rotation:x", 0.1, 0.14)
-			tween.tween_property(procedural_root, "rotation:x", 0.0, 0.14)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(-0.22, 0, 0), 0.14)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(0.08, 0, 0), 0.14)
+			tween.tween_property(procedural_root, "rotation", base_rotation, 0.14)
 		"think":
-			tween.tween_property(procedural_root, "rotation:z", -0.12, 0.25)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(0.04, 0.0, -0.18), 0.25)
 			tween.tween_interval(0.45)
-			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.2)
+			tween.tween_property(procedural_root, "rotation", base_rotation, 0.2)
 		"happy":
-			tween.tween_property(procedural_root, "position:y", original.y + 0.12, 0.16)
-			tween.tween_property(procedural_root, "position:y", original.y, 0.16)
-			tween.tween_property(procedural_root, "position:y", original.y + 0.08, 0.12)
-			tween.tween_property(procedural_root, "position:y", original.y, 0.12)
+			tween.tween_property(procedural_root, "position", base_position + Vector3(0, 0.18, 0), 0.16)
+			tween.parallel().tween_property(procedural_root, "rotation", base_rotation + Vector3(0, 0, 0.12), 0.16)
+			tween.tween_property(procedural_root, "position", base_position, 0.16)
+			tween.parallel().tween_property(procedural_root, "rotation", base_rotation, 0.16)
 		"sit":
-			tween.tween_property(procedural_root, "position:y", original.y - 0.18, 0.28)
+			tween.tween_property(procedural_root, "position", base_position + Vector3(0, -0.18, 0), 0.28)
 		"talk":
-			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y + 0.04, 0.12)
-			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y - 0.04, 0.12)
-			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y, 0.12)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(0.0, 0.08, -0.03), 0.12)
+			tween.tween_property(procedural_root, "rotation", base_rotation + Vector3(0.0, -0.06, 0.02), 0.12)
+			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
 		_:
-			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.12)
+			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
 
 
 func _infer_agent_id() -> String:

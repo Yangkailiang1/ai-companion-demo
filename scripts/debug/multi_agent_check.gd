@@ -22,14 +22,18 @@ func _run() -> void:
 
 	var main_driver = main_agent.get_node_or_null("CharacterAnimationDriver")
 	var jue_driver = jue_agent.get_node_or_null("CharacterAnimationDriver")
+	var jue_model_root: Node3D = jue_agent.get_node_or_null("JueModelRoot")
 	_assert(main_driver != null and jue_driver != null, "both agents need animation drivers")
+	_assert(jue_model_root != null, "Jue needs procedural model root")
+	var base_rotation := jue_model_root.rotation
 
 	var bus := root.get_node_or_null("MessageBus")
 	_assert(bus != null, "MessageBus autoload must exist")
 	bus.emit_signal("performance_cue", "wave", {"agent_id": "jue_agent", "source": "multi_agent_check"})
-	await create_timer(0.12).timeout
+	await create_timer(0.2).timeout
 	_assert(jue_driver.get_current_gesture() == "wave", "targeted Jue cue should move Jue")
 	_assert(main_driver.get_current_gesture() != "wave", "targeted Jue cue must not move main agent")
+	_assert(jue_model_root.rotation.distance_to(base_rotation) > 0.08, "Jue procedural wave should be visibly animated")
 
 	var memory_system := root.get_node_or_null("MemorySystem")
 	_assert(memory_system != null, "MemorySystem autoload must exist")
