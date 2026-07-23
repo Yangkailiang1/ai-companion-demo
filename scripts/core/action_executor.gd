@@ -178,8 +178,8 @@ func _speak(params: Dictionary) -> void:
 	var text: String = params.get("text", "")
 	var tone: String = params.get("tone", "neutral")
 	if not text.is_empty():
-		MessageBus.ui_show_bubble.emit(text, tone, 4.0)
-	MessageBus.performance_cue.emit("talk", {"source": "executor"})
+		MessageBus.agent_show_bubble.emit(_agent_id(), text, tone, 4.0)
+	MessageBus.performance_cue.emit("talk", {"source": "executor", "agent_id": _agent_id()})
 	# speak 不阻塞，立即继续
 	_on_action_finished()
 
@@ -210,7 +210,7 @@ func _put_down(params: Dictionary) -> void:
 
 
 func _sit(params: Dictionary) -> void:
-	MessageBus.performance_cue.emit("sit", {"source": "executor"})
+	MessageBus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
 
@@ -238,6 +238,12 @@ func _to_vec3(value: Variant) -> Vector3:
 	if value is Dictionary:
 		return Vector3(float(value.get("x", 0.0)), float(value.get("y", 0.0)), float(value.get("z", 0.0)))
 	return Vector3.ZERO
+
+
+func _agent_id() -> String:
+	if is_instance_valid(agent_node) and agent_node.get("agent_name") != null:
+		return String(agent_node.get("agent_name"))
+	return ""
 
 
 func _str_to_need_type(str: String):

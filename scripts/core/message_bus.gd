@@ -22,12 +22,14 @@ signal emit_actions(agent_id: String, actions: Array)
 
 # 信号：UI 更新请求
 signal ui_show_bubble(text: String, emotion: String, duration: float)
+signal agent_show_bubble(agent_id: String, text: String, emotion: String, duration: float)
 signal ui_add_chat_entry(speaker: String, text: String, is_player: bool)
 signal ui_update_hud(hud_data: Dictionary)
 signal ui_status_changed(message: String, state: String)
 
 # 信号：角色语音输出请求。TTSService 监听这个信号并异步播放音频。
 signal tts_speech_requested(text: String, context: Dictionary)
+signal agent_spoke(agent_id: String, text: String, emotion: String)
 
 # 信号：GOAP 任务完成
 signal goal_completed(agent_id: String, goal: String)
@@ -54,13 +56,15 @@ func _ready():
 func route_player_input(text: String) -> void:
 	var is_command = text.begins_with("!")
 	var clean_text = text.trim_prefix("!") if is_command else text
+	var target_agent_id := _resolve_target_agent(clean_text)
+	clean_text = _strip_agent_mention(clean_text)
 
 	ui_add_chat_entry.emit("玩家", clean_text, true)
 	ui_status_changed.emit("消息已发送，等待 AI 处理…", "pending")
 
 	var trigger_source = AffordanceTypes.TriggerSource.PLAYER_INPUT
 	var data = {"text": clean_text, "is_command": is_command}
-	agent_trigger_cycle.emit("main_agent", trigger_source, data)
+	agent_trigger_cycle.emit(target_agent_id, trigger_source, data)
 
 
 # World Simulator 事件 → 路由到 Agent
@@ -78,8 +82,27 @@ func route_idle_wake(agent_id: String) -> void:
 func route_agent_output(agent_id: String, speech: String, emotion: String) -> void:
 	if not speech.is_empty():
 		ui_show_bubble.emit(speech, emotion, 5.0)
+		agent_show_bubble.emit(agent_id, speech, emotion, 5.0)
 		tts_speech_requested.emit(speech, {
 			"agent_id": agent_id,
 			"emotion": emotion,
 		})
+		agent_spoke.emit(agent_id, speech, emotion)
 	ui_add_chat_entry.emit(agent_id, speech, false)
+
+
+func _resolve_target_agent(text: String) -> String:
+	var normalized := text.strip_edges()
+	if normalized.begins_with("@诀") or normalized.begins_with("诀，") or normalized.begins_with("诀,") or normalized.begins_with("诀 "):
+		return "jue_agent"
+	if normalized.begins_with("@咕咕嘎嘎") or normalized.begins_with("咕咕嘎嘎"):
+		return "main_agent"
+	return "main_agent"
+
+
+func _strip_agent_mention(text: String) -> String:
+	var stripped := text.strip_edges()
+	for prefix in ["@诀", "诀，", "诀,", "诀 ", "@咕咕嘎嘎", "咕咕嘎嘎，", "咕咕嘎嘎,", "咕咕嘎嘎 "]:
+		if stripped.begins_with(prefix):
+			return stripped.substr(prefix.length()).strip_edges()
+	return stripped

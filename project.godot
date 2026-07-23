@@ -28,6 +28,7 @@ MemorySystem="*res://scripts/core/memory_system.gd"
 CodifiedProfile="*res://scripts/core/codified_profile.gd"
 CognitiveCycle="*res://scripts/core/cognitive_cycle.gd"
 TTSService="*res://scripts/core/tts_service.gd"
+SocialSystem="*res://scripts/core/social_system.gd"
 
 [display]
 

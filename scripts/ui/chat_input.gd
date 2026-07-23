@@ -14,7 +14,7 @@ extends Control
 @onready var status_label: Label = $StatusPanel/StatusLabel
 @onready var camera_hint: Label = $CameraHint
 
-var display_names = {"main_agent": "咕咕嘎嘎"}
+var display_names = {"main_agent": "咕咕嘎嘎", "jue_agent": "诀"}
 const PLAYER_NAME := "你"
 const MAX_CHAT_LINES := 18
 const STATE_COLORS := {
@@ -40,7 +40,7 @@ func _ready():
 	MessageBus.ui_add_chat_entry.connect(_on_chat_entry)
 	MessageBus.ui_status_changed.connect(_on_status_changed)
 	_apply_visual_style()
-	line_edit.placeholder_text = "和咕咕嘎嘎说点什么..."
+	line_edit.placeholder_text = "和咕咕嘎嘎说点什么…也可以输入“诀，……”"
 	line_edit.focus_mode = Control.FOCUS_CLICK
 	line_edit.mouse_default_cursor_shape = Control.CURSOR_IBEAM
 	line_edit.caret_blink = true

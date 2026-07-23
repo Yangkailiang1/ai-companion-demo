@@ -117,7 +117,7 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT:
 		MessageBus.ui_status_changed.emit("AI 正在理解：%s" % data.get("text", "").left(24), "thinking")
 	else:
-		MessageBus.ui_status_changed.emit("咕咕嘎嘎正在自主思考…", "thinking")
+		MessageBus.ui_status_changed.emit("%s正在自主思考…" % CodifiedProfile.get_agent_display_name(agent_id), "thinking")
 
 	# Step 1: Perception — 世界语义快照
 	var semantic_snapshot = SemanticWorld.generate_semantic_snapshot(agent_id)
@@ -127,12 +127,12 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT:
 		player_message = data.get("text", "")
 		if not player_message.is_empty():
-			MemorySystem.add_episode("玩家说: %s" % player_message, 6.0)
+			MemorySystem.add_episode_for_agent(agent_id, "玩家说: %s" % player_message, 6.0)
 
-	var memory_context = MemorySystem.format_for_llm(player_message)
+	var memory_context = MemorySystem.format_for_llm_for_agent(agent_id, player_message)
 
 	# Step 3: Codified Profile — 角色逻辑触发
-	var triggered = CodifiedProfile.parse_by_scene(semantic_snapshot, player_message)
+	var triggered = CodifiedProfile.parse_by_scene_for_agent(agent_id, semantic_snapshot, player_message)
 	var codified_context = CodifiedProfile.get_triggered_log(triggered)
 
 	# Step 4: 决定使用 LLM 还是本地 fallback
@@ -140,7 +140,7 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 		MessageBus.ui_status_changed.emit("本地规则模式正在生成回复…", "local")
 		_use_local_fallback(player_message, source, triggered)
 	else:
-		var prompt = build_prompt(semantic_snapshot, memory_context, codified_context, triggered, player_message, source)
+		var prompt = build_prompt(semantic_snapshot, memory_context, codified_context, triggered, player_message, source, agent_id)
 		MessageBus.ui_status_changed.emit("AI %s/%s 正在回复…" % [llm_provider, llm_model], "online")
 		_send_llm_request(prompt)
 
@@ -148,9 +148,9 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 # === Prompt 构造 ===
 
 func build_prompt(semantic: String, memory: String, codified: String, triggered: Array,
-				  player_msg: String, source: AffordanceTypes.TriggerSource) -> String:
+				  player_msg: String, source: AffordanceTypes.TriggerSource, agent_id: String = "main_agent") -> String:
 
-	var identity = CodifiedProfile.get_identity()
+	var identity = CodifiedProfile.get_identity_for_agent(agent_id)
 
 	var explicit_instruction = _build_explicit_player_instruction(player_msg)
 	var prompt = """%s
@@ -303,6 +303,7 @@ func _parse_llm_output(content: String) -> Dictionary:
 # === 决策处理 ===
 
 func _handle_decision(decision: Dictionary) -> void:
+	var agent_id: String = current_trigger.get("agent_id", "main_agent")
 	var goal: String = decision.get("goal", "idle")
 	var speech: String = decision.get("speech", "")
 	var emotion: String = decision.get("emotion", "neutral")
@@ -343,14 +344,15 @@ func _handle_decision(decision: Dictionary) -> void:
 
 	# 记录记忆
 	if not thought.is_empty():
-		MemorySystem.add_episode("[思考] " + thought, 4.0)
+		MemorySystem.add_episode_for_agent(agent_id, "[思考] " + thought, 4.0)
 
 	# 如果有对话内容 → 先输出对话
-	MessageBus.route_agent_output("main_agent", speech, emotion)
+	MessageBus.route_agent_output(agent_id, speech, emotion)
 
 	# 发出表现层 cue
 	MessageBus.performance_cue.emit(gesture, {
 		"source": "llm",
+		"agent_id": agent_id,
 		"emotion": emotion,
 		"motion_provider": performance["provider"],
 		"generation_prompt": performance["generation_prompt"],
@@ -359,6 +361,7 @@ func _handle_decision(decision: Dictionary) -> void:
 	})
 	_emit_expression_performance(expression_performance, {
 		"source": "llm",
+		"agent_id": agent_id,
 		"motion_provider": performance["provider"],
 		"router_action_id": performance.get("action_id", ""),
 	})
@@ -378,7 +381,7 @@ func _handle_decision(decision: Dictionary) -> void:
 			actions = _infer_actions_from_goal(goal)
 
 	# 发送给 Agent
-	MessageBus.emit_actions.emit("main_agent", actions)
+	MessageBus.emit_actions.emit(agent_id, actions)
 
 	goap.queue_free()
 	MessageBus.ui_status_changed.emit("AI 已回复（%s/%s）" % [llm_provider, llm_model], "done")
@@ -407,6 +410,7 @@ func _infer_actions_from_goal(goal: String) -> Array:
 # === Fallback：无 LLM 时用本地规则 ===
 
 func _use_local_fallback(player_message: String, source: AffordanceTypes.TriggerSource, triggered: Array) -> void:
+	var agent_id: String = current_trigger.get("agent_id", "main_agent")
 	var speech = ""
 	var emotion = "neutral"
 	var goal = "idle"
@@ -538,11 +542,12 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 
 	# 输出
 	if not speech.is_empty():
-		MessageBus.route_agent_output("main_agent", speech, emotion)
+		MessageBus.route_agent_output(agent_id, speech, emotion)
 
 	# 发出表现层 cue
 	MessageBus.performance_cue.emit(gesture, {
 		"source": "local",
+		"agent_id": agent_id,
 		"emotion": emotion,
 		"motion_provider": performance["provider"],
 		"generation_prompt": performance["generation_prompt"],
@@ -551,6 +556,7 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 	})
 	_emit_expression_performance(expression_performance, {
 		"source": "local",
+		"agent_id": agent_id,
 		"motion_provider": performance["provider"],
 		"router_action_id": performance.get("action_id", ""),
 	})
@@ -566,7 +572,7 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 		add_child(goap)
 		actions = goap.plan(goal)
 		goap.queue_free()
-	MessageBus.emit_actions.emit("main_agent", actions)
+	MessageBus.emit_actions.emit(agent_id, actions)
 
 	MessageBus.ui_status_changed.emit("已使用本地规则回复", "done")
 	_finish_cycle()

@@ -2,6 +2,7 @@ class_name CharacterExpressionDriver
 extends Node
 
 @export var fade_duration: float = 0.12
+@export var agent_id: String = ""
 
 var current_expression := "neutral"
 var _catalog: Dictionary = {}
@@ -14,6 +15,8 @@ signal expression_changed(old_expression: String, new_expression: String)
 
 
 func _ready() -> void:
+	if agent_id.is_empty():
+		agent_id = _infer_agent_id()
 	_catalog = _load_catalog()
 	if MessageBus.has_signal("expression_cue"):
 		MessageBus.expression_cue.connect(_on_expression_cue)
@@ -50,6 +53,8 @@ func _collect_meshes(node: Node) -> void:
 
 
 func _on_expression_cue(expression: String, intensity: float, context: Dictionary) -> void:
+	if not _context_matches_agent(context):
+		return
 	var normalized := expression.strip_edges().to_lower()
 	if not _catalog.has(normalized):
 		normalized = "neutral"
@@ -65,6 +70,8 @@ func _on_expression_cue(expression: String, intensity: float, context: Dictionar
 
 
 func _on_expression_blend_cue(payload: Dictionary, context: Dictionary) -> void:
+	if not _context_matches_agent(context):
+		return
 	var normalized := String(payload.get("expression", "neutral")).strip_edges().to_lower()
 	var old_expression := current_expression
 	current_expression = normalized
@@ -127,6 +134,20 @@ func _binding_key(binding: Dictionary) -> String:
 
 func _normalize_morph_name(value: String) -> String:
 	return value.strip_edges().to_lower().replace(".", "_").replace("-", "_")
+
+
+func _infer_agent_id() -> String:
+	var node := get_parent()
+	while node:
+		if "agent_name" in node:
+			return String(node.agent_name)
+		node = node.get_parent()
+	return "main_agent"
+
+
+func _context_matches_agent(context: Dictionary) -> bool:
+	var target := String(context.get("agent_id", ""))
+	return target.is_empty() or target == agent_id
 
 
 func _load_catalog() -> Dictionary:

@@ -117,7 +117,7 @@ func move_to_position(target: Vector3) -> void:
 	_movement_elapsed = 0.0
 	_stuck_elapsed = 0.0
 	_last_progress_position = global_position
-	MessageBus.performance_cue.emit("walk", {"source": "agent"})
+	MessageBus.performance_cue.emit("walk", {"source": "agent", "agent_id": agent_name})
 
 	# 尝试使用 NavAgent，失败时 fallback 到直接移动
 	if _navmesh_ready:
@@ -185,7 +185,7 @@ func _finish_movement(success: bool = true, reason: String = "arrived") -> void:
 	has_target = false
 	velocity = Vector3.ZERO
 	if _locomotion_sequence_depth == 0 or not success:
-		MessageBus.performance_cue.emit("idle", {"source": "agent"})
+		MessageBus.performance_cue.emit("idle", {"source": "agent", "agent_id": agent_name})
 	if success:
 		arrived.emit()
 	movement_finished.emit(success, reason)
@@ -205,7 +205,7 @@ func begin_locomotion_sequence() -> void:
 func end_locomotion_sequence() -> void:
 	_locomotion_sequence_depth = maxi(_locomotion_sequence_depth - 1, 0)
 	if _locomotion_sequence_depth == 0 and not is_moving:
-		MessageBus.performance_cue.emit("idle", {"source": "agent", "sequence_complete": true})
+		MessageBus.performance_cue.emit("idle", {"source": "agent", "agent_id": agent_name, "sequence_complete": true})
 
 
 func _on_idle_timer() -> void:

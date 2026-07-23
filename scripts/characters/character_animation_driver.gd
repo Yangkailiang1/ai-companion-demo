@@ -11,6 +11,8 @@ extends Node
 
 # --- 导出配置 ---
 @export var animation_player: AnimationPlayer
+@export var agent_id: String = ""
+@export var procedural_root: Node3D
 @export var cross_fade_duration: float = 0.2
 @export var default_animation: String = "idle"
 
@@ -26,6 +28,10 @@ signal gesture_changed(old_gesture: String, new_gesture: String)
 # --- 生命周期 ---
 
 func _ready():
+	if agent_id.is_empty():
+		agent_id = _infer_agent_id()
+	if not procedural_root:
+		procedural_root = get_parent() as Node3D
 	# 监听 performance cue 信号
 	if not MessageBus.has_signal("performance_cue"):
 		push_warning("CharacterAnimationDriver: performance_cue signal not found on MessageBus")
@@ -34,14 +40,14 @@ func _ready():
 
 	if not animation_player:
 		animation_player = _find_animation_player()
-		if not animation_player:
-			push_warning("CharacterAnimationDriver: no AnimationPlayer found — animations disabled")
+		if not animation_player and not procedural_root:
+			push_warning("CharacterAnimationDriver: no AnimationPlayer or procedural root found — animations disabled")
 
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
 
 	# 初始播放 idle
-	_play_animation(default_animation)
+	_play_animation_or_procedural(default_animation)
 
 
 func _find_animation_player() -> AnimationPlayer:
@@ -65,7 +71,7 @@ func _find_animation_player_recursive(node: Node) -> AnimationPlayer:
 # --- 核心：接收 cue 信号 ---
 
 func _on_performance_cue(gesture_name: String, context: Dictionary) -> void:
-	if not animation_player:
+	if not _context_matches_agent(context):
 		return
 
 	# 校验 gesture
@@ -79,18 +85,18 @@ func _on_performance_cue(gesture_name: String, context: Dictionary) -> void:
 		_is_talking = true
 		# Talk 使用 idle 动画 + 可能的 future 嘴部 blend
 		# 本轮 talk 使用 idle 作为基础动画
-		_play_animation("idle", cross_fade_duration)
+		_play_animation_or_procedural("talk", cross_fade_duration)
 		return
 
 	_is_talking = false
 
 	# 检查动画是否存在
-	if not animation_player.has_animation(gesture_str):
-		push_warning("CharacterAnimationDriver: animation '%s' not found in AnimationPlayer, falling back to idle" % gesture_str)
-		_play_animation("idle", cross_fade_duration)
-		gesture_str = "idle"
+	if not animation_player or not animation_player.has_animation(gesture_str):
+		_play_procedural(gesture_str)
+		current_gesture = PerformanceCueTypes.parse_gesture(gesture_str)
+		return
 
-	_play_animation(gesture_str, cross_fade_duration)
+	_play_animation_or_procedural(gesture_str, cross_fade_duration)
 
 
 # --- 内部 ---
@@ -105,6 +111,65 @@ func _play_animation(name: String, blend_time: float = 0.2) -> void:
 	if animation_player.current_animation != name:
 		animation_player.play(name, blend_time)
 		gesture_changed.emit(old, name)
+
+
+func _play_animation_or_procedural(name: String, blend_time: float = 0.2) -> void:
+	if animation_player and animation_player.has_animation(name):
+		_play_animation(name, blend_time)
+	else:
+		var old = PerformanceCueTypes.gesture_to_string(current_gesture)
+		current_gesture = PerformanceCueTypes.parse_gesture(name)
+		_play_procedural(name)
+		gesture_changed.emit(old, name)
+
+
+func _play_procedural(name: String) -> void:
+	if not procedural_root:
+		return
+	if name in ["idle", "walk"]:
+		return
+	var original := procedural_root.position
+	var tween := create_tween()
+	match name:
+		"wave":
+			tween.tween_property(procedural_root, "rotation:z", 0.16, 0.16)
+			tween.tween_property(procedural_root, "rotation:z", -0.16, 0.16)
+			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.16)
+		"nod":
+			tween.tween_property(procedural_root, "rotation:x", -0.12, 0.14)
+			tween.tween_property(procedural_root, "rotation:x", 0.1, 0.14)
+			tween.tween_property(procedural_root, "rotation:x", 0.0, 0.14)
+		"think":
+			tween.tween_property(procedural_root, "rotation:z", -0.12, 0.25)
+			tween.tween_interval(0.45)
+			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.2)
+		"happy":
+			tween.tween_property(procedural_root, "position:y", original.y + 0.12, 0.16)
+			tween.tween_property(procedural_root, "position:y", original.y, 0.16)
+			tween.tween_property(procedural_root, "position:y", original.y + 0.08, 0.12)
+			tween.tween_property(procedural_root, "position:y", original.y, 0.12)
+		"sit":
+			tween.tween_property(procedural_root, "position:y", original.y - 0.18, 0.28)
+		"talk":
+			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y + 0.04, 0.12)
+			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y - 0.04, 0.12)
+			tween.tween_property(procedural_root, "rotation:y", procedural_root.rotation.y, 0.12)
+		_:
+			tween.tween_property(procedural_root, "rotation:z", 0.0, 0.12)
+
+
+func _infer_agent_id() -> String:
+	var node := get_parent()
+	while node:
+		if "agent_name" in node:
+			return String(node.agent_name)
+		node = node.get_parent()
+	return "main_agent"
+
+
+func _context_matches_agent(context: Dictionary) -> bool:
+	var target := String(context.get("agent_id", ""))
+	return target.is_empty() or target == agent_id
 
 
 func _on_animation_finished(animation_name: StringName) -> void:

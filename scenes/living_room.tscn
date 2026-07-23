@@ -1,4 +1,4 @@
-[gd_scene load_steps=71 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=73 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -26,6 +26,8 @@
 [ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_arm_1k.jpg" id="24_rug_arm"]
 [ext_resource type="Texture2D" path="res://assets/environments/backdrops/cozy_morning_backdrop.png" id="25_backdrop"]
 [ext_resource type="Script" path="res://scripts/characters/idle_breath.gd" id="26_idle_breath"]
+[ext_resource type="PackedScene" path="res://assets/characters/jue/source/chr_0036_jsspsi_postmodel.fbx" id="27_jue_model"]
+[ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="28_jue_visual"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -558,6 +560,63 @@ script = ExtResource("4_bubble")
 billboard = 1
 
 [node name="BubbleLabel" type="Label3D" parent="Agent/DialogueBubble"]
+pixel_size = 0.006
+font_size = 38
+outline_size = 7
+modulate = Color(1, 1, 1, 1)
+outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+no_depth_test = true
+
+[node name="JueAgent" type="CharacterBody3D" parent="."]
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 1.45, 0, 0.15)
+script = ExtResource("2_agent")
+agent_name = "jue_agent"
+
+[node name="AgentCollision" type="CollisionShape3D" parent="JueAgent"]
+position = Vector3(0, 0.78, 0)
+shape = SubResource("shape_agent")
+
+[node name="JueModelRoot" type="Node3D" parent="JueAgent"]
+position = Vector3(0, 0, 0)
+scale = Vector3(120, 120, 120)
+script = ExtResource("28_jue_visual")
+
+[node name="JueModel" parent="JueAgent/JueModelRoot" instance=ExtResource("27_jue_model")]
+
+[node name="AgentNameLabel" type="Label3D" parent="JueAgent"]
+position = Vector3(0, 1.92, 0)
+text = "诀"
+font_size = 42
+outline_size = 8
+modulate = Color(1, 0.9, 0.86, 1)
+outline_modulate = Color(0.08, 0.03, 0.04, 0.95)
+billboard = 1
+no_depth_test = true
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="JueAgent"]
+path_desired_distance = 0.3
+target_desired_distance = 0.45
+radius = 0.36
+height = 1.55
+
+[node name="CharacterAnimationDriver" type="Node" parent="JueAgent" node_paths=PackedStringArray("procedural_root")]
+script = ExtResource("5_anim_driver")
+agent_id = "jue_agent"
+procedural_root = NodePath("../JueModelRoot")
+
+[node name="CharacterExpressionDriver" type="Node" parent="JueAgent"]
+script = ExtResource("8_expression_driver")
+agent_id = "jue_agent"
+
+[node name="IdleTimer" type="Timer" parent="JueAgent"]
+
+[node name="DialogueBubble" type="Sprite3D" parent="JueAgent"]
+position = Vector3(0, 2.12, 0)
+script = ExtResource("4_bubble")
+agent_id = "jue_agent"
+billboard = 1
+
+[node name="BubbleLabel" type="Label3D" parent="JueAgent/DialogueBubble"]
 pixel_size = 0.006
 font_size = 38
 outline_size = 7
