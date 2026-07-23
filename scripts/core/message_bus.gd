@@ -42,6 +42,9 @@ signal performance_cue(gesture: String, context: Dictionary)
 # 表情层 cue 独立于身体动画，避免表情切换打断移动/动作。
 signal expression_cue(expression: String, intensity: float, context: Dictionary)
 
+# 表情混合 cue：允许检索层直接下发 morph 权重组合，例如 70% happy + 30% shy。
+signal expression_blend_cue(expression_payload: Dictionary, context: Dictionary)
+
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS

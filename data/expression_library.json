@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "feature_provider": "hash_char_ngram_v1",
+  "dimensions": 1024,
+  "accept_threshold": 0.16,
+  "top_k": 2,
+  "expressions": [
+    {
+      "id": "neutral",
+      "display_name": "平静",
+      "description": "平静、自然、放松的默认表情",
+      "aliases": ["平静", "普通", "自然", "冷静", "neutral", "calm"],
+      "morph_weights": {},
+      "fade_duration": 0.16,
+      "hold_seconds": 0.0
+    },
+    {
+      "id": "happy",
+      "display_name": "开心",
+      "description": "开心地笑，温暖、友好、轻松的微笑",
+      "aliases": ["开心", "高兴", "微笑", "快乐", "笑一下", "happy", "smile", "glad"],
+      "morph_weights": {"joy": 1.0},
+      "fade_duration": 0.18,
+      "hold_seconds": 0.0
+    },
+    {
+      "id": "excited",
+      "display_name": "兴奋",
+      "description": "兴奋、期待、眼睛发亮，嘴巴微微张开",
+      "aliases": ["兴奋", "激动", "期待", "好期待", "excited"],
+      "morph_weights": {"joy": 1.0, "a": 0.16},
+      "fade_duration": 0.14,
+      "hold_seconds": 0.0
+    },
+    {
+      "id": "shy_happy",
+      "display_name": "害羞开心",
+      "description": "有点害羞但很开心，轻轻微笑、眨眼、稍微低头",
+      "aliases": ["害羞但开心", "害羞开心", "害羞地笑", "羞涩地笑", "不好意思地笑", "害羞", "不好意思", "腼腆", "羞涩", "shy", "bashful"],
+      "morph_weights": {"joy": 0.62, "blink": 0.16, "a": 0.05},
+      "bone_fallback": {"head_pitch_degrees": 5.0, "head_roll_degrees": 3.0},
+      "fade_duration": 0.24,
+      "hold_seconds": 0.0,
+      "approximate": true
+    },
+    {
+      "id": "sad",
+      "display_name": "难过",
+      "description": "难过、委屈、沮丧，眼神低落，轻微闭眼",
+      "aliases": ["难过", "伤心", "委屈", "沮丧", "失落", "sad", "upset"],
+      "morph_weights": {"blink": 0.16, "angry": 0.08},
+      "bone_fallback": {"head_pitch_degrees": 10.0},
+      "fade_duration": 0.24,
+      "hold_seconds": 0.0,
+      "approximate": true
+    },
+    {
+      "id": "angry",
+      "display_name": "生气",
+      "description": "生气、不满、有点炸毛的表情",
+      "aliases": ["生气", "愤怒", "不高兴", "恼火", "angry", "mad"],
+      "morph_weights": {"angry": 1.0},
+      "fade_duration": 0.14,
+      "hold_seconds": 0.0
+    },
+    {
+      "id": "surprised",
+      "display_name": "惊讶",
+      "description": "惊讶、吃惊、意外，嘴巴微张",
+      "aliases": ["惊讶", "吃惊", "意外", "哇", "surprised", "wow"],
+      "morph_weights": {"a": 0.28, "blink": 0.04},
+      "bone_fallback": {"head_pitch_degrees": -7.0},
+      "fade_duration": 0.10,
+      "hold_seconds": 1.2,
+      "approximate": true
+    },
+    {
+      "id": "bored",
+      "display_name": "无聊",
+      "description": "无聊、没精神、懒懒的，半眯眼",
+      "aliases": ["无聊", "没意思", "犯困", "懒懒的", "bored"],
+      "morph_weights": {"blink": 0.24},
+      "bone_fallback": {"head_roll_degrees": 6.0},
+      "fade_duration": 0.28,
+      "hold_seconds": 0.0,
+      "approximate": true
+    },
+    {
+      "id": "confused",
+      "display_name": "困惑",
+      "description": "困惑、疑问、没听懂，轻微歪头和眨眼",
+      "aliases": ["困惑", "疑惑", "不明白", "没听懂", "confused", "puzzled"],
+      "morph_weights": {"blink": 0.12, "a": 0.08},
+      "bone_fallback": {"head_roll_degrees": -5.0},
+      "fade_duration": 0.22,
+      "hold_seconds": 1.5,
+      "approximate": true
+    },
+    {
+      "id": "talk",
+      "display_name": "说话",
+      "description": "说话时的轻微口型，嘴巴自然开合的基础姿态",
+      "aliases": ["说话", "聊天", "回答", "开口", "talk", "speak"],
+      "morph_weights": {"a": 0.32},
+      "fade_duration": 0.08,
+      "hold_seconds": 0.6,
+      "approximate": true
+    },
+    {
+      "id": "blink",
+      "display_name": "眨眼",
+      "description": "快速眨眼，短暂闭眼再恢复",
+      "aliases": ["眨眼", "眨眨眼", "blink"],
+      "morph_weights": {"blink": 1.0},
+      "fade_duration": 0.04,
+      "hold_seconds": 0.18,
+      "transient_seconds": 0.18
+    }
+  ]
+}

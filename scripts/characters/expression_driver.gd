@@ -19,6 +19,8 @@ func _ready() -> void:
 		MessageBus.expression_cue.connect(_on_expression_cue)
 	else:
 		push_warning("CharacterExpressionDriver: expression_cue signal missing")
+	if MessageBus.has_signal("expression_blend_cue"):
+		MessageBus.expression_blend_cue.connect(_on_expression_blend_cue)
 	call_deferred("_discover_morph_targets")
 
 
@@ -62,13 +64,32 @@ func _on_expression_cue(expression: String, intensity: float, context: Dictionar
 		_release_transient_later(_cue_epoch, transient)
 
 
+func _on_expression_blend_cue(payload: Dictionary, context: Dictionary) -> void:
+	var normalized := String(payload.get("expression", "neutral")).strip_edges().to_lower()
+	var old_expression := current_expression
+	current_expression = normalized
+	_cue_epoch += 1
+	var intensity := clampf(float(payload.get("intensity", 1.0)), 0.0, 1.0)
+	var weights: Dictionary = payload.get("morph_weights", {})
+	var requested_fade := float(payload.get("fade_duration", fade_duration))
+	_apply_custom_morphs(weights, intensity, requested_fade)
+	if old_expression != current_expression:
+		expression_changed.emit(old_expression, current_expression)
+	var transient := float(payload.get("transient_seconds", payload.get("hold_seconds", 0.0)))
+	if transient > 0.0:
+		_release_transient_later(_cue_epoch, transient)
+
+
 func _apply_morphs(expression: String, intensity: float) -> void:
+	_apply_custom_morphs(_catalog[expression].get("morph_weights", {}), intensity, fade_duration)
+
+
+func _apply_custom_morphs(weights: Dictionary, intensity: float, duration: float) -> void:
 	if _all_channels.is_empty():
 		return
 	if _active_tween and _active_tween.is_valid():
 		_active_tween.kill()
 	var target_values: Dictionary = {}
-	var weights: Dictionary = _catalog[expression].get("morph_weights", {})
 	for morph_name in weights:
 		var normalized_name := _normalize_morph_name(morph_name)
 		for binding in _bindings.get(normalized_name, []):
@@ -82,7 +103,7 @@ func _apply_morphs(expression: String, intensity: float) -> void:
 		var index: int = binding["index"]
 		var target := float(target_values.get(_binding_key(binding), 0.0))
 		var setter := Callable(self, "_set_blend_value").bind(mesh_instance, index)
-		_active_tween.tween_method(setter, mesh_instance.get_blend_shape_value(index), target, fade_duration)
+		_active_tween.tween_method(setter, mesh_instance.get_blend_shape_value(index), target, maxf(duration, 0.01))
 
 
 func _set_blend_value(value: float, mesh_instance: MeshInstance3D, index: int) -> void:

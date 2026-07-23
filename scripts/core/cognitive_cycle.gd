@@ -5,6 +5,7 @@
 extends Node
 
 const MotionIntentRouterScript = preload("res://scripts/characters/motion_intent_router.gd")
+const ExpressionIntentRouterScript = preload("res://scripts/characters/expression_intent_router.gd")
 
 # LLM API 配置
 var llm_api_url: String = ""
@@ -25,6 +26,7 @@ var http_request: HTTPRequest
 # 当前触发上下文
 var current_trigger: Dictionary = {}
 var _motion_router
+var _expression_router
 
 # 本地 fallback 响应库（无 LLM 时使用）
 const FALLBACK_GREETINGS = [
@@ -54,6 +56,9 @@ func _ready():
 	_motion_router = MotionIntentRouterScript.new()
 	if not _motion_router.is_ready():
 		push_warning("CognitiveCycle: motion router catalog unavailable: %s" % _motion_router.load_error)
+	_expression_router = ExpressionIntentRouterScript.new()
+	if not _expression_router.is_ready():
+		push_warning("CognitiveCycle: expression router library unavailable: %s" % _expression_router.load_error)
 	_load_llm_config()
 
 	# 创建 HTTP 请求节点
@@ -167,7 +172,7 @@ func build_prompt(semantic: String, memory: String, codified: String, triggered:
 如果玩家跟你说话了，本轮玩家消息拥有最高优先级。先直接回应玩家当前所说的内容，不要被角色偏好或旧记忆带偏，也不要无故转移到奶茶。
 
 你必须回复一个 JSON 对象，格式如下：
-{"thought": "你的内心想法", "goal": "一个简洁的目标名称(如drink_milk_tea/watch_tv/read_book/rest_on_sofa/patrol_room/wander_room/chat_with_player)", "goal_reason": "为什么做这个决定", "emotion": "情绪(happy/sad/angry/surprised/neutral/bored/excited)", "emotion_intensity": 0.5, "speech": "你说的话（可以为空字符串）", "speech_tone": "语气(cheerful/neutral/nervous/sad/angry)", "gesture": "身体动作兜底(必须从以下选择一个:idle/walk/wave/nod/think/happy/sit/talk)", "motion_query": "用于动作库语义检索的短句，例如'开心地挥手问候'或'自然地走向电视'", "plan": [{"action": "patrol", "route": "room_perimeter", "laps": 1}]}
+{"thought": "你的内心想法", "goal": "一个简洁的目标名称(如drink_milk_tea/watch_tv/read_book/rest_on_sofa/patrol_room/wander_room/chat_with_player)", "goal_reason": "为什么做这个决定", "emotion": "情绪(happy/sad/angry/surprised/neutral/bored/excited)", "emotion_intensity": 0.5, "speech": "你说的话（可以为空字符串）", "speech_tone": "语气(cheerful/neutral/nervous/sad/angry)", "gesture": "身体动作兜底(必须从以下选择一个:idle/walk/wave/nod/think/happy/sit/talk)", "motion_query": "用于动作库语义检索的短句，例如'开心地挥手问候'或'自然地走向电视'", "expression_query": "用于表情库语义检索的短句，例如'害羞但开心地笑'或'疑惑地歪头'", "plan": [{"action": "patrol", "route": "room_perimeter", "laps": 1}]}
 
 plan 是可选字段，最多 6 步。action 只能是 navigate_object/navigate_waypoint/patrol/wander/look_at/interact/wait；目标只能引用当前场景已有物体或已知路径点。不要输出坐标。"""
 
@@ -306,12 +311,20 @@ func _handle_decision(decision: Dictionary) -> void:
 	var emotion_intensity: float = clampf(float(decision.get("emotion_intensity", 0.65)), 0.0, 1.0)
 	var player_message: String = current_trigger.get("data", {}).get("text", "")
 	var motion_query: String = decision.get("motion_query", player_message)
+	var expression_query: String = decision.get("expression_query", "")
 
 	# 校验并净化 gesture
 	gesture = _validate_and_sanitize_gesture(gesture)
 
 	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity, motion_query)
 	gesture = performance["gesture"]
+	var expression_performance := _resolve_expression_performance(
+		expression_query,
+		String(performance.get("expression", emotion)),
+		emotion_intensity,
+		player_message,
+		speech
+	)
 
 	var router_goal := String(performance.get("goal", ""))
 	var explicit_goal = router_goal if not router_goal.is_empty() else _infer_explicit_player_goal(player_message)
@@ -344,7 +357,7 @@ func _handle_decision(decision: Dictionary) -> void:
 		"router_action_id": performance.get("action_id", ""),
 		"router_target": performance.get("target", ""),
 	})
-	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
+	_emit_expression_performance(expression_performance, {
 		"source": "llm",
 		"motion_provider": performance["provider"],
 		"router_action_id": performance.get("action_id", ""),
@@ -515,6 +528,13 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 
 	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
 	gesture = performance["gesture"]
+	var expression_performance := _resolve_expression_performance(
+		player_message,
+		String(performance.get("expression", emotion)),
+		emotion_intensity,
+		player_message,
+		speech
+	)
 
 	# 输出
 	if not speech.is_empty():
@@ -529,7 +549,7 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 		"router_action_id": performance.get("action_id", ""),
 		"router_target": performance.get("target", ""),
 	})
-	MessageBus.expression_cue.emit(performance["expression"], emotion_intensity, {
+	_emit_expression_performance(expression_performance, {
 		"source": "local",
 		"motion_provider": performance["provider"],
 		"router_action_id": performance.get("action_id", ""),
@@ -614,6 +634,42 @@ func _resolve_player_performance(player_message: String, fallback_gesture: Strin
 		"target": String(routed.get("target", "")),
 		"action_id": String(routed.get("action_id", "")),
 	}
+
+
+func _resolve_expression_performance(expression_query: String, fallback_expression: String, intensity: float, player_message: String, speech: String) -> Dictionary:
+	var safe_expression := fallback_expression.strip_edges().to_lower()
+	if safe_expression not in ["neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk"]:
+		safe_expression = "neutral"
+	if not _expression_router or not _expression_router.is_ready():
+		return {
+			"expression": safe_expression,
+			"intensity": clampf(intensity, 0.0, 1.0),
+			"morph_weights": {},
+			"provider": "fallback",
+		}
+	var query := expression_query.strip_edges()
+	if query.is_empty():
+		query = player_message.strip_edges()
+	if query.is_empty():
+		query = speech.strip_edges()
+	if query.is_empty():
+		query = safe_expression
+	return _expression_router.route(query, safe_expression, intensity)
+
+
+func _emit_expression_performance(expression_performance: Dictionary, context: Dictionary) -> void:
+	var merged_context := context.duplicate(true)
+	merged_context["expression_provider"] = String(expression_performance.get("provider", "fallback"))
+	merged_context["expression_components"] = expression_performance.get("components", [])
+	var weights: Dictionary = expression_performance.get("morph_weights", {})
+	if weights.is_empty():
+		MessageBus.expression_cue.emit(
+			String(expression_performance.get("expression", "neutral")),
+			float(expression_performance.get("intensity", 1.0)),
+			merged_context
+		)
+	else:
+		MessageBus.expression_blend_cue.emit(expression_performance, merged_context)
 
 
 func _route_player_intent(player_message: String, fallback_gesture: String, emotion: String, intensity: float) -> Dictionary:

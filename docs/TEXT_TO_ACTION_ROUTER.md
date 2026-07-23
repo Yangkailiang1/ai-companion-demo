@@ -14,6 +14,10 @@ language to character performance:
 5. The selected `action_id` maps to the existing Godot animation clip and the
    selected expression maps to the expression driver.
 
+Expression now has a parallel retrieval path documented in
+`docs/EXPRESSION_ROUTER.md`. The key difference is that motion chooses a baked clip,
+while expression can blend multiple morph targets continuously.
+
 The current local artifact is intentionally tiny:
 
 - Feature provider: `hash_char_ngram_v1`
