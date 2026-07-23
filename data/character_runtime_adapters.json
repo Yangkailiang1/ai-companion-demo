@@ -117,11 +117,11 @@
         },
         "rest_pose_degrees": {
           "left_clavicle": [0, 0, 0],
-          "left_upper_arm": [0, 0, 0],
+          "left_upper_arm": [0, 68, 0],
           "left_lower_arm": [0, 0, 0],
           "left_hand": [0, 0, 0],
           "right_clavicle": [0, 0, 0],
-          "right_upper_arm": [0, 0, 0],
+          "right_upper_arm": [0, -68, 0],
           "right_lower_arm": [0, 0, 0],
           "right_hand": [0, 0, 0],
           "head": [-2, 0, 0]
@@ -144,12 +144,12 @@
             "duration": 1.25,
             "cycles": 3.0,
             "degrees": {
-              "right_upper_arm": [0, 0, 0],
+              "right_upper_arm": [0, 92, 0],
               "right_lower_arm": [0, 0, 0]
             },
             "oscillate_degrees": {
-              "right_hand": [0, 0, 18],
-              "right_lower_arm": [0, 0, 18]
+              "right_hand": [18, 0, 0],
+              "right_lower_arm": [22, 0, 0]
             }
           },
           "nod": {
@@ -161,16 +161,16 @@
             "duration": 1.2,
             "degrees": {
               "head": [5, 0, -4],
-              "right_upper_arm": [0, 0, 0],
-              "right_lower_arm": [0, 0, 0]
+              "right_upper_arm": [0, 46, 0],
+              "right_lower_arm": [0, 0, 55]
             }
           },
           "happy": {
             "duration": 0.95,
             "cycles": 2.0,
             "degrees": {
-              "left_upper_arm": [0, 0, -18],
-              "right_upper_arm": [0, 0, 18]
+              "left_upper_arm": [0, -82, 0],
+              "right_upper_arm": [0, 82, 0]
             },
             "oscillate_degrees": {"chest": [-3, 0, 0], "head": [-2, 0, 0]}
           },

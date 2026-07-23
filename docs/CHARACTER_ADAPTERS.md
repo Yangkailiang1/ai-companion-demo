@@ -59,9 +59,15 @@ The HumanML3D-to-Jue 22-joint semantic map is recorded in:
 data/humanml3d_jue_bone_map.json
 ```
 
-This means 诀 can respond to routed actions, but actions like `wave` are not yet
-true arm-bone animations. They are visible root/body gestures until we retarget
-motion-library clips to her skeleton.
+诀 now uses a character-specific additive skeleton overlay for lightweight
+`idle`, `wave`, `nod`, `think`, `happy`, and `talk` cues. It captures the FBX
+import pose first and adds semantic-bone deltas on top, so the imported pelvis
+and chest rotations are never replaced with identity rotations. This keeps the
+model upright and lets the idle pose lower both arms from the source T-pose.
+
+These overlays are still authored procedural poses, not full retargeted motion
+clips. The next quality step remains baking reviewed HumanML3D or motion-library
+clips onto the imported Jue skeleton.
 
 ## Next real motion step
 

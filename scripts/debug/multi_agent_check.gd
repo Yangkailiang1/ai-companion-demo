@@ -37,6 +37,11 @@ func _run() -> void:
 	_assert(adapter_registry.map_clip("main_agent", "talk", "talk") == "idle", "main talk cue should map to idle clip")
 	_assert(adapter_registry.map_clip("jue_agent", "offline_smoke_walk", "offline_smoke_walk") == "walk", "Jue offline clip should safely map to walk")
 	var base_rotation := jue_model_root.rotation
+	_assert(absf(base_rotation.y) < 0.001, "Jue model root must keep the verified front-facing orientation")
+	var jue_skeleton_adapter: Dictionary = adapter_registry.get_skeleton_adapter("jue_agent")
+	var jue_rest_pose: Dictionary = jue_skeleton_adapter.get("rest_pose_degrees", {})
+	_assert(float(jue_rest_pose["left_upper_arm"][1]) > 45.0, "Jue left arm idle correction must use positive local Y")
+	_assert(float(jue_rest_pose["right_upper_arm"][1]) < -45.0, "Jue right arm idle correction must use negative local Y")
 
 	var bus := root.get_node_or_null("MessageBus")
 	_assert(bus != null, "MessageBus autoload must exist")
@@ -45,7 +50,7 @@ func _run() -> void:
 	_assert(jue_driver.get_current_gesture() == "wave", "targeted Jue cue should move Jue")
 	_assert(jue_pose_overlay.get_current_overlay_gesture() == "wave", "targeted Jue cue should enter pose overlay wave")
 	_assert(main_driver.get_current_gesture() != "wave", "targeted Jue cue must not move main agent")
-	_assert(jue_model_root.rotation.distance_to(base_rotation) > 0.08, "Jue procedural wave should be visibly animated")
+	_assert(jue_model_root.rotation.distance_to(base_rotation) < 0.001, "Jue skeleton wave must not tip the whole model root")
 
 	var memory_system := root.get_node_or_null("MemorySystem")
 	_assert(memory_system != null, "MemorySystem autoload must exist")

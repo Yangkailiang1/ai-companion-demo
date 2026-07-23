@@ -582,7 +582,7 @@ shape = SubResource("shape_agent")
 
 [node name="JueModelRoot" type="Node3D" parent="JueAgent"]
 position = Vector3(0, 0.02, 0)
-rotation = Vector3(0.035, 3.141593, -0.035)
+rotation = Vector3(0.035, 0, -0.035)
 scale = Vector3(145, 145, 145)
 script = ExtResource("28_jue_visual")
 

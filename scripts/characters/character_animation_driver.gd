@@ -138,6 +138,10 @@ func _play_procedural(name: String) -> void:
 		return
 	if name in ["idle", "walk"]:
 		return
+	# A declared skeleton gesture owns the cue. Applying the old model-root
+	# fallback as well would double the motion and can tip the whole FBX over.
+	if _has_skeleton_gesture(name):
+		return
 	var base_position := _procedural_base_position
 	var base_rotation := _procedural_base_rotation
 	var tween := create_tween()
@@ -168,6 +172,16 @@ func _play_procedural(name: String) -> void:
 			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
 		_:
 			tween.tween_property(procedural_root, "rotation", base_rotation, 0.12)
+
+
+func _has_skeleton_gesture(gesture_name: String) -> bool:
+	if not has_node("/root/CharacterAdapterRegistry"):
+		return false
+	var skeleton_adapter: Dictionary = get_node("/root/CharacterAdapterRegistry").get_skeleton_adapter(agent_id)
+	if not bool(skeleton_adapter.get("enabled", false)):
+		return false
+	var gesture_overlays: Dictionary = skeleton_adapter.get("gesture_overlays", {})
+	return gesture_overlays.has(gesture_name)
 
 
 func _map_gesture_for_character(gesture_name: String) -> String:

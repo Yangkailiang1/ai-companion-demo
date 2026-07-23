@@ -16,6 +16,7 @@ var _gesture_started_msec := 0
 var _gesture_duration := 0.0
 var _expression_pose: Dictionary = {}
 var _expression_until_msec := 0
+var _baseline_rotations: Dictionary = {}
 
 
 func _ready() -> void:
@@ -26,6 +27,7 @@ func _ready() -> void:
 	if not _skeleton:
 		push_warning("CharacterPoseOverlay: no Skeleton3D found for %s" % agent_id)
 		return
+	_capture_baseline_rotations()
 	if MessageBus.has_signal("performance_cue"):
 		MessageBus.performance_cue.connect(_on_performance_cue)
 	if MessageBus.has_signal("expression_blend_cue"):
@@ -133,11 +135,24 @@ func _apply_pose_to_skeleton(pose: Dictionary) -> void:
 		if index < 0:
 			continue
 		var euler := _vec3_from_variant(pose[semantic_bone])
-		_skeleton.set_bone_pose_rotation(index, Quaternion.from_euler(Vector3(
+		var delta := Quaternion.from_euler(Vector3(
 			deg_to_rad(euler.x),
 			deg_to_rad(euler.y),
 			deg_to_rad(euler.z)
-		)))
+		))
+		var baseline: Quaternion = _baseline_rotations.get(index, _skeleton.get_bone_pose_rotation(index))
+		_skeleton.set_bone_pose_rotation(index, baseline * delta)
+
+
+func _capture_baseline_rotations() -> void:
+	_baseline_rotations.clear()
+	for semantic_bone in _bone_aliases:
+		var bone_name := _resolve_bone_name(String(semantic_bone))
+		if bone_name.is_empty():
+			continue
+		var index := _skeleton.find_bone(bone_name)
+		if index >= 0:
+			_baseline_rotations[index] = _skeleton.get_bone_pose_rotation(index)
 
 
 func _on_performance_cue(gesture: String, context: Dictionary) -> void:
