@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "agents": {
+    "main_agent": {
+      "traits": {
+        "openness": 0.72,
+        "conscientiousness": 0.58,
+        "extraversion": 0.82,
+        "agreeableness": 0.78,
+        "neuroticism": 0.42
+      },
+      "motives": {
+        "care": 0.84,
+        "curiosity": 0.74,
+        "comfort": 0.56,
+        "affiliation": 0.88,
+        "autonomy": 0.68
+      },
+      "baseline_mood": {"valence": 0.28, "arousal": 0.58}
+    },
+    "jue_agent": {
+      "traits": {
+        "openness": 0.8,
+        "conscientiousness": 0.84,
+        "extraversion": 0.32,
+        "agreeableness": 0.66,
+        "neuroticism": 0.28
+      },
+      "motives": {
+        "care": 0.64,
+        "curiosity": 0.9,
+        "comfort": 0.68,
+        "affiliation": 0.5,
+        "autonomy": 0.78
+      },
+      "baseline_mood": {"valence": 0.14, "arousal": 0.34}
+    }
+  }
+}

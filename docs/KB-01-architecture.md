@@ -3,20 +3,23 @@
 ## Autoload 依赖图
 
 ```
-MessageBus ←── WorldSimulator, SemanticWorld, CognitiveCycle, AgentBase, UI
+MessageBus ←── WorldSimulator, SemanticWorld, Psyche, CognitiveCycle, AgentBase, UI
     ↓
-CognitiveCycle ←── SemanticWorld, MemorySystem, CodifiedProfile, GOAPPlanner
-    ↓ SignalBus (+ GOAPPlanner, ActionExecutor)
+AgentPsycheSystem ←── OCEAN, motives, mood, attention, beliefs
+    ↓
+CognitiveCycle ←── SemanticWorld, MemorySystem, CodifiedProfile, Psyche, GOAPPlanner
+    ↓ MessageBus (+ GOAPPlanner, ActionExecutor)
 AgentBase
 ```
 
 **加载顺序**（project.godot autoload）：
-1. `SignalBus` — 信号桥
-2. `MessageBus` — 事件总线
-3. `WorldSimulator` — 时间+需求引擎
-4. `SemanticWorld` — 物体+affordance
-5. `MemorySystem` — 四层记忆
+1. `MessageBus` — 事件总线
+2. `WorldSimulator` — 时间+每角色需求引擎
+3. `SemanticWorld` — 物体+affordance
+4. `MemorySystem` / `CodifiedProfile` — 记忆与角色规则
+5. `AgentPsycheSystem` — 人格、心境、注意、意图、社会信念
 6. `CognitiveCycle` — 认知循环主控
+7. Social / Save / Autonomous 等外围服务
 
 ## 数据流全景
 
@@ -28,15 +31,16 @@ CognitiveCycle._on_trigger(agent, PLAYER_INPUT, data)
     │ 1. SemanticWorld.generate_semantic_snapshot() → NL description
     │ 2. MemorySystem.format_for_llm() → retrieved memories
     │ 3. CodifiedProfile.parse_by_scene() → triggered rules [CCL]
-    │ 4. → LLM HTTP (ECNU-Max / OpenAI format)
+    │ 4. AgentPsycheSystem → mood / attention / intention / beliefs
+    │ 5. → LLM HTTP (ECNU-Max / OpenAI format)
     ▼
 LLM Response {goal, speech, emotion}
-    │ 5. GOAPPlanner.plan(goal) → PrimitiveAction chain
-    │ 6. SignalBus.emit_actions()
+    │ 6. GOAPPlanner.plan(goal) → PrimitiveAction chain
+    │ 7. MessageBus.emit_actions()
     ▼
 AgentBase → ActionExecutor.start_queue()
     │ navigate / interact / speak / idle
-    ▼ back to idle, restart idle_timer (30-60s)
+    ▼ back to idle, update psyche/memory, restart idle timer
 ```
 
 **Simulation 自主触发**：

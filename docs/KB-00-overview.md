@@ -11,6 +11,8 @@
 | [KB-03 实现细节](./KB-03-implementation.md) | 各模块关键实现、数据结构、协议 | ~80 |
 | [长期开发规划树](./DEVELOPMENT_ROADMAP_TREE.md) | 场景、角色、玩家、剧情、开源生态与版本切片 | 持续更新 |
 | [存档与状态物体](./SAVE_AND_OBJECT_STATE.md) | Schema v1、盆栽状态机、语义同步和验收 | v0.6 |
+| [拟人化研究映射](./HUMANLIKE_AGENT_RESEARCH_MAPPING.md) | OCEAN、心境、ToM、混合架构到项目实现 | v0.7 |
+| [LangGraph Agent Runtime](./LANGGRAPH_AGENT_RUNTIME.md) | 共享图、独立 thread、状态协议与 Godot 边界 | v0.7 |
 
 ## 关键概念速查
 
@@ -22,6 +24,7 @@
 | Memory Stream | 短期 + 长期 + 反思 三层记忆 [GA] | KB-03 |
 | Message Bus | 统一事件总线，等权处理 Simulation / Player / Agent 事件 | KB-01 |
 | Action-Dialogue Decoupling | LLM 只负责自然语言，行为执行本地化 [CAS] | KB-01 |
+| Agent Psyche | OCEAN、动机、持续心境、注意、意图与不确定社会信念 | 拟人化研究映射 |
 
 ## 文件组织
 

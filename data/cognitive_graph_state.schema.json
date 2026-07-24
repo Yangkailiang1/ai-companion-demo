@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Living Agent Cognitive Graph State",
+  "type": "object",
+  "required": ["schema_version", "thread_id", "agent_id", "trigger", "profile", "psyche"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "thread_id": {"type": "string", "pattern": "^agent:"},
+    "agent_id": {"type": "string", "minLength": 1},
+    "trigger": {"type": "object"},
+    "profile": {
+      "type": "object",
+      "required": ["identity", "traits", "motives"],
+      "properties": {
+        "identity": {"type": "string"},
+        "traits": {"type": "object"},
+        "motives": {"type": "object"}
+      }
+    },
+    "psyche": {
+      "type": "object",
+      "required": ["mood", "attention", "intention", "beliefs", "recent_activities"],
+      "properties": {
+        "mood": {"type": "object"},
+        "attention": {"type": "string"},
+        "intention": {"type": "string"},
+        "beliefs": {"type": "object"},
+        "recent_activities": {"type": "array"},
+        "private_thoughts": {"type": "array"}
+      }
+    },
+    "world": {"type": "string"},
+    "memory_context": {"type": "string"},
+    "candidate_goals": {"type": "array"},
+    "selected_goal": {"type": "object"},
+    "response": {"type": "object"}
+  },
+  "additionalProperties": true
+}

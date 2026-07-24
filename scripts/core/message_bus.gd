@@ -10,6 +10,7 @@ signal world_state_changed(change_type: String, data: Dictionary)
 
 # 信号：玩家输入
 signal player_message_received(text: String, is_command: bool)
+signal player_attention_requested(agent_id: String, text: String)
 
 # 信号：Agent 需要认知循环处理
 signal agent_trigger_cycle(agent_id: String, source: AffordanceTypes.TriggerSource, data: Dictionary)
@@ -17,6 +18,9 @@ signal agent_trigger_cycle(agent_id: String, source: AffordanceTypes.TriggerSour
 # 信号：Agent 完成动作
 signal agent_action_completed(agent_id: String, action: Dictionary)
 signal action_queue_completed(agent_id: String)
+signal agent_activity_started(agent_id: String, activity_id: String, context: Dictionary)
+signal agent_activity_completed(agent_id: String, activity_id: String, context: Dictionary)
+signal agent_activity_interrupted(agent_id: String, activity_id: String, reason: String)
 
 # 信号：GOAP Action Chain 下发（原 SignalBus.emit_actions）
 signal emit_actions(agent_id: String, actions: Array)
@@ -62,6 +66,7 @@ func route_player_input(text: String) -> void:
 
 	ui_add_chat_entry.emit("玩家", clean_text, true)
 	ui_status_changed.emit("消息已发送，等待 AI 处理…", "pending")
+	player_attention_requested.emit(target_agent_id, clean_text)
 	player_message_received.emit(clean_text, is_command)
 
 	var trigger_source = AffordanceTypes.TriggerSource.PLAYER_INPUT

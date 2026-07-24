@@ -134,20 +134,30 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 	# Step 3: Codified Profile — 角色逻辑触发
 	var triggered = CodifiedProfile.parse_by_scene_for_agent(agent_id, semantic_snapshot, player_message)
 	var codified_context = CodifiedProfile.get_triggered_log(triggered)
+	var psychology_context = AgentPsycheSystem.build_cognitive_context(agent_id)
 
 	# Step 4: 决定使用 LLM 还是本地 fallback
 	if llm_api_url.is_empty() or llm_api_key.is_empty():
 		MessageBus.ui_status_changed.emit("本地规则模式正在生成回复…", "local")
 		_use_local_fallback(player_message, source, triggered)
 	else:
-		var prompt = build_prompt(semantic_snapshot, memory_context, codified_context, triggered, player_message, source, agent_id)
+		var prompt = build_prompt(
+			semantic_snapshot,
+			memory_context,
+			codified_context,
+			psychology_context,
+			triggered,
+			player_message,
+			source,
+			agent_id
+		)
 		MessageBus.ui_status_changed.emit("AI %s/%s 正在回复…" % [llm_provider, llm_model], "online")
 		_send_llm_request(prompt)
 
 
 # === Prompt 构造 ===
 
-func build_prompt(semantic: String, memory: String, codified: String, triggered: Array,
+func build_prompt(semantic: String, memory: String, codified: String, psychology: String, triggered: Array,
 				  player_msg: String, source: AffordanceTypes.TriggerSource, agent_id: String = "main_agent") -> String:
 
 	var identity = CodifiedProfile.get_identity_for_agent(agent_id)
@@ -159,6 +169,9 @@ func build_prompt(semantic: String, memory: String, codified: String, triggered:
 
 %s
 
+%s
+
+[角色当前的心理与注意状态]
 %s
 
 [本轮玩家消息]
@@ -185,6 +198,7 @@ plan 是可选字段，最多 6 步。action 只能是 navigate_object/navigate_
 		semantic,
 		memory,
 		codified if not codified.is_empty() else "[没有特殊的角色反应]",
+		psychology,
 		player_msg if not player_msg.is_empty() else "[无，本轮为自主行为]",
 		explicit_instruction,
 	]

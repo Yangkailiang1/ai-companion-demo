@@ -15,6 +15,8 @@ Schema version 1 contains:
   retained for backward-compatible saves and HUD access);
 - each semantic object's state and structured properties;
 - each loaded Agent's identity, position, rotation, activity and emotion.
+- each Agent's persistent mood, attention, intention, recent activities, private
+  thought buffer and uncertain beliefs about other characters.
 
 The runtime attempts to load the default save after the startup scene is ready and
 autosaves every 60 seconds. Tests can pass an explicit path to `save_game()` and

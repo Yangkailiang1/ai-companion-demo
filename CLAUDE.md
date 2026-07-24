@@ -18,6 +18,7 @@
 | WorldSimulator | done (含需求冷却) | `scripts/core/world_simulator.gd` |
 | SemanticWorld | done | `scripts/core/semantic_world.gd` |
 | MemorySystem | stub (Episode 存储 OK，Reflection 未实现) | `scripts/core/memory_system.gd` |
+| **AgentPsycheSystem** | **new v0.7（OCEAN、动机、心境、注意、意图、简化 ToM）** | `agent_psyche_system.gd`, `agent_psychology.json` |
 | CodifiedProfile | done (关键词匹配) | `scripts/core/codified_profile.gd` |
 | CognitiveCycle | done (LLM + 本地 fallback + gesture) | `scripts/core/cognitive_cycle.gd` |
 | GOAPPlanner | done (10 goal blueprints + validated dynamic plan) | `scripts/core/goap_planner.gd` |
@@ -38,6 +39,7 @@
 | **异步 TTS** | **done baseline（句子分块近流式播放）** | `tts_service.gd`, `docs/TTS_INTEGRATION.md` |
 | **版本化存档 + 盆栽状态机** | **new v0.6 baseline** | `save_system.gd`, `plant_state.gd`, `docs/SAVE_AND_OBJECT_STATE.md` |
 | **Utility AI 自主生活** | **new v0.7 baseline（多活动、个性评分、资源锁、独立需求、微行为）** | `autonomous_behavior_system.gd`, `autonomous_life_config.json`, `docs/AUTONOMOUS_LIFE_RUNTIME.md` |
+| **LangGraph 共享认知图实验** | **new v0.7 prototype（双 thread 隔离已验收）** | `cognition_lab/`, `docs/LANGGRAPH_AGENT_RUNTIME.md` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
@@ -81,7 +83,7 @@ UI: ChatLog + HUD (needs bars) + 3D Bubble
 ## 核心 Autoload
 
 ```
-MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedProfile
+MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedProfile → AgentPsycheSystem
 → CognitiveCycle / SocialSystem / AutonomousBehaviorSystem
 → TTSService / CharacterAdapterRegistry / SaveSystem
 ```
@@ -100,6 +102,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [x] Blender 5.0 导出 + Godot GLB 导入（企鹅、庭院）
 - [x] 中文动作指令 → performance cue → AnimationPlayer 自动化验收
 - [x] 1280×720 主场景截图验收：企鹅模型、HUD、输入框可见
+- [x] OCEAN/动机调制、持续心境、注意、意图、活动厌倦与简化 Theory of Mind
+- [x] 一张共享 LangGraph 使用 `agent:main_agent` / `agent:jue_agent` 独立 checkpoint
 
 ## v0.2 新能力
 
@@ -185,6 +189,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - **[PROJECT_ARCHITECTURE](./docs/PROJECT_ARCHITECTURE.md)** — 完整架构文档 (v0.1 新增)
 - **[ASSET_REQUIREMENTS](./docs/ASSET_REQUIREMENTS.md)** — 资产需求清单 (v0.1 新增)
 - **[DEVELOPMENT_ROADMAP_TREE](./docs/DEVELOPMENT_ROADMAP_TREE.md)** — 长期规划树与版本切片
+- **[HUMANLIKE_AGENT_RESEARCH_MAPPING](./docs/HUMANLIKE_AGENT_RESEARCH_MAPPING.md)** — 调研结论到当前实现的映射
+- **[LANGGRAPH_AGENT_RUNTIME](./docs/LANGGRAPH_AGENT_RUNTIME.md)** — 共享认知图、角色状态与 Godot 边界
 
 ## LLM 配置（可选）
 

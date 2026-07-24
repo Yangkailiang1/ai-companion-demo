@@ -17,6 +17,8 @@ func _run() -> void:
 	var semantic_world := root.get_node("SemanticWorld")
 	var world_simulator := root.get_node("WorldSimulator")
 	var save_system := root.get_node("SaveSystem")
+	var psyche_system := root.get_node("AgentPsycheSystem")
+	var bus := root.get_node("MessageBus")
 	var plant := scene.get_node("WorldRoot/LivingRoom/Plant")
 	var plant_state := plant.get_node("PlantState")
 	var main_agent: Node3D = scene.get_node("WorldRoot/LivingRoom/Agent")
@@ -30,6 +32,8 @@ func _run() -> void:
 	world_simulator.day_number = 4
 	main_agent.global_position = Vector3(-2.2, 0.0, 1.1)
 	jue_agent.global_position = Vector3(1.8, 0.0, -1.2)
+	bus.player_attention_requested.emit("main_agent", "谢谢你陪着我")
+	await process_frame
 	var saved_main_position := main_agent.global_position
 	var saved_jue_position := jue_agent.global_position
 	var save_error: Error = save_system.save_game(TEST_SAVE_PATH)
@@ -39,6 +43,16 @@ func _run() -> void:
 	world_simulator.day_number = 1
 	main_agent.global_position = Vector3.ZERO
 	jue_agent.global_position = Vector3.ZERO
+	psyche_system.import_save_state({
+		"main_agent": {
+			"mood": {"valence": -0.8, "arousal": 0.95},
+			"attention": "temporary_test_target",
+			"intention": "",
+			"beliefs": {},
+			"recent_activities": [],
+			"private_thoughts": [],
+		}
+	})
 	plant_state.perform_interaction("water", "main_agent")
 	_assert(plant_state.moisture > 35.0, "water interaction must change moisture before reload")
 
@@ -49,6 +63,10 @@ func _run() -> void:
 	_assert(world_simulator.day_number == 4, "day number must restore")
 	_assert(main_agent.global_position.distance_to(saved_main_position) < 0.001, "main agent position must restore")
 	_assert(jue_agent.global_position.distance_to(saved_jue_position) < 0.001, "Jue position must restore")
+	_assert(
+		String(psyche_system.get_agent_state("main_agent").get("attention", "")) == "player",
+		"main Agent psychology must restore"
+	)
 	_assert(plant_state.get_state_name() == "严重缺水", "plant structured state must restore")
 
 	var interaction: Dictionary = plant.perform_interaction("water", "main_agent")

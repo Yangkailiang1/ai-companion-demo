@@ -59,6 +59,8 @@ func load_game(path: String = "") -> Error:
 		return ERR_FILE_UNRECOGNIZED
 	WorldSimulator.import_save_state(data.get("world", {}))
 	SemanticWorld.import_save_state(data.get("objects", {}))
+	if has_node("/root/AgentPsycheSystem"):
+		get_node("/root/AgentPsycheSystem").import_save_state(data.get("psychology", {}))
 	_pending_agent_states = data.get("agents", {}).duplicate(true)
 	_apply_pending_agent_states()
 	last_error = ""
@@ -89,6 +91,7 @@ func _build_snapshot() -> Dictionary:
 		"saved_at_unix": Time.get_unix_time_from_system(),
 		"world": WorldSimulator.export_save_state(),
 		"objects": SemanticWorld.export_save_state(),
+		"psychology": AgentPsycheSystem.export_save_state(),
 		"agents": agents,
 	}
 

@@ -37,6 +37,7 @@ var _stuck_elapsed: float = 0.0
 var _last_progress_position := Vector3.ZERO
 var _active_executor: ActionExecutor = null
 var _locomotion_sequence_depth: int = 0
+var _facing_tween: Tween
 
 signal arrived
 signal movement_finished(success: bool, reason: String)
@@ -131,7 +132,23 @@ func move_to_position(target: Vector3) -> void:
 func look_at_target(target_id: String) -> void:
 	var obj = SemanticWorld.get_object(target_id)
 	if obj:
-		look_at(Vector3(obj.position.x, global_position.y, obj.position.z), Vector3.UP)
+		turn_towards_world_position(obj.position, 0.3)
+
+
+func turn_towards_world_position(world_position: Vector3, duration: float = 0.3) -> void:
+	var flat_direction := Vector3(
+		world_position.x - global_position.x,
+		0.0,
+		world_position.z - global_position.z
+	)
+	if flat_direction.length_squared() < 0.0001:
+		return
+	# Both imported characters use local +Z as their visible forward direction.
+	var target_yaw := atan2(flat_direction.x, flat_direction.z)
+	if _facing_tween and _facing_tween.is_valid():
+		_facing_tween.kill()
+	_facing_tween = create_tween()
+	_facing_tween.tween_property(self, "rotation:y", target_yaw, maxf(duration, 0.01))
 
 
 func _physics_process(delta: float) -> void:

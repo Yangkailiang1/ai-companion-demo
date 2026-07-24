@@ -112,7 +112,9 @@ func _on_player_message(_text: String, _is_command: bool) -> void:
 	var interrupted_ids := _active_activities.keys()
 	for agent_id in interrupted_ids:
 		var activity: Dictionary = _active_activities.get(agent_id, {})
+		var activity_id := String(activity.get("activity_id", ""))
 		MemorySystem.add_episode_for_agent(String(agent_id), "玩家呼唤时暂停了%s。" % _activity_label(activity), 3.0)
+		MessageBus.agent_activity_interrupted.emit(String(agent_id), activity_id, "player")
 		_release_activity(String(agent_id))
 		MessageBus.emit_actions.emit(String(agent_id), [])
 	_diagnostics["status"] = "interrupted_by_player"
@@ -131,6 +133,9 @@ func _on_action_queue_completed(agent_id: String) -> void:
 		_emit_visible_social_line(agent_id, completion_line, String(definition.get("emotion", "neutral")))
 	if String(activity.get("activity_id", "")) == "plant_care":
 		_emit_companion_observation(agent_id)
+	MessageBus.agent_activity_completed.emit(agent_id, String(activity.get("activity_id", "")), {
+		"duration_seconds": float(Time.get_ticks_msec() - int(activity.get("started_at_msec", Time.get_ticks_msec()))) / 1000.0,
+	})
 	_release_activity(agent_id)
 	_agent_available_after_msec[agent_id] = Time.get_ticks_msec() + int(POST_ACTIVITY_QUIET_SECONDS * 1000.0)
 	_diagnostics["status"] = "activity_completed"
@@ -193,17 +198,20 @@ func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> D
 	if not bool(condition_result.get("available", true)):
 		return {}
 	var preference := _agent_preference(agent_id, activity_id)
+	var psyche_modifier := AgentPsycheSystem.get_utility_modifier(agent_id, activity_id)
 	var base_score := float(definition.get("base_score", 0.0))
 	var need_score := _need_deficit(agent_id, String(definition.get("need", ""))) * float(definition.get("need_weight", 0.0))
 	var condition_score := float(condition_result.get("strength", 0.0)) * float(definition.get("condition_weight", 0.0))
 	var distance_score := _distance_bonus(agent, String(definition.get("focus_target", ""))) * 0.06
-	var score := (base_score + need_score + condition_score + distance_score) * preference
+	var score := (base_score + need_score + condition_score + distance_score) * preference * psyche_modifier
 	return {
 		"agent_id": agent_id,
 		"activity_id": activity_id,
 		"score": snappedf(score, 0.001),
 		"minimum_score": float(definition.get("minimum_score", 0.0)),
 		"preference": preference,
+		"psyche_modifier": snappedf(psyche_modifier, 0.001),
+		"psyche_reason": AgentPsycheSystem.get_utility_reason(agent_id, activity_id),
 		"base_score": base_score,
 		"need_score": snappedf(need_score, 0.001),
 		"condition_score": snappedf(condition_score, 0.001),
@@ -296,6 +304,11 @@ func _start_activity(candidate: Dictionary) -> bool:
 	}
 	_activity_last_started["%s:%s" % [agent_id, activity_id]] = Time.get_ticks_msec()
 	_last_global_start_msec = Time.get_ticks_msec()
+	MessageBus.agent_activity_started.emit(agent_id, activity_id, {
+		"focus_target": focus_target,
+		"score": candidate.get("score", 0.0),
+		"psyche_reason": candidate.get("psyche_reason", ""),
+	})
 
 	var start_memory := String(definition.get("start_memory", "开始了一项日常活动。"))
 	MemorySystem.add_episode_for_agent(agent_id, start_memory, 4.0)

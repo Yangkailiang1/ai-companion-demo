@@ -100,6 +100,8 @@ AI Living Town
 - `T1.2 [NEXT]` 为动作增加中断、优先级、互斥组和恢复策略，防止说话、走路、挥手相互抢占。
 - `T1.3 [LATER]` 支持层级计划：长期目标、日程、短期行为和即时反应。
 - `T1.4 [LATER]` 增加可解释决策日志，让开发者看到“为什么选择这个动作”。
+- `T1.5 [DONE prototype]` 建立 LangGraph 兼容 AgentState 与共享认知图；按
+  `thread_id=agent:<agent_id>` 隔离角色 checkpoint，Godot 保持物理执行权。
 
 ### T2. 语义世界与空间协议 `[ACTIVE]`
 
@@ -243,6 +245,8 @@ AI Living Town
 当前两个角色已经按 `agent_id` 隔离记忆，并有保守的社交回应。
 
 - `C5.0 [DONE baseline]` 自主行为完成后分别记录行动者/观察者 Episode，并更新观察者对行动者的 respect。
+- `C5.0a [DONE baseline]` OCEAN、动机、持续心境、注意、当前意图、私密想法和
+  简化 Theory of Mind 已按角色隔离并进入存档；LLM 上下文能读取但不得当作客观事实。
 - `C5.1 [NEXT]` Reflection、语义记忆压缩和长期事实更新。
 - `C5.2 [NEXT]` 关系图：熟悉、信任、好感、冲突、共同经历。
 - `C5.3 [NEXT]` 日程、地点偏好、习惯和需求驱动的长期目标。
