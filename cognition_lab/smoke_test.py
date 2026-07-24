@@ -19,6 +19,12 @@ def state(agent_id: str, motives: dict[str, float], world: str) -> dict:
         },
         "world": world,
         "memory_context": "",
+        "daily_plan": {
+            "day": 1,
+            "period": "morning",
+            "priorities": ["plant_care", "read_book", "wander_room"],
+            "completed": [],
+        },
         "audit": [],
     }
 
@@ -43,14 +49,27 @@ def main() -> None:
         "perceive",
         "retrieve_memory",
         "update_psyche",
+        "reflect_if_needed",
         "propose_goals",
         "arbitrate",
         "compose_response",
     ]
+    reflection_config = {"configurable": {"thread_id": "agent:reflection_check"}}
+    reflection_state = state(
+        "reflection_check",
+        {"care": 0.5, "curiosity": 0.5, "autonomy": 0.5},
+        "小绿状态良好",
+    )
+    reflection_state["trigger"] = {"source": "reflection"}
+    reflection_state["psyche"]["recent_activities"] = ["read_book", "read_book", "wander_room"]
+    reflection_result = graph.invoke(reflection_state, config=reflection_config)
+    assert reflection_result["reflection"]["dominant_activity"] == "read_book"
+    assert reflection_result["reflection"]["requires_memory_write"] is True
     print(
         "LANGGRAPH_AGENT_PASS",
         f"main={main_result['selected_goal']['goal']}",
         f"jue={jue_result['selected_goal']['goal']}",
+        f"reflection={reflection_result['reflection']['dominant_activity']}",
         "threads=isolated",
     )
 

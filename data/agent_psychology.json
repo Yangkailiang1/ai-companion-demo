@@ -16,7 +16,14 @@
         "affiliation": 0.88,
         "autonomy": 0.68
       },
-      "baseline_mood": {"valence": 0.28, "arousal": 0.58}
+      "baseline_mood": {"valence": 0.28, "arousal": 0.58},
+      "daily_rhythm": {
+        "morning": {"plant_care": 1.2, "read_book": 0.85, "rest_on_sofa": 0.75, "wander_room": 1.15},
+        "noon": {"plant_care": 1.0, "read_book": 0.9, "rest_on_sofa": 1.15, "wander_room": 0.95},
+        "afternoon": {"plant_care": 1.05, "read_book": 0.95, "rest_on_sofa": 0.85, "wander_room": 1.2},
+        "evening": {"plant_care": 0.9, "read_book": 1.05, "rest_on_sofa": 1.1, "wander_room": 1.05},
+        "night": {"plant_care": 0.7, "read_book": 0.9, "rest_on_sofa": 1.35, "wander_room": 0.65}
+      }
     },
     "jue_agent": {
       "traits": {
@@ -33,7 +40,14 @@
         "affiliation": 0.5,
         "autonomy": 0.78
       },
-      "baseline_mood": {"valence": 0.14, "arousal": 0.34}
+      "baseline_mood": {"valence": 0.14, "arousal": 0.34},
+      "daily_rhythm": {
+        "morning": {"plant_care": 1.0, "read_book": 1.25, "rest_on_sofa": 0.8, "wander_room": 0.8},
+        "noon": {"plant_care": 0.95, "read_book": 1.1, "rest_on_sofa": 1.1, "wander_room": 0.75},
+        "afternoon": {"plant_care": 0.9, "read_book": 1.3, "rest_on_sofa": 0.9, "wander_room": 0.8},
+        "evening": {"plant_care": 0.85, "read_book": 1.2, "rest_on_sofa": 1.15, "wander_room": 0.7},
+        "night": {"plant_care": 0.65, "read_book": 1.0, "rest_on_sofa": 1.4, "wander_room": 0.55}
+      }
     }
   }
 }

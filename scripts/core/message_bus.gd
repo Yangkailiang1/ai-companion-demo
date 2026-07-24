@@ -21,6 +21,7 @@ signal action_queue_completed(agent_id: String)
 signal agent_activity_started(agent_id: String, activity_id: String, context: Dictionary)
 signal agent_activity_completed(agent_id: String, activity_id: String, context: Dictionary)
 signal agent_activity_interrupted(agent_id: String, activity_id: String, reason: String)
+signal agent_reflection_requested(agent_id: String, recent_episodes: Array)
 
 # 信号：GOAP Action Chain 下发（原 SignalBus.emit_actions）
 signal emit_actions(agent_id: String, actions: Array)

@@ -21,8 +21,9 @@ var relationship_memory: Dictionary = {
 }
 
 # 反思阈值 [GA §4.3]
-const REFLECTION_THRESHOLD: float = 150.0
+const REFLECTION_THRESHOLD: float = 45.0
 var accumulated_importance: float = 0.0
+var accumulated_importance_by_agent: Dictionary = {}
 
 var memory_file_path: String = "user://memories.json"
 var agent_memories: Dictionary = {}
@@ -49,16 +50,20 @@ func add_episode_for_agent(agent_id: String, content: String, importance: float 
 	}
 	agent_memories[agent_id]["episodes"].append(entry)
 	episode_memory = agent_memories["main_agent"]["episodes"]
-	accumulated_importance += importance
+	accumulated_importance_by_agent[agent_id] = float(accumulated_importance_by_agent.get(agent_id, 0.0)) + importance
+	if agent_id == "main_agent":
+		accumulated_importance = float(accumulated_importance_by_agent[agent_id])
 
 	# 限制内存大小
 	while agent_memories[agent_id]["episodes"].size() > MAX_EPISODES:
 		agent_memories[agent_id]["episodes"].pop_front()
 
 	# 检查是否需要触发反思
-	if accumulated_importance >= REFLECTION_THRESHOLD:
-		request_reflection()
-		accumulated_importance = 0.0
+	if float(accumulated_importance_by_agent[agent_id]) >= REFLECTION_THRESHOLD:
+		accumulated_importance_by_agent[agent_id] = 0.0
+		if agent_id == "main_agent":
+			accumulated_importance = 0.0
+		request_reflection_for_agent(agent_id)
 
 	_save_memories()
 
@@ -136,15 +141,24 @@ func retrieve_semantic(key: String) -> String:
 # === 反思模块 [GA §4.3] ===
 
 func request_reflection() -> void:
-	# 反思需要 LLM 处理，这里发出信号让 CognitiveCycle 处理
-	MessageBus.world_state_changed.emit("reflection_needed", {
-		"recent_episodes": episode_memory.slice(max(0, episode_memory.size() - 20)),
-	})
+	request_reflection_for_agent("main_agent")
+
+
+func request_reflection_for_agent(agent_id: String) -> void:
+	_ensure_agent_memory(agent_id)
+	var episodes: Array = agent_memories[agent_id]["episodes"]
+	MessageBus.agent_reflection_requested.emit(
+		agent_id,
+		episodes.slice(max(0, episodes.size() - 20))
+	)
 
 
 func add_reflection(content: String) -> void:
-	# LLM 生成的反思结果存入 Episode Memory
-	add_episode("[反思] " + content, 8.0)
+	add_reflection_for_agent("main_agent", content)
+
+
+func add_reflection_for_agent(agent_id: String, content: String) -> void:
+	add_episode_for_agent(agent_id, "[反思] " + content, 8.0)
 
 
 # === 格式化输出（给 LLM 用）===

@@ -20,6 +20,11 @@ func _run() -> void:
 	root.add_child(main)
 	current_scene = main
 	await process_frame
+	var autonomy := root.get_node("AutonomousBehaviorSystem")
+	autonomy.set_scheduler_enabled(false)
+	if not autonomy.get_active_agent_id().is_empty():
+		bus.player_message_received.emit("gesture test setup", false)
+		await process_frame
 	# Capture planned actions without executing their timers/movement; execution is
 	# covered by the startup scene check and would outlive this short test process.
 	var agent := main.find_child("Agent", true, false)

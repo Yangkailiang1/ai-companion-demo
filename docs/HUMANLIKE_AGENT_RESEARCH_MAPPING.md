@@ -7,11 +7,11 @@
 
 | 调研方向 | 项目实现 | 当前边界 |
 |---|---|---|
-| Generative Agents：感知、记忆、反思、规划 | 已有 SemanticWorld、独立 Memory、CognitiveCycle、GOAP；新增统一认知图状态 | Reflection 仍待正式实现 |
+| Generative Agents：感知、记忆、反思、规划 | 已有 SemanticWorld、独立 Memory、CognitiveCycle、GOAP；新增按角色重要性阈值触发的反思基线 | 当前反思是确定性摘要，尚未做语义事实压缩 |
 | PANDA / 人格驱动策略 | OCEAN 大五人格和动机共同调制 Utility AI | 参数为设计配置，尚未用玩家数据训练 |
 | Dual-Memory Sentiment / 动态情绪 | 每角色独立 valence/arousal，事件改变、随后回归人格基线 | 尚未加入长期情绪趋势总结 |
 | ToM-agent / 心智理论 | 观察另一角色活动，保存“推测意图 + 置信度”，明确不是事实 | 目前只依据可见活动，不推断复杂错误信念 |
-| Act-LLM / 规划仲裁 | Utility 候选、人格调制、重复厌倦、GOAP 验证、玩家抢占 | 日计划和中断后恢复尚待实现 |
+| Act-LLM / 规划仲裁 | Utility 候选、人格/日程调制、重复厌倦、GOAP 验证、玩家抢占与任务恢复 | 目前是分时段日程，尚无跨地点长期计划 |
 | CASCADE / 标签化 NPC | LLM 与物理执行解耦；本地规则负责快速日常行为 | 尚未建立世界级 Macro Director |
 | Codifying Character Logic | 身份规则、人格参数、活动偏好均为结构化配置 | 后续需要角色导入向导生成/校验配置 |
 | 混合架构 | LangGraph/LLM 负责慢认知；Godot 负责导航、碰撞、动作和状态 | 外部 LangGraph 尚未接入游戏进程 |
@@ -40,6 +40,9 @@
 - 另一角色能注意行动者，并保存带置信度的意图推测；
 - 完成活动会改变心境，心境随后缓慢回到各自人格基线；
 - 刚做过的活动会出现厌倦惩罚，减少机械重复；
+- 每个角色依据早晨/中午/下午/晚上/夜间形成不同活动优先级；
+- 玩家打断自主活动后，角色先回应；条件和资源仍有效时恢复原任务，否则留下放弃原因；
+- Episode 重要性达到阈值后，角色分别形成反思并写回各自长期记忆；
 - 私密想法与公开发言分离，私密状态不会自动显示为对白；
 - 心境、意图、注意、信念和近期活动进入版本化存档。
 
@@ -55,14 +58,15 @@
 
 - `agent:main_agent` 在缺水世界状态下选择照顾植物；
 - `agent:jue_agent` 在正常环境中因高好奇动机选择阅读；
+- 图中 `reflect_if_needed` 节点可生成有界反思，日计划参与候选目标打分；
 - 两个 thread 的检查点状态相互隔离。
 
 详细边界见 `docs/LANGGRAPH_AGENT_RUNTIME.md`。
 
 ## 后续研究实现顺序
 
-1. Reflection：按重要性阈值总结近期活动、关系与情绪变化。
-2. 日计划：长期目标 → 当日计划 → 当前活动，并支持玩家打断后恢复。
+1. 把确定性反思升级为“Episode 聚类 → 语义事实候选 → 冲突校验 → 长期记忆”。
+2. 把分时段偏好升级为长期目标 → 当日计划 → 地点/活动，并处理跨场景恢复。
 3. 更完整的 ToM：角色所见范围、信息来源、错误信念和反事实修正。
 4. 社交共同活动：邀请、接受/拒绝、等待、座位预约和自然结束。
 5. 本地 LangGraph 进程桥：SQLite checkpoint、超时、降级和存档迁移。
@@ -75,4 +79,7 @@ python3 cognition_lab/smoke_test.py
 
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
   --script scripts/debug/agent_psyche_check.gd
+
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/planning_reflection_check.gd
 ```

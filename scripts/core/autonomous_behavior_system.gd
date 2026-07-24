@@ -6,11 +6,13 @@ const DEFAULT_EVALUATION_INTERVAL := 6.0
 const MICRO_BEHAVIOR_COOLDOWN_SECONDS := 14.0
 const GLOBAL_ACTIVITY_START_GAP_SECONDS := 2.0
 const POST_ACTIVITY_QUIET_SECONDS := 5.0
+const SUSPENDED_ACTIVITY_MAX_AGE_SECONDS := 90.0
 const DRY_STATES := ["需要浇水", "严重缺水", "枯萎"]
 
 var _config: Dictionary = {}
 var _activities: Array = []
 var _active_activities: Dictionary = {}
+var _suspended_activities: Dictionary = {}
 var _resource_owners: Dictionary = {}
 var _activity_last_started: Dictionary = {}
 var _agent_available_after_msec: Dictionary = {}
@@ -19,6 +21,8 @@ var _micro_indices: Dictionary = {}
 var _last_player_input_msec := -10000
 var _last_global_start_msec := -2000
 var _evaluation_pending := false
+var _player_input_epoch := 0
+var _resume_scheduled_epoch: Dictionary = {}
 var _diagnostics: Dictionary = {
 	"status": "initializing",
 	"candidates": [],
@@ -69,6 +73,10 @@ func get_active_activity(agent_id: String) -> String:
 	return String(_active_activities.get(agent_id, {}).get("activity_id", ""))
 
 
+func get_suspended_activity(agent_id: String) -> String:
+	return String(_suspended_activities.get(agent_id, {}).get("activity_id", ""))
+
+
 func get_diagnostics() -> Dictionary:
 	return _diagnostics.duplicate(true)
 
@@ -109,10 +117,14 @@ func _on_world_state_changed(change_type: String, data: Dictionary) -> void:
 
 func _on_player_message(_text: String, _is_command: bool) -> void:
 	_last_player_input_msec = Time.get_ticks_msec()
+	_player_input_epoch += 1
 	var interrupted_ids := _active_activities.keys()
 	for agent_id in interrupted_ids:
 		var activity: Dictionary = _active_activities.get(agent_id, {})
 		var activity_id := String(activity.get("activity_id", ""))
+		activity["suspended_at_msec"] = Time.get_ticks_msec()
+		activity["player_epoch"] = _player_input_epoch
+		_suspended_activities[String(agent_id)] = activity.duplicate(true)
 		MemorySystem.add_episode_for_agent(String(agent_id), "玩家呼唤时暂停了%s。" % _activity_label(activity), 3.0)
 		MessageBus.agent_activity_interrupted.emit(String(agent_id), activity_id, "player")
 		_release_activity(String(agent_id))
@@ -123,6 +135,8 @@ func _on_player_message(_text: String, _is_command: bool) -> void:
 
 func _on_action_queue_completed(agent_id: String) -> void:
 	if not _active_activities.has(agent_id):
+		if _suspended_activities.has(agent_id):
+			_schedule_resume_after_player(agent_id)
 		return
 	var activity: Dictionary = _active_activities[agent_id]
 	var definition: Dictionary = activity.get("definition", {})
@@ -147,6 +161,78 @@ func _on_action_queue_completed(agent_id: String) -> void:
 		call_deferred("evaluate_now")
 
 
+func resume_suspended_now(agent_id: String) -> bool:
+	if not _suspended_activities.has(agent_id):
+		return false
+	var suspended: Dictionary = _suspended_activities[agent_id]
+	var age_msec := Time.get_ticks_msec() - int(suspended.get("suspended_at_msec", 0))
+	if age_msec > int(SUSPENDED_ACTIVITY_MAX_AGE_SECONDS * 1000.0):
+		_abandon_suspended(agent_id, "等待时间太久")
+		return false
+	if Time.get_ticks_msec() - _last_player_input_msec < int(PLAYER_GRACE_SECONDS * 1000.0):
+		return false
+	if has_node("/root/CognitiveCycle") and bool(get_node("/root/CognitiveCycle").get("is_processing")):
+		return false
+	var agent := _find_agent(agent_id)
+	if not agent or String(agent.get("current_activity")) != "idle":
+		return false
+	var definition: Dictionary = suspended.get("definition", {})
+	var condition_result := _evaluate_condition(String(definition.get("condition", "")))
+	if not bool(condition_result.get("available", true)):
+		_abandon_suspended(agent_id, "环境已经变化")
+		return false
+	if not _resources_available(definition.get("resources", [])):
+		return false
+	var candidate: Dictionary = suspended.get("candidate", {}).duplicate(true)
+	if candidate.is_empty():
+		candidate = {
+			"agent_id": agent_id,
+			"activity_id": suspended.get("activity_id", ""),
+			"score": 1.0,
+			"definition": definition,
+		}
+	candidate["resumed"] = true
+	_suspended_activities.erase(agent_id)
+	var started := _start_activity(candidate)
+	if started:
+		_diagnostics["status"] = "activity_resumed"
+		_diagnostics["selected"] = candidate.duplicate(true)
+	return started
+
+
+func _schedule_resume_after_player(agent_id: String) -> void:
+	var epoch := _player_input_epoch
+	if int(_resume_scheduled_epoch.get(agent_id, -1)) == epoch:
+		return
+	_resume_scheduled_epoch[agent_id] = epoch
+	_attempt_resume_after_player(agent_id, epoch)
+
+
+func _attempt_resume_after_player(agent_id: String, epoch: int) -> void:
+	var elapsed := float(Time.get_ticks_msec() - _last_player_input_msec) / 1000.0
+	await get_tree().create_timer(maxf(PLAYER_GRACE_SECONDS - elapsed + 0.2, 0.2)).timeout
+	if epoch != _player_input_epoch or not _suspended_activities.has(agent_id):
+		return
+	for _attempt in range(3):
+		if resume_suspended_now(agent_id):
+			return
+		if not _suspended_activities.has(agent_id):
+			return
+		await get_tree().create_timer(2.0).timeout
+
+
+func _abandon_suspended(agent_id: String, reason: String) -> void:
+	var suspended: Dictionary = _suspended_activities.get(agent_id, {})
+	if suspended.is_empty():
+		return
+	MemorySystem.add_episode_for_agent(
+		agent_id,
+		"没有恢复%s，因为%s。" % [_activity_label(suspended), reason],
+		3.0
+	)
+	_suspended_activities.erase(agent_id)
+
+
 func _can_evaluate() -> bool:
 	var now := Time.get_ticks_msec()
 	if now - _last_player_input_msec < int(PLAYER_GRACE_SECONDS * 1000.0):
@@ -164,7 +250,7 @@ func _score_candidates() -> Array:
 	var candidates: Array = []
 	for agent in get_tree().get_nodes_in_group("agents"):
 		var agent_id := String(agent.get("agent_name"))
-		if agent_id.is_empty() or _active_activities.has(agent_id):
+		if agent_id.is_empty() or _active_activities.has(agent_id) or _suspended_activities.has(agent_id):
 			continue
 		if Time.get_ticks_msec() < int(_agent_available_after_msec.get(agent_id, 0)):
 			continue
@@ -199,11 +285,12 @@ func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> D
 		return {}
 	var preference := _agent_preference(agent_id, activity_id)
 	var psyche_modifier := AgentPsycheSystem.get_utility_modifier(agent_id, activity_id)
+	var schedule_modifier := AgentPsycheSystem.get_schedule_modifier(agent_id, activity_id)
 	var base_score := float(definition.get("base_score", 0.0))
 	var need_score := _need_deficit(agent_id, String(definition.get("need", ""))) * float(definition.get("need_weight", 0.0))
 	var condition_score := float(condition_result.get("strength", 0.0)) * float(definition.get("condition_weight", 0.0))
 	var distance_score := _distance_bonus(agent, String(definition.get("focus_target", ""))) * 0.06
-	var score := (base_score + need_score + condition_score + distance_score) * preference * psyche_modifier
+	var score := (base_score + need_score + condition_score + distance_score) * preference * psyche_modifier * schedule_modifier
 	return {
 		"agent_id": agent_id,
 		"activity_id": activity_id,
@@ -212,6 +299,8 @@ func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> D
 		"preference": preference,
 		"psyche_modifier": snappedf(psyche_modifier, 0.001),
 		"psyche_reason": AgentPsycheSystem.get_utility_reason(agent_id, activity_id),
+		"schedule_modifier": snappedf(schedule_modifier, 0.001),
+		"daily_plan": AgentPsycheSystem.get_daily_plan(agent_id),
 		"base_score": base_score,
 		"need_score": snappedf(need_score, 0.001),
 		"condition_score": snappedf(condition_score, 0.001),
@@ -301,6 +390,7 @@ func _start_activity(candidate: Dictionary) -> bool:
 		"definition": definition,
 		"resources": resources,
 		"started_at_msec": Time.get_ticks_msec(),
+		"candidate": candidate.duplicate(true),
 	}
 	_activity_last_started["%s:%s" % [agent_id, activity_id]] = Time.get_ticks_msec()
 	_last_global_start_msec = Time.get_ticks_msec()
@@ -308,9 +398,14 @@ func _start_activity(candidate: Dictionary) -> bool:
 		"focus_target": focus_target,
 		"score": candidate.get("score", 0.0),
 		"psyche_reason": candidate.get("psyche_reason", ""),
+		"resumed": bool(candidate.get("resumed", false)),
 	})
 
-	var start_memory := String(definition.get("start_memory", "开始了一项日常活动。"))
+	var start_memory := (
+		"回应玩家后，决定恢复%s。" % _activity_label({"activity_id": activity_id})
+		if bool(candidate.get("resumed", false))
+		else String(definition.get("start_memory", "开始了一项日常活动。"))
+	)
 	MemorySystem.add_episode_for_agent(agent_id, start_memory, 4.0)
 	MessageBus.performance_cue.emit("think", {
 		"agent_id": agent_id,
@@ -322,6 +417,13 @@ func _start_activity(candidate: Dictionary) -> bool:
 		_emit_visible_social_line(agent_id, start_line, String(definition.get("emotion", "neutral")))
 	MessageBus.emit_actions.emit(agent_id, actions)
 	return true
+
+
+func _find_agent(agent_id: String) -> Node:
+	for node in get_tree().get_nodes_in_group("agents"):
+		if String(node.get("agent_name")) == agent_id:
+			return node
+	return null
 
 
 func _release_activity(agent_id: String) -> void:

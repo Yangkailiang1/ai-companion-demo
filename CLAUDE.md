@@ -10,15 +10,15 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
-## 当前状态（v0.5+ Demo 基线；下一版本切片为 v0.6）
+## 当前状态（v0.7 具身生活感迭代）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
 | MessageBus | done (含 performance_cue 信号) | `scripts/core/message_bus.gd` |
 | WorldSimulator | done (含需求冷却) | `scripts/core/world_simulator.gd` |
 | SemanticWorld | done | `scripts/core/semantic_world.gd` |
-| MemorySystem | stub (Episode 存储 OK，Reflection 未实现) | `scripts/core/memory_system.gd` |
-| **AgentPsycheSystem** | **new v0.7（OCEAN、动机、心境、注意、意图、简化 ToM）** | `agent_psyche_system.gd`, `agent_psychology.json` |
+| MemorySystem | done baseline（每角色 Episode + 重要性阈值 Reflection） | `scripts/core/memory_system.gd` |
+| **AgentPsycheSystem** | **v0.7（OCEAN、动机、心境、注意、意图、简化 ToM、分时段日计划）** | `agent_psyche_system.gd`, `agent_psychology.json` |
 | CodifiedProfile | done (关键词匹配) | `scripts/core/codified_profile.gd` |
 | CognitiveCycle | done (LLM + 本地 fallback + gesture) | `scripts/core/cognitive_cycle.gd` |
 | GOAPPlanner | done (10 goal blueprints + validated dynamic plan) | `scripts/core/goap_planner.gd` |
@@ -38,8 +38,8 @@
 | **双角色与角色适配器** | **done baseline，持续扩展** | `character_runtime_adapters.json`, `CHARACTER_ADAPTERS.md` |
 | **异步 TTS** | **done baseline（句子分块近流式播放）** | `tts_service.gd`, `docs/TTS_INTEGRATION.md` |
 | **版本化存档 + 盆栽状态机** | **new v0.6 baseline** | `save_system.gd`, `plant_state.gd`, `docs/SAVE_AND_OBJECT_STATE.md` |
-| **Utility AI 自主生活** | **new v0.7 baseline（多活动、个性评分、资源锁、独立需求、微行为）** | `autonomous_behavior_system.gd`, `autonomous_life_config.json`, `docs/AUTONOMOUS_LIFE_RUNTIME.md` |
-| **LangGraph 共享认知图实验** | **new v0.7 prototype（双 thread 隔离已验收）** | `cognition_lab/`, `docs/LANGGRAPH_AGENT_RUNTIME.md` |
+| **Utility AI 自主生活** | **v0.7 baseline（多活动、个性/日程评分、资源锁、微行为、打断后恢复）** | `autonomous_behavior_system.gd`, `autonomous_life_config.json`, `docs/AUTONOMOUS_LIFE_RUNTIME.md` |
+| **LangGraph 共享认知图实验** | **v0.7 prototype（双 thread 隔离、反思节点、日计划加权已验收）** | `cognition_lab/`, `docs/LANGGRAPH_AGENT_RUNTIME.md` |
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
@@ -104,6 +104,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [x] 1280×720 主场景截图验收：企鹅模型、HUD、输入框可见
 - [x] OCEAN/动机调制、持续心境、注意、意图、活动厌倦与简化 Theory of Mind
 - [x] 一张共享 LangGraph 使用 `agent:main_agent` / `agent:jue_agent` 独立 checkpoint
+- [x] 每角色分时段日计划、玩家打断后条件式恢复、重要性阈值反思
 
 ## v0.2 新能力
 

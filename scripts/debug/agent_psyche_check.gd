@@ -34,6 +34,10 @@ func _run() -> void:
 		})
 	)
 
+	# Normal startup may restore a player's recent-activity history. Personality
+	# comparison must start from the same habituation state.
+	psyche._states["main_agent"]["recent_activities"] = []
+	psyche._states["jue_agent"]["recent_activities"] = []
 	var main_read_before: float = psyche.get_utility_modifier("main_agent", "read_book")
 	var jue_read_before: float = psyche.get_utility_modifier("jue_agent", "read_book")
 	_assert(jue_read_before > main_read_before, "Jue must have a stronger psychological reading preference")

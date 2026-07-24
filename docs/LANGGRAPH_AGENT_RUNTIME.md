@@ -80,8 +80,10 @@ Important channels:
 | `thread_id` | Checkpoint isolation for one character |
 | `profile` | Stable identity, OCEAN traits and motives |
 | `psyche` | Mood, attention, intention, beliefs and recent activity |
+| `daily_plan` | Current day/period priorities and completed activities |
 | `world` | Current semantic perception, never raw scene-tree authority |
 | `memory_context` | Retrieved context, not the complete unbounded history |
+| `reflection` | Bounded reflection candidate awaiting memory write |
 | `candidate_goals` | Proposals awaiting deterministic validation |
 | `selected_goal` | Arbitrated high-level goal |
 | `response` | Dialogue and performance intent returned to Godot |
@@ -97,14 +99,14 @@ Suggested persistent namespaces:
 
 ## Runtime graph
 
-The first external LangGraph implementation should compile one reusable graph:
+The local prototype now compiles one reusable graph:
 
 ```text
 START
   -> perceive
   -> retrieve_memory
   -> update_psyche
-  -> [reflection needed?] -> reflect
+  -> reflect_if_needed
   -> propose_goals
   -> validate_and_arbitrate
   -> compose_response
@@ -114,6 +116,11 @@ START
 Social inference can be a named subgraph with its own schema. It should update
 beliefs as uncertain observations rather than writing another character's private
 state as fact.
+
+`reflect_if_needed` currently supplies a deterministic baseline: a reflection
+trigger summarizes recent activity and mood, while normal turns pass through
+without inventing a reflection. Daily-plan priorities add a bounded bonus during
+goal proposal. Godot still validates conditions, reservations and execution.
 
 ## Integration phases
 
@@ -136,7 +143,7 @@ python3 cognition_lab/smoke_test.py
 Expected:
 
 ```text
-LANGGRAPH_AGENT_PASS main=water_plant jue=read_book threads=isolated
+LANGGRAPH_AGENT_PASS main=water_plant jue=read_book reflection=read_book threads=isolated
 ```
 
 Godot-side psyche, attention, prompt and save integration:

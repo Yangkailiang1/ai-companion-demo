@@ -29,8 +29,18 @@
         "private_thoughts": {"type": "array"}
       }
     },
+    "daily_plan": {
+      "type": "object",
+      "properties": {
+        "day": {"type": "integer"},
+        "period": {"type": "string"},
+        "priorities": {"type": "array", "items": {"type": "string"}},
+        "completed": {"type": "array", "items": {"type": "string"}}
+      }
+    },
     "world": {"type": "string"},
     "memory_context": {"type": "string"},
+    "reflection": {"type": "object"},
     "candidate_goals": {"type": "array"},
     "selected_goal": {"type": "object"},
     "response": {"type": "object"}

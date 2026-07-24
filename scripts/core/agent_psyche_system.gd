@@ -24,6 +24,7 @@ func _ready() -> void:
 	MessageBus.agent_activity_completed.connect(_on_activity_completed)
 	MessageBus.agent_activity_interrupted.connect(_on_activity_interrupted)
 	MessageBus.agent_spoke.connect(_on_agent_spoke)
+	MessageBus.agent_reflection_requested.connect(_on_reflection_requested)
 
 
 func _process(delta: float) -> void:
@@ -93,6 +94,20 @@ func get_utility_reason(agent_id: String, activity_id: String) -> String:
 	]
 
 
+func get_schedule_modifier(agent_id: String, activity_id: String) -> float:
+	_refresh_daily_plan(agent_id)
+	var profile := _profile(agent_id)
+	var rhythm: Dictionary = profile.get("daily_rhythm", {})
+	var period := _time_period_key()
+	var period_weights: Dictionary = rhythm.get(period, {})
+	return clampf(float(period_weights.get(activity_id, 1.0)), 0.4, 1.6)
+
+
+func get_daily_plan(agent_id: String) -> Dictionary:
+	_refresh_daily_plan(agent_id)
+	return _ensure_state(agent_id).get("daily_plan", {}).duplicate(true)
+
+
 func get_agent_state(agent_id: String) -> Dictionary:
 	return _ensure_state(agent_id).duplicate(true)
 
@@ -115,6 +130,7 @@ func build_cognitive_context(agent_id: String) -> String:
 		"- 当前注意：%s" % String(state.get("attention", "无明确对象")),
 		"- 当前意图：%s" % String(state.get("intention", "无")),
 		"- 最近活动：%s" % [state.get("recent_activities", [])],
+		"- 当前日计划：%s" % [get_daily_plan(agent_id)],
 	]
 	var beliefs: Dictionary = state.get("beliefs", {})
 	if not beliefs.is_empty():
@@ -143,8 +159,10 @@ func build_graph_state(agent_id: String, trigger: Dictionary = {}) -> Dictionary
 			"motives": profile.get("motives", {}).duplicate(true),
 		},
 		"psyche": get_agent_state(agent_id),
+		"daily_plan": get_daily_plan(agent_id),
 		"world": SemanticWorld.generate_semantic_snapshot(agent_id),
 		"memory_context": MemorySystem.format_for_llm_for_agent(agent_id, String(trigger.get("text", ""))),
+		"reflection": {},
 		"candidate_goals": [],
 		"selected_goal": {},
 		"response": {},
@@ -167,6 +185,7 @@ func import_save_state(data: Dictionary) -> void:
 		state["beliefs"] = incoming.get("beliefs", {}).duplicate(true)
 		state["recent_activities"] = incoming.get("recent_activities", []).duplicate()
 		state["private_thoughts"] = incoming.get("private_thoughts", []).duplicate(true)
+		state["daily_plan"] = incoming.get("daily_plan", {}).duplicate(true)
 
 
 func _on_player_attention_requested(agent_id: String, text: String) -> void:
@@ -221,6 +240,11 @@ func _on_activity_completed(agent_id: String, activity_id: String, _context: Dic
 	recent.append(activity_id)
 	while recent.size() > MAX_RECENT_ACTIVITIES:
 		recent.pop_front()
+	_refresh_daily_plan(agent_id)
+	var daily_plan: Dictionary = state["daily_plan"]
+	var completed: Array = daily_plan.get("completed", [])
+	completed.append(activity_id)
+	daily_plan["completed"] = completed
 	match activity_id:
 		"plant_care": _shift_mood(agent_id, 0.14, -0.04)
 		"read_book": _shift_mood(agent_id, 0.1, -0.08)
@@ -243,6 +267,37 @@ func _on_agent_spoke(agent_id: String, _text: String, emotion: String) -> void:
 		"angry": _shift_mood(agent_id, -0.12, 0.15)
 		_:
 			_shift_mood(agent_id, 0.01, 0.01)
+
+
+func _on_reflection_requested(agent_id: String, recent_episodes: Array) -> void:
+	var state := _ensure_state(agent_id)
+	var activity_counts := {}
+	var player_mentions := 0
+	for episode in recent_episodes:
+		var content := String(episode.get("content", ""))
+		if "玩家" in content:
+			player_mentions += 1
+		for activity_id in ["plant_care", "read_book", "rest_on_sofa", "wander_room"]:
+			if _activity_label(activity_id) in content or activity_id in content:
+				activity_counts[activity_id] = int(activity_counts.get(activity_id, 0)) + 1
+	var dominant_activity := ""
+	for activity_id in activity_counts:
+		if int(activity_counts[activity_id]) > int(activity_counts.get(dominant_activity, 0)):
+			dominant_activity = String(activity_id)
+	var mood: Dictionary = state["mood"]
+	var parts: Array[String] = []
+	if not dominant_activity.is_empty():
+		parts.append("最近我经常选择%s，这说明它符合我当前的生活节奏" % _activity_label(dominant_activity))
+	if player_mentions > 0:
+		parts.append("玩家最近多次参与了我的生活，我会更优先留意对方")
+	if not state.get("beliefs", {}).is_empty():
+		parts.append("我也在观察同伴的意图，但这些判断仍可能出错")
+	if parts.is_empty():
+		parts.append("最近的经历还没有形成稳定模式，我可以继续观察")
+	parts.append("我目前整体感到%s" % _mood_label(mood))
+	var reflection := "；".join(parts) + "。"
+	MemorySystem.add_reflection_for_agent(agent_id, reflection)
+	_add_private_thought(agent_id, "我整理了近期经历，形成了一条新的长期反思。")
 
 
 func _shift_mood(agent_id: String, valence_delta: float, arousal_delta: float) -> void:
@@ -272,8 +327,43 @@ func _ensure_state(agent_id: String) -> Dictionary:
 			"beliefs": {},
 			"recent_activities": [],
 			"private_thoughts": [],
+			"daily_plan": {},
 		}
 	return _states[normalized]
+
+
+func _refresh_daily_plan(agent_id: String) -> void:
+	var state := _ensure_state(agent_id)
+	var current_day := WorldSimulator.day_number
+	var current_period := _time_period_key()
+	var existing: Dictionary = state.get("daily_plan", {})
+	if int(existing.get("day", -1)) == current_day and String(existing.get("period", "")) == current_period:
+		return
+	var profile := _profile(agent_id)
+	var weights: Dictionary = profile.get("daily_rhythm", {}).get(current_period, {}).duplicate(true)
+	var ranked := []
+	for activity_id in weights:
+		ranked.append({"activity_id": String(activity_id), "weight": float(weights[activity_id])})
+	ranked.sort_custom(func(a: Dictionary, b: Dictionary): return float(a["weight"]) > float(b["weight"]))
+	var priorities: Array[String] = []
+	for item in ranked.slice(0, mini(3, ranked.size())):
+		priorities.append(String(item["activity_id"]))
+	state["daily_plan"] = {
+		"day": current_day,
+		"period": current_period,
+		"priorities": priorities,
+		"completed": existing.get("completed", []) if int(existing.get("day", -1)) == current_day else [],
+	}
+
+
+func _time_period_key() -> String:
+	match WorldSimulator.time_of_day:
+		AffordanceTypes.TimeOfDay.MORNING: return "morning"
+		AffordanceTypes.TimeOfDay.NOON: return "noon"
+		AffordanceTypes.TimeOfDay.AFTERNOON: return "afternoon"
+		AffordanceTypes.TimeOfDay.EVENING: return "evening"
+		AffordanceTypes.TimeOfDay.NIGHT: return "night"
+	return "morning"
 
 
 func _profile(agent_id: String) -> Dictionary:
