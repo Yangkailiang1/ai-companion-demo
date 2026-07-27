@@ -72,10 +72,16 @@ func _build_character_context() -> String:
 	for agent_id in CharacterAdapterRegistry.get_registered_agent_ids():
 		var adapter := CharacterAdapterRegistry.get_character_adapter(agent_id)
 		var clips: Dictionary = adapter.get("motion_adapter", {}).get("clip_map", {})
+		var display_name := String(adapter.get(
+			"display_name", CodifiedProfile.get_agent_display_name(agent_id)
+		))
+		var identity := String(adapter.get(
+			"identity", CodifiedProfile.get_identity_for_agent(agent_id)
+		))
 		lines.append("- %s (%s): %s；动作=%s" % [
 			agent_id,
-			CodifiedProfile.get_agent_display_name(agent_id),
-			CodifiedProfile.get_identity_for_agent(agent_id),
+			display_name,
+			identity,
 			", ".join(clips.keys()),
 		])
 	return "\n".join(lines)

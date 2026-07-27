@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "agent_id": "future_chibi",
+  "display_name": "未来Q版角色",
+  "model_scene": "res://local_characters/future_chibi/model.glb",
+  "adapter": {
+    "display_name": "未来Q版角色",
+    "identity": "你是未来Q版角色。性格温柔好奇，喜欢主动参与朋友们的小剧场。",
+    "model_family": "humanoid_chibi_glb",
+    "motion_adapter": {
+      "type": "animation_player",
+      "clip_map": {
+        "idle": "idle",
+        "walk": "walk",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "happy": "happy",
+        "sit": "sit",
+        "talk": "talk"
+      }
+    },
+    "skeleton_adapter": {
+      "enabled": true,
+      "bone_aliases": {
+        "hips": ["Hips"],
+        "spine": ["Spine"],
+        "chest": ["Chest"],
+        "neck": ["Neck"],
+        "head": ["Head"],
+        "left_upper_arm": ["LeftUpperArm"],
+        "left_lower_arm": ["LeftLowerArm"],
+        "left_hand": ["LeftHand"],
+        "right_upper_arm": ["RightUpperArm"],
+        "right_lower_arm": ["RightLowerArm"],
+        "right_hand": ["RightHand"]
+      }
+    },
+    "expression_adapter": {
+      "type": "blend_shapes",
+      "channel_map": {
+        "joy": ["Joy", "smile"],
+        "angry": ["Angry", "brow_angry"],
+        "blink": ["Blink", "blink"],
+        "a": ["A", "mouth_a"],
+        "i": ["I", "mouth_i"],
+        "u": ["U", "mouth_u"],
+        "e": ["E", "mouth_e"],
+        "o": ["O", "mouth_o"]
+      }
+    }
+  }
+}

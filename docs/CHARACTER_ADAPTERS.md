@@ -44,6 +44,10 @@ The adapter has two separate mapping layers:
 ### 诀 (`jue_agent`)
 
 - Motion: procedural fallback on `JueModelRoot`.
+- Material: the LOD0 body, face, hair, iris and the first two clothing groups now
+  use the FBX package's imported D/N/E textures. The runtime no longer replaces
+  the whole outfit with guessed flat gray colors. Unretargeted VFX cloth groups
+  remain hidden until their auxiliary bones and transparency are reviewed.
 - Skeleton pose: `Bip001_*` bones are mapped to shared semantic bones. The runtime
   overlay provides lightweight head/chest idle breathing and cue-driven body accents.
   Large T-pose-like VFX/sleeve display pieces are hidden in the demo until their cloth
@@ -72,6 +76,40 @@ model upright and lets the idle pose lower both arms from the source T-pose.
 These overlays are still authored procedural poses, not full retargeted motion
 clips. The next quality step remains baking reviewed HumanML3D or motion-library
 clips onto the imported Jue skeleton.
+
+## Runtime Q-character binding
+
+Converted Q characters can now join the shared motion/expression libraries and
+the LLM story cast without adding a model-specific branch to StoryDirector:
+
+1. Convert the source character to a Godot-readable GLB with its skeleton,
+   material textures and blend shapes preserved.
+2. Create a version-1 character manifest based on
+   `data/examples/chibi_character_manifest.example.json`.
+3. Attach `character_runtime_binding.gd` to the character scene and point
+   `manifest_path` at that manifest.
+4. Keep `CharacterAnimationDriver` and `CharacterExpressionDriver` under the
+   Agent node. They consume the registered `clip_map` and `channel_map`.
+5. Place the CharacterBody3D in the `agents` group through `agent_base.gd`.
+
+At runtime the manifest adds the new `agent_id` to
+`CharacterAdapterRegistry`. The ECNU planning prompt then includes its display
+name, identity and available shared actions. StoryDirector already resolves any
+registered cast member from the `agents` group, so the same generated Story
+beats can drive the new character.
+
+The semantic contract is shared; the physical assets remain model-specific:
+
+```text
+ECNU / motion router emits: wave + happy
+Character adapter maps:     wave -> Wave_01, joy -> Fcl_MTH_Smile
+Animation/expression driver: plays this Q model's clip and morph
+```
+
+PMX itself is not a runtime format. A PMX archive cannot use this binding until
+it has been converted and inspected. Animation clips also cannot be copied
+blindly between different rest poses; each skeleton family needs a reviewed
+retarget/bake, after which all characters continue to use the same action IDs.
 
 ## Next real motion step
 
@@ -107,3 +145,10 @@ It verifies:
 - expression semantic channels map to at least one real blend shape;
 - `data/humanml3d_jue_bone_map.json` contains exactly 22 source joints and all
   targets exist in Jue's imported skeleton.
+
+Runtime Q-character manifest registration is covered separately:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/chibi_runtime_binding_check.gd
+```

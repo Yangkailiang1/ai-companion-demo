@@ -1,3 +1,9 @@
+# Roadmap: C3.1, C6.2
+# Responsibility: 把语义表情权重映射到当前角色的 blend shapes 并平滑过渡；
+# 不推断情绪、不生成表情资产，也不控制身体动作。
+# Collaborators: MessageBus, CharacterAdapterRegistry, ExpressionIntentRouter
+# Tests: scripts/debug/expression_router_check.gd, scripts/debug/chibi_runtime_binding_check.gd
+
 class_name CharacterExpressionDriver
 extends Node
 
@@ -15,17 +21,30 @@ var _cue_epoch := 0
 signal expression_changed(old_expression: String, new_expression: String)
 
 
+## [C3.1][C6.2] 发现表情通道并监听运行时角色 manifest 的迟到注册。
 func _ready() -> void:
 	if agent_id.is_empty():
 		agent_id = _infer_agent_id()
 	_catalog = _load_catalog()
 	_channel_aliases = _load_channel_aliases()
+	if has_node("/root/CharacterAdapterRegistry"):
+		var registry := get_node("/root/CharacterAdapterRegistry")
+		if not registry.runtime_adapter_registered.is_connected(_on_runtime_adapter_registered):
+			registry.runtime_adapter_registered.connect(_on_runtime_adapter_registered)
 	if MessageBus.has_signal("expression_cue"):
 		MessageBus.expression_cue.connect(_on_expression_cue)
 	else:
 		push_warning("CharacterExpressionDriver: expression_cue signal missing")
 	if MessageBus.has_signal("expression_blend_cue"):
 		MessageBus.expression_blend_cue.connect(_on_expression_blend_cue)
+	call_deferred("_discover_morph_targets")
+
+
+## [C6.2][C3.1] 当前角色注册后刷新 morph 别名和绑定，消除节点加载顺序依赖。
+func _on_runtime_adapter_registered(registered_agent_id: String) -> void:
+	if registered_agent_id != agent_id:
+		return
+	_channel_aliases = _load_channel_aliases()
 	call_deferred("_discover_morph_targets")
 
 

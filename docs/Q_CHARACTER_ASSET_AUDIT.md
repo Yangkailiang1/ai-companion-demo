@@ -14,6 +14,11 @@
 仓库发布，也不能由转换格式来绕过原许可证。正式开源版本需要换成作者自有或
 具有明确 CC0、CC BY、MIT 等允许再分发条款的角色资产。
 
+项目侧已经完成 version-1 运行时角色 manifest 和动态适配器注册：转换后的
+GLB 可以分别声明动作 clip、语义骨骼和表情 morph 映射，并自动进入 ECNU
+剧情规划的 cast 白名单。当前缺口已经从“Runtime 不支持多模型”缩小为
+“PMX 资产需要转换、逐角色检查和确认授权”。
+
 ## 当前盘点
 
 | 资产 | 源格式 | 当前处理 |
@@ -47,9 +52,15 @@
 5. 编写该角色的骨骼/动作/表情适配配置并跑角色接入验收。
 6. 若授权不允许发布，只在 `.gitignore` 覆盖的本地开发目录引用。
 
-可参考 Blender MMD 工具项目：
-[powroupi/blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools)。
-插件对 Blender 5 的兼容性需要单独验证，不能假定旧版插件可直接使用。
+适配配置以 `data/examples/chibi_character_manifest.example.json` 为模板。
+运行时由 `character_runtime_binding.gd` 注册，不需要为每个 Q 版角色复制
+StoryDirector、LLM、MemorySystem 或动作/表情路由器。
+
+可使用仍在维护的 Blender MMD 工具项目：
+[MMD-Blender/blender_mmd_tools](https://github.com/MMD-Blender/blender_mmd_tools)。
+其 v4.x 官方兼容表覆盖 Blender 4.2–5.1；本机 Blender 5.0.1 应使用最新
+v4.x，而不是旧 `powroupi` 分支。实际批量转换前仍需先用一个角色验证材质、
+骨骼、morph 和 GLB 导出结果。
 
 ## 需要用户补充的正式素材
 

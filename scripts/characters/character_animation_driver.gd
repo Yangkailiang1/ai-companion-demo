@@ -1,3 +1,9 @@
+# Roadmap: C2.1, C6.2
+# Responsibility: 把指定角色的语义动作提示映射为 AnimationPlayer 或程序化表现；
+# 不选择动作、不做骨骼重定向，也不改变世界状态。
+# Collaborators: MessageBus, CharacterAdapterRegistry, CharacterPoseOverlay
+# Tests: scripts/debug/multi_agent_check.gd, scripts/debug/chibi_runtime_binding_check.gd
+#
 # character_animation_driver.gd — 独立角色表现适配器
 # 负责监听 performance cue 信号，驱动 AnimationPlayer 播放对应动画。
 # CognitiveCycle/ActionExecutor 不直接操作 AnimationPlayer，
@@ -30,11 +36,15 @@ signal gesture_changed(old_gesture: String, new_gesture: String)
 
 # --- 生命周期 ---
 
-func _ready():
+## [C2.1][C6.2] 解析角色 ID 和动作后端，并监听运行时角色包的迟到注册。
+func _ready() -> void:
 	if agent_id.is_empty():
 		agent_id = _infer_agent_id()
 	if has_node("/root/CharacterAdapterRegistry"):
-		_motion_adapter_type = get_node("/root/CharacterAdapterRegistry").get_motion_adapter_type(agent_id)
+		var registry := get_node("/root/CharacterAdapterRegistry")
+		_motion_adapter_type = registry.get_motion_adapter_type(agent_id)
+		if not registry.runtime_adapter_registered.is_connected(_on_runtime_adapter_registered):
+			registry.runtime_adapter_registered.connect(_on_runtime_adapter_registered)
 	if not procedural_root:
 		procedural_root = get_parent() as Node3D
 	if procedural_root:
@@ -55,6 +65,16 @@ func _ready():
 		animation_player.animation_finished.connect(_on_animation_finished)
 
 	# 初始播放 idle
+	_play_animation_or_procedural(default_animation)
+
+
+## [C6.2][C2.1] 当前角色 manifest 注册后刷新动作后端，消除子节点加载顺序依赖。
+func _on_runtime_adapter_registered(registered_agent_id: String) -> void:
+	if registered_agent_id != agent_id:
+		return
+	_motion_adapter_type = CharacterAdapterRegistry.get_motion_adapter_type(agent_id)
+	if animation_player == null:
+		animation_player = _find_animation_player()
 	_play_animation_or_procedural(default_animation)
 
 
