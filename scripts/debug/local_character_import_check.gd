@@ -5,7 +5,7 @@
 
 extends SceneTree
 
-const MODEL_PATH := "res://assets/local_characters/castorice/castorice.glb"
+const DEFAULT_MODEL_PATH := "res://assets/local_characters/castorice/castorice.glb"
 
 
 func _init() -> void:
@@ -14,11 +14,13 @@ func _init() -> void:
 
 ## [C6.1][C3.1][O4] 验证本地 GLB 的网格、骨骼和表情；缺失时安全跳过。
 func _run() -> void:
-	if not ResourceLoader.exists(MODEL_PATH):
-		print("LOCAL_CHARACTER_IMPORT_SKIP path=%s" % MODEL_PATH)
+	var args := OS.get_cmdline_user_args()
+	var model_path := String(args[0]) if not args.is_empty() else DEFAULT_MODEL_PATH
+	if not ResourceLoader.exists(model_path):
+		print("LOCAL_CHARACTER_IMPORT_SKIP path=%s" % model_path)
 		quit(0)
 		return
-	var packed := load(MODEL_PATH) as PackedScene
+	var packed := load(model_path) as PackedScene
 	if packed == null:
 		_fail("local GLB is not a PackedScene")
 		return

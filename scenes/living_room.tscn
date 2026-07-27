@@ -587,11 +587,14 @@ script = ExtResource("4_bubble")
 billboard = 1
 
 [node name="BubbleLabel" type="Label3D" parent="Agent/DialogueBubble"]
-pixel_size = 0.006
-font_size = 38
-outline_size = 7
+pixel_size = 0.003
+font_size = 30
+outline_size = 5
+width = 320.0
+autowrap_mode = 2
 modulate = Color(1, 1, 1, 1)
 outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+billboard = 1
 no_depth_test = true
 
 [node name="JueAgent" type="CharacterBody3D" parent="."]
@@ -649,13 +652,16 @@ agent_id = "jue_agent"
 billboard = 1
 
 [node name="BubbleLabel" type="Label3D" parent="JueAgent/DialogueBubble"]
-pixel_size = 0.006
-font_size = 38
-outline_size = 7
+pixel_size = 0.003
+font_size = 30
+outline_size = 5
+width = 320.0
+autowrap_mode = 2
 modulate = Color(1, 1, 1, 1)
 outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+billboard = 1
 no_depth_test = true
 
 [node name="LocalCharacterSpawner" type="Node3D" parent="."]
 script = ExtResource("33_local_character_spawner")
-manifest_paths = Array[String](["res://assets/local_characters/castorice/character_manifest.json"])
+manifest_paths = Array[String](["res://assets/local_characters/castorice/character_manifest.json", "res://assets/local_characters/cartethyia/character_manifest.json", "res://assets/local_characters/xiangliyao/character_manifest.json"])

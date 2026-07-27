@@ -62,9 +62,12 @@ agent_id = "local_character"
 billboard = 1
 
 [node name="BubbleLabel" type="Label3D" parent="DialogueBubble"]
-pixel_size = 0.006
-font_size = 38
-outline_size = 7
+pixel_size = 0.003
+font_size = 30
+outline_size = 5
+width = 320.0
+autowrap_mode = 2
 modulate = Color(1, 1, 1, 1)
 outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+billboard = 1
 no_depth_test = true

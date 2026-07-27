@@ -111,7 +111,7 @@ it has been converted and inspected. Animation clips also cannot be copied
 blindly between different rest poses; each skeleton family needs a reviewed
 retarget/bake, after which all characters continue to use the same action IDs.
 
-### Local-only MMD packages (`v0.8.4`)
+### Local-only MMD packages (`v0.8.5`)
 
 Models whose licenses prohibit redistribution must never appear as a direct
 `ext_resource` in a published scene. The living room now contains
@@ -120,15 +120,23 @@ Models whose licenses prohibit redistribution must never appear as a direct
 instantiated from `local_runtime_character.tscn`, registered with the same
 adapter registry, and receives an independent Agent ID and memory partition.
 
-The first local validation package is Castorice (`castorice_agent`):
+The local validation catalog currently contains:
+
+- Castorice / 遐蝶 (`castorice_agent`): 272 bones, 37 morphs;
+- Cartethyia / 卡提希娅 (`cartethyia_agent`): 652 bones, 69 morphs;
+- Xiangli Yao / 相里要 (`xiangliyao_agent`): 495 bones, 70 morphs.
+
+All three packages use the same runtime contract:
 
 - PMX converted by `tools/blender/export_local_mmd_character.py`;
 - MMD node groups rebuilt as portable Principled texture materials;
-- 272-bone skeleton and 37 morphs preserved;
+- original skeletons and morphs preserved;
 - Japanese MMD bones mapped to semantic body bones;
 - `笑い/怒り/まばたき/あいうえお` mapped to shared expression channels;
 - dynamic `@显示名` routing, StoryDirector cast registration and independent
-  story memory verified.
+  story memory verified for every actor;
+- a generated multi-role story can target all available local actors without
+  hard-coding their model skeletons in StoryDirector.
 
 The converted GLB and its manifest are ignored by Git. Open-source checkouts
 therefore run with the built-in characters only, while an authorized local
@@ -183,4 +191,6 @@ Optional local PMX conversion and runtime coverage:
   --script scripts/debug/local_character_import_check.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
   --script scripts/debug/local_character_runtime_check.gd
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/local_character_catalog_check.gd
 ```

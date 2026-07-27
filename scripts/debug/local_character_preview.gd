@@ -5,8 +5,8 @@
 
 extends SceneTree
 
-const MODEL_PATH := "res://assets/local_characters/castorice/castorice.glb"
-const OUTPUT_PATH := "/private/tmp/castorice_preview.png"
+const DEFAULT_MODEL_PATH := "res://assets/local_characters/castorice/castorice.glb"
+const DEFAULT_OUTPUT_PATH := "/private/tmp/castorice_preview.png"
 
 
 func _init() -> void:
@@ -16,13 +16,16 @@ func _init() -> void:
 ## [C6.1][C8.1] 构建临时灯光与相机，输出本地角色近景。
 func _run() -> void:
 	root.size = Vector2i(900, 900)
-	if not ResourceLoader.exists(MODEL_PATH):
-		print("LOCAL_CHARACTER_PREVIEW_SKIP path=%s" % MODEL_PATH)
+	var args := OS.get_cmdline_user_args()
+	var model_path := String(args[0]) if args.size() > 0 else DEFAULT_MODEL_PATH
+	var output_path := String(args[1]) if args.size() > 1 else DEFAULT_OUTPUT_PATH
+	if not ResourceLoader.exists(model_path):
+		print("LOCAL_CHARACTER_PREVIEW_SKIP path=%s" % model_path)
 		quit(0)
 		return
 	var stage := Node3D.new()
 	root.add_child(stage)
-	var model := (load(MODEL_PATH) as PackedScene).instantiate() as Node3D
+	var model := (load(model_path) as PackedScene).instantiate() as Node3D
 	stage.add_child(model)
 	await process_frame
 	var bounds := _find_bounds(model)
@@ -31,12 +34,12 @@ func _run() -> void:
 	await create_timer(0.45).timeout
 	await RenderingServer.frame_post_draw
 	var image := root.get_texture().get_image()
-	var error := image.save_png(OUTPUT_PATH)
+	var error := image.save_png(output_path)
 	if error != OK:
 		push_error("LOCAL_CHARACTER_PREVIEW_FAIL error=%d" % error)
 		quit(1)
 		return
-	print("LOCAL_CHARACTER_PREVIEW_PASS path=%s bounds=%s" % [OUTPUT_PATH, bounds])
+	print("LOCAL_CHARACTER_PREVIEW_PASS path=%s bounds=%s" % [output_path, bounds])
 	quit(0)
 
 
