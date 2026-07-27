@@ -1,6 +1,6 @@
 # ASSET_PROVENANCE.md — 资产来源记录
 
-> v0.6 | 最后更新: 2026-07-22
+> v0.8.4 | 最后更新: 2026-07-27
 
 ## 免责声明
 
@@ -9,6 +9,18 @@
 Poly Haven 下载的家具模型与 PBR 贴图按 Poly Haven 公示许可证记录为 **CC0**，可用于当前 demo 原型与后续重混/改造；仍建议发布前保留来源清单与下载 manifest。
 
 ## 资产清单
+
+### 0. Chibi Castorice（本机非商业验证，不入库）
+
+| 属性 | 值 |
+|------|-----|
+| **源文件** | `model/Q版/_不可进入开源Godot项目/02_仅限本地非商业且禁止再分发/ChibiCastorice_*.zip` |
+| **格式** | `.pmx` + PNG 贴图 |
+| **骨骼 / Morph** | 272 bones / 37 morphs |
+| **本机导出** | `assets/local_characters/castorice/castorice.glb`（Git ignored） |
+| **转换脚本** | `tools/blender/export_local_mmd_character.py` |
+| **许可证边界** | 禁止商业使用和二次配布；仅作用户本机非商业技术验证 |
+| **项目状态** | 可选加载；公开检出缺失该文件时安全跳过 |
 
 ### 1. 终末地小企鹅（Primary Character）
 

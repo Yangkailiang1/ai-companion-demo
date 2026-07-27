@@ -173,4 +173,13 @@ func get_triggered_log(triggered: Array) -> String:
 func _profile_for_agent(target_agent_id: String) -> Dictionary:
 	if _agent_profiles.has(target_agent_id):
 		return _agent_profiles[target_agent_id]
+	if has_node("/root/CharacterAdapterRegistry"):
+		var adapter: Dictionary = CharacterAdapterRegistry.get_character_adapter(target_agent_id)
+		if not adapter.is_empty():
+			return {
+				"name": adapter.get("display_name", target_agent_id),
+				"personality": adapter.get("identity", ""),
+				"seed_memories": [],
+				"rules": [],
+			}
 	return profile_data

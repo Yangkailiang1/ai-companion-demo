@@ -52,7 +52,7 @@ func _ready():
 	MessageBus.experience_mode_changed.connect(_on_experience_mode_changed)
 	_apply_visual_style()
 	_create_focus_caret_indicator()
-	line_edit.placeholder_text = "自由模式：输入对话 / @诀 / !演出 剧本"
+	line_edit.placeholder_text = "自由模式：输入对话 / @角色名 / !演出 剧本"
 	line_edit.focus_mode = Control.FOCUS_CLICK
 	line_edit.mouse_default_cursor_shape = Control.CURSOR_IBEAM
 	line_edit.caret_blink = true
@@ -74,7 +74,7 @@ func _on_experience_mode_changed(mode_name: String) -> void:
 	line_edit.placeholder_text = (
 		"演出模式：输入自然语言剧本 / !自由 返回"
 		if mode_name == "performance"
-		else "自由模式：输入对话 / @诀 / !演出 剧本"
+		else "自由模式：输入对话 / @角色名 / !演出 剧本"
 	)
 
 
@@ -122,7 +122,11 @@ func _on_input_area_gui_input(event: InputEvent) -> void:
 func _on_chat_entry(speaker: String, text: String, is_player: bool) -> void:
 	if text.is_empty() or not chat_log:
 		return
-	var name = display_names.get(speaker, speaker) if not is_player else PLAYER_NAME
+	var name = (
+		display_names.get(speaker, CodifiedProfile.get_agent_display_name(speaker))
+		if not is_player
+		else PLAYER_NAME
+	)
 	var color = "#7a4b2b" if is_player else "#a65b42"
 	_chat_entries.append("[color=%s][%s][/color] %s" % [color, name, text])
 	while _chat_entries.size() > MAX_CHAT_LINES:

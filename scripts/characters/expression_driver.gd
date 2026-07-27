@@ -48,12 +48,19 @@ func _on_runtime_adapter_registered(registered_agent_id: String) -> void:
 	call_deferred("_discover_morph_targets")
 
 
+## [C3.1][C6.2] 发现当前模型 morph；声明 bone_fallback 的角色允许没有 blend shapes。
 func _discover_morph_targets() -> void:
 	_bindings.clear()
 	_all_channels.clear()
 	_collect_meshes(get_parent())
 	if _all_channels.is_empty():
-		push_warning("CharacterExpressionDriver: no blend shapes found under character")
+		var adapter_type := ""
+		if has_node("/root/CharacterAdapterRegistry"):
+			adapter_type = String(
+				CharacterAdapterRegistry.get_expression_adapter(agent_id).get("type", "")
+			)
+		if adapter_type != "bone_fallback":
+			push_warning("CharacterExpressionDriver: no blend shapes found under character")
 
 
 func _collect_meshes(node: Node) -> void:

@@ -111,6 +111,29 @@ it has been converted and inspected. Animation clips also cannot be copied
 blindly between different rest poses; each skeleton family needs a reviewed
 retarget/bake, after which all characters continue to use the same action IDs.
 
+### Local-only MMD packages (`v0.8.4`)
+
+Models whose licenses prohibit redistribution must never appear as a direct
+`ext_resource` in a published scene. The living room now contains
+`LocalCharacterSpawner`, which checks ignored manifests under
+`assets/local_characters/` and skips them when absent. Each available package is
+instantiated from `local_runtime_character.tscn`, registered with the same
+adapter registry, and receives an independent Agent ID and memory partition.
+
+The first local validation package is Castorice (`castorice_agent`):
+
+- PMX converted by `tools/blender/export_local_mmd_character.py`;
+- MMD node groups rebuilt as portable Principled texture materials;
+- 272-bone skeleton and 37 morphs preserved;
+- Japanese MMD bones mapped to semantic body bones;
+- `笑い/怒り/まばたき/あいうえお` mapped to shared expression channels;
+- dynamic `@显示名` routing, StoryDirector cast registration and independent
+  story memory verified.
+
+The converted GLB and its manifest are ignored by Git. Open-source checkouts
+therefore run with the built-in characters only, while an authorized local
+installation can add multiple manifests without editing StoryDirector.
+
 ## Next real motion step
 
 To truly use the offline motion library across models:
@@ -151,4 +174,13 @@ Runtime Q-character manifest registration is covered separately:
 ```bash
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
   --script scripts/debug/chibi_runtime_binding_check.gd
+```
+
+Optional local PMX conversion and runtime coverage:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/local_character_import_check.gd
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/local_character_runtime_check.gd
 ```

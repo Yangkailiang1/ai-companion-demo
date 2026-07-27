@@ -193,16 +193,43 @@ func _parse_story_command(text: String) -> String:
 
 func _resolve_target_agent(text: String) -> String:
 	var normalized := text.strip_edges()
-	if normalized.begins_with("@诀") or normalized.begins_with("诀，") or normalized.begins_with("诀,") or normalized.begins_with("诀 "):
-		return "jue_agent"
-	if normalized.begins_with("@咕咕嘎嘎") or normalized.begins_with("咕咕嘎嘎"):
-		return "main_agent"
+	for candidate in _registered_agent_mentions():
+		for prefix in _mention_prefixes(String(candidate.display_name)):
+			if normalized.begins_with(prefix):
+				return String(candidate.agent_id)
 	return "main_agent"
 
 
 func _strip_agent_mention(text: String) -> String:
 	var stripped := text.strip_edges()
-	for prefix in ["@诀", "诀，", "诀,", "诀 ", "@咕咕嘎嘎", "咕咕嘎嘎，", "咕咕嘎嘎,", "咕咕嘎嘎 "]:
-		if stripped.begins_with(prefix):
-			return stripped.substr(prefix.length()).strip_edges()
+	for candidate in _registered_agent_mentions():
+		for prefix in _mention_prefixes(String(candidate.display_name)):
+			if stripped.begins_with(prefix):
+				return stripped.substr(prefix.length()).strip_edges()
 	return stripped
+
+
+## [C6.2][D3] 返回内置与运行时角色的可点名身份，按显示名长度优先匹配。
+func _registered_agent_mentions() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not has_node("/root/CharacterAdapterRegistry"):
+		return result
+	for agent_id in CharacterAdapterRegistry.get_registered_agent_ids():
+		var adapter: Dictionary = CharacterAdapterRegistry.get_character_adapter(agent_id)
+		result.append({
+			"agent_id": agent_id,
+			"display_name": String(adapter.get("display_name", agent_id)),
+		})
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return String(a.display_name).length() > String(b.display_name).length()
+	)
+	return result
+
+
+func _mention_prefixes(display_name: String) -> Array[String]:
+	return [
+		"@" + display_name,
+		display_name + "，",
+		display_name + ",",
+		display_name + " ",
+	]

@@ -110,8 +110,13 @@ func _validate_adapter(agent_id: String, adapter: Dictionary) -> String:
 			return "%s 缺少动作映射: %s" % [agent_id, action_id]
 	var expression: Dictionary = adapter.get("expression_adapter", {})
 	var channels: Dictionary = expression.get("channel_map", {})
-	if channels.is_empty():
+	var expression_type := String(expression.get("type", "blend_shapes"))
+	if channels.is_empty() and expression_type != "bone_fallback":
 		return "%s 缺少表情 channel_map" % agent_id
+	if expression_type == "bone_fallback":
+		var skeleton: Dictionary = adapter.get("skeleton_adapter", {})
+		if skeleton.get("expression_bone_map", {}).is_empty():
+			return "%s 的 bone_fallback 缺少 expression_bone_map" % agent_id
 	return ""
 
 

@@ -2,7 +2,17 @@
   "schema_version": 1,
   "agent_id": "future_chibi",
   "display_name": "未来Q版角色",
-  "model_scene": "res://local_characters/future_chibi/model.glb",
+  "node_name": "FutureChibiAgent",
+  "model_scene": "res://assets/local_characters/future_chibi/model.glb",
+  "spawn": {
+    "position": [0.0, 0.0, -1.5],
+    "rotation_degrees": [0.0, 0.0, 0.0],
+    "model_scale": 1.0,
+    "collision_height": 1.3,
+    "collision_radius": 0.32,
+    "label_height": 1.55,
+    "bubble_height": 1.75
+  },
   "adapter": {
     "display_name": "未来Q版角色",
     "identity": "你是未来Q版角色。性格温柔好奇，喜欢主动参与朋友们的小剧场。",
@@ -17,7 +27,8 @@
         "think": "think",
         "happy": "happy",
         "sit": "sit",
-        "talk": "talk"
+        "talk": "talk",
+        "offline_smoke_walk": "walk"
       }
     },
     "skeleton_adapter": {

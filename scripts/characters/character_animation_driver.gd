@@ -64,8 +64,9 @@ func _ready() -> void:
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
 
-	# 初始播放 idle
-	_play_animation_or_procedural(default_animation)
+	# Imported AnimationPlayer siblings can finish their own _ready after this
+	# driver. Defer once so their initialization cannot clear the default clip.
+	call_deferred("_play_default_after_tree_ready")
 
 
 ## [C6.2][C2.1] 当前角色 manifest 注册后刷新动作后端，消除子节点加载顺序依赖。
@@ -75,6 +76,16 @@ func _on_runtime_adapter_registered(registered_agent_id: String) -> void:
 	_motion_adapter_type = CharacterAdapterRegistry.get_motion_adapter_type(agent_id)
 	if animation_player == null:
 		animation_player = _find_animation_player()
+	call_deferred("_play_default_after_tree_ready")
+
+
+## [C2.1][C6.2] 在整棵角色子树 ready 后启动映射后的默认动作。
+func _play_default_after_tree_ready() -> void:
+	if not is_inside_tree():
+		return
+	await get_tree().process_frame
+	if not is_inside_tree():
+		return
 	_play_animation_or_procedural(default_animation)
 
 
@@ -130,6 +141,7 @@ func _on_performance_cue(gesture_name: String, context: Dictionary) -> void:
 
 # --- 内部 ---
 
+## [C2.1] 播放真实剪辑；从空状态启动时禁用无来源的交叉淡化。
 func _play_animation(name: String, blend_time: float = 0.2) -> void:
 	if not animation_player or not animation_player.has_animation(name):
 		return
@@ -138,7 +150,9 @@ func _play_animation(name: String, blend_time: float = 0.2) -> void:
 	current_gesture = PerformanceCueTypes.parse_gesture(name)
 
 	if animation_player.current_animation != name:
-		animation_player.play(name, blend_time)
+		animation_player.active = true
+		var effective_blend := 0.0 if animation_player.current_animation.is_empty() else blend_time
+		animation_player.play(name, effective_blend)
 		gesture_changed.emit(old, name)
 
 
@@ -204,10 +218,11 @@ func _has_skeleton_gesture(gesture_name: String) -> bool:
 	return gesture_overlays.has(gesture_name)
 
 
+## [C2.1][C6.2] 把已验证语义动作映射为任意非空模型剪辑名或 Overlay ID。
 func _map_gesture_for_character(gesture_name: String) -> String:
 	if has_node("/root/CharacterAdapterRegistry"):
 		var mapped := String(get_node("/root/CharacterAdapterRegistry").map_clip(agent_id, gesture_name, gesture_name))
-		if PerformanceCueTypes.is_valid_gesture(mapped):
+		if not mapped.is_empty():
 			return mapped
 	return gesture_name
 
@@ -226,8 +241,12 @@ func _context_matches_agent(context: Dictionary) -> bool:
 	return target.is_empty() or target == agent_id
 
 
+## [C2.1][C6.2] 按角色映射后的真实剪辑名循环 idle/walk，单次动作回到 idle。
 func _on_animation_finished(animation_name: StringName) -> void:
-	if String(animation_name) in LOOPING_GESTURES:
+	var looping_clips: Array[String] = []
+	for gesture_name in LOOPING_GESTURES:
+		looping_clips.append(_map_gesture_for_character(gesture_name))
+	if String(animation_name) in looping_clips:
 		# Some GLTF importers do not preserve Blender's cyclic flag. Restart the
 		# two locomotion loops explicitly so the character never freezes.
 		animation_player.play(animation_name)

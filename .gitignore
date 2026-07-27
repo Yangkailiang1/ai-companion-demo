@@ -20,6 +20,9 @@ data/llm_config.json
 __pycache__/
 *.pyc
 
+# Local licensed character conversions — code may detect them, never redistribute.
+assets/local_characters/
+
 # Motion ML lab — keep reproducible configs/scripts, never commit heavy artifacts.
 motion_lab/.venv/
 motion_lab/vendor/

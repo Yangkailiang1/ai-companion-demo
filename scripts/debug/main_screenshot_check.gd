@@ -23,6 +23,9 @@ func _run() -> void:
 	current_scene = scene
 	for _frame in range(18):
 		await process_frame
+	# Imported idle clips need real elapsed time; process frames can complete with
+	# nearly zero delta in a screenshot-only run and otherwise capture frame one.
+	await create_timer(0.65).timeout
 	await RenderingServer.frame_post_draw
 	var image := root.get_texture().get_image()
 	if image == null or image.is_empty():
