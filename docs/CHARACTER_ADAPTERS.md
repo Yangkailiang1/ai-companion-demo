@@ -43,6 +43,8 @@ The adapter has two separate mapping layers:
 
 ### 诀 (`jue_agent`)
 
+- Asset: optional local FBX under `assets/local_characters/jue/`; public checkout keeps
+  the same Agent contract with a redistributable primitive placeholder.
 - Motion: procedural fallback on `JueModelRoot`.
 - Material: the LOD0 body, face, hair, iris and the first two clothing groups now
   use the FBX package's imported D/N/E textures. The runtime no longer replaces

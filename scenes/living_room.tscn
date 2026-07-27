@@ -1,4 +1,4 @@
-[gd_scene load_steps=89 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=92 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -26,7 +26,6 @@
 [ext_resource type="Texture2D" path="res://assets/materials/polyhaven/dirty_carpet/dirty_carpet_arm_1k.jpg" id="24_rug_arm"]
 [ext_resource type="Texture2D" path="res://assets/environments/backdrops/cozy_morning_backdrop.png" id="25_backdrop"]
 [ext_resource type="Script" path="res://scripts/characters/idle_breath.gd" id="26_idle_breath"]
-[ext_resource type="PackedScene" path="res://assets/characters/jue/source/chr_0036_jsspsi_postmodel.fbx" id="27_jue_model"]
 [ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="28_jue_visual"]
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="29_pose_overlay"]
 [ext_resource type="Script" path="res://scripts/characters/penguin_animation_adapter.gd" id="30_penguin_anim_adapter"]
@@ -81,6 +80,24 @@ size = Vector3(0.72, 2.35, 0.48)
 
 [sub_resource type="BoxShape3D" id="shape_wall_switch"]
 size = Vector3(0.08, 0.22, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="mat_jue_placeholder_body"]
+albedo_color = Color(0.46, 0.35, 0.62, 1)
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="mat_jue_placeholder_head"]
+albedo_color = Color(0.91, 0.78, 0.71, 1)
+roughness = 0.78
+
+[sub_resource type="CapsuleMesh" id="mesh_jue_placeholder_body"]
+material = SubResource("mat_jue_placeholder_body")
+radius = 0.31
+height = 1.18
+
+[sub_resource type="SphereMesh" id="mesh_jue_placeholder_head"]
+material = SubResource("mat_jue_placeholder_head")
+radius = 0.3
+height = 0.6
 
 [sub_resource type="BoxMesh" id="mesh_table"]
 size = Vector3(2.1, 0.35, 1.1)
@@ -728,7 +745,26 @@ rotation = Vector3(0.035, 0, -0.035)
 scale = Vector3(145, 145, 145)
 script = ExtResource("28_jue_visual")
 
-[node name="JueModel" parent="JueAgent/JueModelRoot" instance=ExtResource("27_jue_model")]
+[node name="PublicPlaceholder" type="Node3D" parent="JueAgent/JueModelRoot"]
+scale = Vector3(0.00689655, 0.00689655, 0.00689655)
+
+[node name="Body" type="MeshInstance3D" parent="JueAgent/JueModelRoot/PublicPlaceholder"]
+position = Vector3(0, 0.72, 0)
+mesh = SubResource("mesh_jue_placeholder_body")
+
+[node name="Head" type="MeshInstance3D" parent="JueAgent/JueModelRoot/PublicPlaceholder"]
+position = Vector3(0, 1.52, 0)
+mesh = SubResource("mesh_jue_placeholder_head")
+
+[node name="LocalAssetHint" type="Label3D" parent="JueAgent/JueModelRoot/PublicPlaceholder"]
+position = Vector3(0, 1.93, 0)
+text = "LOCAL MODEL"
+font_size = 20
+outline_size = 4
+modulate = Color(0.92, 0.82, 1, 0.9)
+outline_modulate = Color(0.12, 0.06, 0.18, 0.95)
+billboard = 1
+no_depth_test = true
 
 [node name="AgentNameLabel" type="Label3D" parent="JueAgent"]
 position = Vector3(0, 2.18, 0)

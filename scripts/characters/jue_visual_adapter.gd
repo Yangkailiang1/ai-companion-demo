@@ -1,21 +1,45 @@
 # Roadmap: C8.1, C8.2
-# Responsibility: 为诀的 FBX LOD0 网格绑定项目内已导入的角色贴图并隐藏未适配特效；
-# 不负责骨骼动作、表情选择或剧情调度。
-# Collaborators: Jue FBX scene, CharacterPoseOverlay
+# Responsibility: 从 Git 忽略目录可选加载诀的本地 FBX，并绑定 LOD0 材质；
+# 资产缺失时保留公开占位模型，不负责动作、表情选择或剧情调度。
+# Collaborators: Jue local FBX scene, CharacterPoseOverlay
 # Tests: scripts/debug/jue_material_check.gd
 
 extends Node
 
-const TEXTURE_ROOT := "res://assets/characters/jue/textures/"
+const MODEL_PATH := (
+	"res://assets/local_characters/jue/source/chr_0036_jsspsi_postmodel.fbx"
+)
+const TEXTURE_ROOT := "res://assets/local_characters/jue/textures/"
 
 var _materials: Dictionary = {}
 var _adapted_meshes: Dictionary = {}
+var _is_local_model_loaded := false
 
 
-## [C8.1] 创建材质并在 FBX 子节点完成实例化后执行视觉适配。
+## [C8.1][O4] 优先加载本地受限模型；公开检出缺失时保留占位角色。
 func _ready() -> void:
+	_is_local_model_loaded = _load_optional_model()
+	if not _is_local_model_loaded:
+		return
 	_create_materials()
 	call_deferred("_adapt")
+
+
+## [C8.1][O4] 从 Git 忽略目录实例化诀；失败时不破坏 Agent 运行时。
+func _load_optional_model() -> bool:
+	if not ResourceLoader.exists(MODEL_PATH):
+		return false
+	var model_scene := load(MODEL_PATH) as PackedScene
+	if model_scene == null:
+		push_warning("JueVisualAdapter: local model could not load")
+		return false
+	var model := model_scene.instantiate()
+	model.name = "JueModel"
+	add_child(model)
+	var placeholder := get_node_or_null("PublicPlaceholder") as Node3D
+	if placeholder:
+		placeholder.visible = false
+	return true
 
 
 ## [C8.1] 从当前模型根递归绑定诀的材质；不修改共享导入资源。
@@ -145,4 +169,10 @@ func get_material_diagnostics() -> Dictionary:
 	return {
 		"adapted_meshes": _adapted_meshes.duplicate(true),
 		"textured_materials": textured_materials,
+		"local_model_loaded": _is_local_model_loaded,
 	}
+
+
+## [C8.1][O4] 返回当前是否成功加载 Git 忽略目录中的本地诀模型。
+func is_local_model_loaded() -> bool:
+	return _is_local_model_loaded

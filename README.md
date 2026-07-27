@@ -9,7 +9,7 @@
 
 ![Godot 4.6.1](https://img.shields.io/badge/Godot-4.6.1-478CBF?logo=godot-engine&logoColor=white)
 ![GDScript](https://img.shields.io/badge/GDScript-Living_Agent_Runtime-478CBF)
-![Version](https://img.shields.io/badge/version-0.8.7-F2A65A)
+![Version](https://img.shields.io/badge/version-0.8.8-F2A65A)
 ![Status](https://img.shields.io/badge/status-early_playable_prototype-E8A87C)
 
 </div>
@@ -66,18 +66,18 @@
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/images/autonomous-plant-care.png" alt="角色自主照料盆栽">
-      <p align="center"><b>自由生活：</b>环境状态触发角色照料盆栽</p>
+      <img src="docs/images/autonomous-plant-care.png" alt="自由生活客厅近景">
+      <p align="center"><b>自由生活：</b>角色在温馨客厅中感知环境并自主活动</p>
     </td>
     <td width="50%">
-      <img src="docs/images/character-interaction.png" alt="角色动作和对话交互">
-      <p align="center"><b>具身交互：</b>对话、动作、表情与场景表现</p>
+      <img src="docs/images/character-interaction.png" alt="物理交互家具与物体">
+      <p align="center"><b>具身世界：</b>家具、灯光和小物体具有语义与物理状态</p>
     </td>
   </tr>
 </table>
 
-> 截图中的部分角色是开发者本机的适配验证资产，不包含在仓库中，也不代表这些
-> 第三方模型获得了再分发许可。公开检出会安全跳过它们。
+> README 截图仅使用公开检出能够呈现的场景与占位外观。开发者本机可以额外加载
+> Git 忽略的适配验证资产，但这些第三方模型不会进入公开仓库。
 
 ## 五分钟运行
 

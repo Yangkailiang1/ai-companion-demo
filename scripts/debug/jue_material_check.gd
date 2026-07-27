@@ -19,6 +19,16 @@ func _run() -> void:
 	await process_frame
 	var visual := room.get_node("JueAgent/JueModelRoot")
 	var diagnostics: Dictionary = visual.get_material_diagnostics()
+	if not bool(diagnostics.get("local_model_loaded", false)):
+		_assert(
+			visual.get_node_or_null("PublicPlaceholder") != null,
+			"public checkout must show a placeholder",
+		)
+		print("JUE_MATERIAL_CHECK_PASS local_asset=absent placeholder=ready")
+		room.queue_free()
+		await process_frame
+		quit(0)
+		return
 	var bindings: Dictionary = diagnostics.get("adapted_meshes", {})
 	var textured: Array = diagnostics.get("textured_materials", [])
 	for required in ["body", "face", "hair", "iris", "cloth_primary", "cloth_secondary"]:

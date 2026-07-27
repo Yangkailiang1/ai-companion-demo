@@ -18,7 +18,15 @@ func _run() -> void:
 	_assert(jue_agent != null, "JueAgent must exist")
 	_assert(main_agent.agent_name == "main_agent", "main Agent id mismatch")
 	_assert(jue_agent.agent_name == "jue_agent", "JueAgent id mismatch")
-	_assert(jue_agent.get_node_or_null("JueModelRoot/JueModel") != null, "Jue FBX model must be instanced")
+	var jue_visual = jue_agent.get_node_or_null("JueModelRoot")
+	var has_local_jue := bool(jue_visual.call("is_local_model_loaded"))
+	if has_local_jue:
+		_assert(jue_visual.get_node_or_null("JueModel") != null, "local Jue model must be instanced")
+	else:
+		_assert(
+			jue_visual.get_node_or_null("PublicPlaceholder") != null,
+			"public checkout needs a Jue placeholder",
+		)
 
 	var main_driver = main_agent.get_node_or_null("CharacterAnimationDriver")
 	var jue_driver = jue_agent.get_node_or_null("CharacterAnimationDriver")
@@ -30,9 +38,13 @@ func _run() -> void:
 	_assert(penguin_animation_adapter.is_relaxed_idle_applied(), "penguin relaxed idle must be installed")
 	_assert(penguin_animation_adapter.get_adjusted_track_count() == 2, "penguin relaxed idle must adjust both upper-arm tracks")
 	_assert(jue_pose_overlay != null, "Jue needs skeleton pose overlay")
-	_assert(jue_pose_overlay.is_overlay_enabled(), "Jue skeleton pose overlay should be enabled")
-	_assert(jue_pose_overlay.get_resolved_bone_names().has("head"), "Jue pose overlay should resolve head bone")
-	_assert(jue_pose_overlay.get_resolved_bone_names().has("right_hand"), "Jue pose overlay should resolve right hand bone")
+	if has_local_jue:
+		_assert(jue_pose_overlay.is_overlay_enabled(), "local Jue skeleton overlay should be enabled")
+		_assert(jue_pose_overlay.get_resolved_bone_names().has("head"), "Jue overlay should resolve head")
+		_assert(
+			jue_pose_overlay.get_resolved_bone_names().has("right_hand"),
+			"Jue overlay should resolve right hand",
+		)
 	_assert(jue_model_root != null, "Jue needs procedural model root")
 	var adapter_registry := root.get_node_or_null("CharacterAdapterRegistry")
 	_assert(adapter_registry != null, "CharacterAdapterRegistry autoload must exist")
@@ -52,7 +64,11 @@ func _run() -> void:
 	bus.emit_signal("performance_cue", "wave", {"agent_id": "jue_agent", "source": "multi_agent_check"})
 	await create_timer(0.2).timeout
 	_assert(jue_driver.get_current_gesture() == "wave", "targeted Jue cue should move Jue")
-	_assert(jue_pose_overlay.get_current_overlay_gesture() == "wave", "targeted Jue cue should enter pose overlay wave")
+	if has_local_jue:
+		_assert(
+			jue_pose_overlay.get_current_overlay_gesture() == "wave",
+			"targeted Jue cue should enter pose overlay wave",
+		)
 	_assert(main_driver.get_current_gesture() != "wave", "targeted Jue cue must not move main agent")
 	_assert(jue_model_root.rotation.distance_to(base_rotation) < 0.001, "Jue skeleton wave must not tip the whole model root")
 
@@ -67,7 +83,10 @@ func _run() -> void:
 
 	room.queue_free()
 	await process_frame
-	print("MULTI_AGENT_CHECK_PASS agents=2 targeted_cue=ok memories=separate")
+	print(
+		"MULTI_AGENT_CHECK_PASS agents=2 local_jue=%s targeted_cue=ok memories=separate"
+		% str(has_local_jue)
+	)
 	quit(0)
 
 

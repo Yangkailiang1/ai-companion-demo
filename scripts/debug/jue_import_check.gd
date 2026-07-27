@@ -1,12 +1,20 @@
 extends SceneTree
 
+const LOCAL_MODEL_PATH := (
+	"res://assets/local_characters/jue/source/chr_0036_jsspsi_postmodel.fbx"
+)
+
 
 func _init() -> void:
 	call_deferred("_run")
 
 
 func _run() -> void:
-	var scene: PackedScene = load("res://assets/characters/jue/source/chr_0036_jsspsi_postmodel.fbx")
+	if not ResourceLoader.exists(LOCAL_MODEL_PATH):
+		print("JUE_IMPORT_CHECK_PASS local_asset=absent public_checkout=ready")
+		quit(0)
+		return
+	var scene: PackedScene = load(LOCAL_MODEL_PATH)
 	_assert(scene != null, "Jue FBX must load as PackedScene")
 	var inst := scene.instantiate()
 	root.add_child(inst)

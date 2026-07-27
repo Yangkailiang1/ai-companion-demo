@@ -3,7 +3,7 @@
 The living room now contains two agents:
 
 - `main_agent` — 咕咕嘎嘎, the original penguin companion.
-- `jue_agent` — 诀, an imported humanoid FBX character from `model/诀.7z`.
+- `jue_agent` — 诀；本机可从 Git 忽略目录加载人形 FBX，公开检出使用占位外观。
 
 Both agents use the same high-level runtime contracts:
 
