@@ -10,6 +10,259 @@
 
 设计文档：`/Users/yangkailiang/Documents/ai_games/设计方案/AI养成陪伴游戏_设计方案.md`
 
+## Claude / Codex 强制工程规范
+
+本节是项目代码修改的最高优先级工程约束。项目状态以本文后续章节为快照，
+需求定义以 [`docs/roadmap/`](./docs/roadmap/README.md) 为准，论文依据以
+[`docs/KB-02-papers.md`](./docs/KB-02-papers.md) 和
+`../调研/论文/` 为准。
+
+### 1. 开工前必须建立需求追溯
+
+每次修改代码前必须：
+
+1. 从 `docs/roadmap/` 选择一个或多个稳定需求节点，例如 `C5.1`、`C9.3`。
+2. 阅读该节点的依赖、验收条件和相关论文映射。
+3. 在工作说明、代码注释、测试和提交信息中使用相同节点编号。
+4. 如果找不到对应节点，先补充规划文档，禁止用“misc”“其他优化”代替需求。
+
+一个文件最多承担 3 个主需求节点。超过 3 个通常说明职责混杂，应先拆分。
+
+### 2. 每个代码文件必须声明职责
+
+新建或进行实质修改的项目代码文件，文件头必须包含：
+
+```gdscript
+# Roadmap: C9.3, T1.2
+# Responsibility: 管理自主活动的中断、保留和恢复；不执行具体动画。
+# Collaborators: MessageBus, ActionExecutor, SemanticWorld
+# Tests: scripts/debug/planning_reflection_check.gd
+```
+
+Python 文件使用模块 docstring：
+
+```python
+"""Text-to-motion retrieval policy.
+
+Roadmap: C1.2, C2.4
+Responsibility: Rank motion assets; never mutate Godot world state.
+Tests: motion_lab/tests/test_motion_retrieval.py
+"""
+```
+
+`Responsibility` 必须同时说明“做什么”和“不做什么”。测试、生成文件和第三方
+vendor 代码可以不写 `Collaborators`，但仍应能追溯到测试或实验节点。
+
+### 3. 每个函数必须对应路线图需求
+
+所有新函数、被修改函数和逐步迁移的旧函数，都必须在紧邻函数声明的位置写明
+需求节点。不能只在文件头写一次后让所有函数隐式继承。
+
+GDScript 公共函数或有副作用的函数：
+
+```gdscript
+## [C9.3][T1.2] 玩家交互结束后尝试恢复被暂停的自主活动。
+## 前置：角色空闲，活动条件仍成立，资源未被占用。
+## 副作用：占用活动资源，并通过 MessageBus 发出动作队列。
+## 失败：返回 false，不伪造完成状态。
+func resume_suspended_now(agent_id: String) -> bool:
+```
+
+GDScript 简单私有函数和 getter：
+
+```gdscript
+## [C9.1] 返回角色当前活动 ID；纯读取。
+func get_active_activity(agent_id: String) -> String:
+```
+
+Python：
+
+```python
+def rank_motion(query: str, candidates: list[Motion]) -> list[Motion]:
+    """Rank motion candidates by semantic similarity.
+
+    Roadmap: C1.2
+    Research: [LAMP]
+    Side effects: None.
+    """
+```
+
+强制规则：
+
+- 每个函数至少有 1 个路线图节点，最多 3 个。
+- Godot 生命周期函数也必须标注，如 `_ready()` 可标为
+  `[T4.2] 初始化 C5.1/C5.3 所需信号连接`。
+- 信号回调说明事件来源、状态改变和可能发出的后续信号。
+- 算法来源于论文时添加 `Research: [GA]`、`[CAS]`、`[SOL]` 等稳定标记；
+  标记在 `docs/KB-02-papers.md` 注册，不能只粘贴临时 URL。
+- 注释解释契约、原因、单位和副作用，不逐行翻译代码。
+- 纯 getter 可用一行注释；网络、存档、状态变更、异步函数必须写完整契约。
+
+### 4. 文件和函数长度预算
+
+以下限制只针对项目自有源代码，不包括 `motion_lab/vendor/`、Godot 自动生成文件、
+导入资源和第三方代码：
+
+| 类型 | 目标上限 | 硬上限 | 超限处理 |
+|---|---:|---:|---|
+| GDScript Runtime / UI / Character 文件 | 300 行 | 400 行 | 拆分策略、状态存储、Provider 或 Presenter |
+| GDScript Autoload 编排器 | 350 行 | 500 行 | 只保留编排；算法和 I/O 移入普通类 |
+| GDScript 测试脚本 | 200 行 | 250 行 | 按需求或场景拆成多个验收 |
+| Python 项目模块 | 300 行 | 400 行 | 拆分数据、训练、推理、适配器 |
+| Blender / 资产工具 | 400 行 | 500 行 | 拆分几何、材质、导出和校验 |
+| 单个函数 | 40 行 | 60 行 | 提取命名良好的纯函数或阶段对象 |
+
+补充限制：
+
+- 每文件目标不超过 20 个函数，硬上限 25 个。
+- 单函数参数目标不超过 5 个；复杂上下文使用有类型的 `Resource`、`RefCounted`
+  数据类或明确 Schema，而不是无限增长的匿名 `Dictionary`。
+- 嵌套深度不超过 3 层；优先使用 guard clause。
+- 超过硬上限不能继续追加功能。紧急修复可临时例外，但必须在相应路线图节点记录
+  拆分任务、原因和截止版本。
+- 行数不是追求碎片化的目标；按“变化原因”拆分，不创建只有转发作用的无意义文件。
+
+### 5. 命名规范
+
+GDScript：
+
+- 文件：`snake_case.gd`。
+- `class_name`、`Resource`、数据类型：`PascalCase`。
+- 函数、变量、信号：`snake_case`；信号使用已经发生或请求语义，
+  如 `activity_completed`、`speech_requested`。
+- 常量和枚举成员：`UPPER_SNAKE_CASE`。
+- 私有函数和私有状态：前缀 `_`。
+- 布尔值：`is_`、`has_`、`can_`、`should_` 开头。
+- 回调：`_on_<source>_<event>`；不要使用 `_handle1()`、`do_stuff()`。
+- 单位必须进入名称：`timeout_seconds`、`started_at_msec`、`distance_meters`。
+- ID 后缀统一：`agent_id`、`object_id`、`activity_id`，禁止同一概念混用
+  `name/key/id`。
+
+Python：
+
+- 模块、函数、变量使用 `snake_case`；类型使用 `PascalCase`；常量使用
+  `UPPER_SNAKE_CASE`。
+- 公开函数和跨模块数据必须有类型标注。
+- 训练、推理、数据预处理不得在 import 时自动执行。
+
+### 6. 模块边界与依赖方向
+
+当前允许的依赖方向：
+
+```text
+UI / Scene
+  -> MessageBus / 公共 Runtime API
+  -> Cognition / Utility / Planning
+  -> GOAP / Action validation
+  -> Navigation / Animation / Object interaction
+  -> Godot world state
+
+Provider / LLM / Embedding
+  -> 只能返回结构化候选
+  -> 不能直接改坐标、节点、碰撞、库存或存档
+```
+
+目录职责：
+
+| 目录 | 主要路线图 | 允许职责 |
+|---|---|---|
+| `scripts/core/` | T1、T2、T4、X1、X3 | 稳定协议、编排、存档、Provider 边界 |
+| `scripts/characters/` | C1–C8 | 角色表现、骨骼/动作/表情适配 |
+| `scripts/navigation/` | C4、T2 | 可达性、导航和交互点 |
+| `scripts/objects/` | S3、T2 | 可交互物体状态与 affordance |
+| `scripts/ui/` | S1、P3、P4 | 输入和展示；不得包含认知决策 |
+| `cognition_lab/` | T1.5、C5、R5 | LangGraph 实验；不拥有 Godot 物理状态 |
+| `motion_lab/` | C1、C2、R5 | 离线训练、检索、重定向与评测 |
+| `tools/` | O2、X2、X5 | 资产导入、生成、校验和发布工具 |
+
+跨模块通信优先使用：
+
+1. 有类型的公共方法用于同步查询；
+2. `MessageBus` 用于跨域事件；
+3. 明确 Schema 的 JSON/Resource 用于数据驱动配置。
+
+禁止：
+
+- UI 直接访问 Autoload 私有字段。
+- LLM 输出直接调用 `Node3D.global_position` 或场景树路径。
+- 为一个新角色复制 CognitiveCycle、MemorySystem 或 GOAP。
+- 从核心 Runtime 反向依赖具体 UI、具体角色模型或某个房间。
+- 用字符串拼接临时协议替代已有信号、枚举或 Schema。
+
+### 7. 当前架构审查与重构队列
+
+当前代码已经具备目录分层、MessageBus、SemanticWorld、GOAP、角色适配器和
+数据驱动配置，整体方向符合规划树。但以下文件超过预算，不能继续无条件追加：
+
+| 文件 | 当前规模（审查时） | 混合职责 | 建议拆分 |
+|---|---:|---|---|
+| `cognitive_cycle.gd` | 482 行 / 15 函数（首轮已拆） | Provider、解析、周期编排 | 下一轮提取 `llm_client`、`decision_parser`；已提取 `prompt_builder`、`performance_resolver`、`local_fallback_decider` |
+| `autonomous_behavior_system.gd` | 531 行 / 33 函数 | 调度、评分、恢复、微行为、社交输出 | `utility_scorer`、`activity_runtime`、`interruption_coordinator` |
+| `agent_psyche_system.gd` | 452 行 / 34 函数 | 心境、人格、日程、ToM、反思 | `psyche_state_store`、`daily_planner`、`social_belief_model` |
+| `motion_intent_router.gd` | 341 行 / 24 函数 | 目录、特征、分类、检索、回退 | `motion_catalog`、`feature_provider`、`motion_ranker` |
+| `chat_input.gd` | 333 行 / 22 函数 | 输入、聊天展示、主题、焦点动画 | `chat_controller`、`chat_presenter`、`warm_ui_theme` |
+| `character_pose_overlay.gd` | 281 行 / 26 函数 | 姿势、手势、表情骨骼回退、骨骼解析 | 按 pose / expression / skeleton resolver 拆分 |
+
+这是渐进重构队列，不要求一次性重写。执行规则：
+
+- 修改上述文件时采用“先提取再新增”，净新增不得让文件继续增长。
+- 每次只拆一个清晰职责，并保持现有 headless 合同测试通过。
+- 不在重构中顺便改变玩家可见行为；行为变化使用独立提交。
+
+### 8. 类型、状态和异步规范
+
+- 所有公共函数必须声明参数和返回类型；无返回值写 `-> void`。
+- 核心状态不得使用平行数组；按 `agent_id` / `object_id` 使用有边界的数据对象。
+- Dictionary 跨模块时必须在 `data/*.schema.json` 或文档中定义字段、默认值和版本。
+- 存档字段变化必须同步 X1 Schema、迁移逻辑和回归测试。
+- `await` 前后假设世界可能变化；恢复后重新验证节点存在、角色状态、资源所有权和
+  请求 epoch。
+- 网络请求必须有 timeout、状态码校验、取消/过期保护和本地降级。
+- 信号连接不得在重复初始化时叠加；释放节点前取消仍在运行的请求或回调。
+- LLM、Embedding、TTS 的密钥只从用户配置或环境读取，永不写入仓库、日志和测试夹具。
+
+### 9. 测试与完成标准
+
+每个需求节点至少包含：
+
+- 正常路径；
+- 一个失败或降级路径；
+- 一个边界或中断路径；
+- 若涉及角色，验证 `main_agent` 与 `jue_agent` 状态不串线；
+- 若涉及视觉，增加截图或人工视觉验收；
+- 若涉及异步，验证超时、重复请求和过期结果；
+- 若涉及新角色/物体，证明通过标准接口接入，不修改核心认知分支。
+
+测试文件头使用：
+
+```gdscript
+# Verifies: C9.3, T1.2
+# Covers: interrupt -> respond -> revalidate -> resume/abandon
+```
+
+`[DONE]` 仍以
+[`docs/roadmap/102-completion-standards.md`](./docs/roadmap/102-completion-standards.md)
+为最终标准。只写代码、没有测试与路线图更新，不算完成。
+
+### 10. 提交与审查
+
+提交信息引用主要需求节点：
+
+```text
+feat(C9.3,T1.2): resume autonomous activity after player interaction
+fix(S1.2): preserve camera lock while chat input is focused
+refactor(T4.5): extract LLM provider from cognitive cycle
+```
+
+提交前必须检查：
+
+1. 没有无关用户文件进入提交。
+2. 没有 API Key、聊天记录、模型许可证不明资产。
+3. 文件/函数未超过预算，或已登记例外。
+4. 所有新增/修改函数都有路线图注释。
+5. 对应 headless、Python 或资产测试通过。
+6. 更新路线图状态、模块文档和必要的论文映射。
+
 ## 当前状态（v0.7 具身生活感迭代）
 
 | 模块 | 状态 | 文件 |
@@ -173,13 +426,17 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 长期路线不再维护为单一线性表格。统一规划入口：
 
-- **[AI Living Town 长期开发规划树](./docs/DEVELOPMENT_ROADMAP_TREE.md)**
+- **[AI Living Town 开发规划文档](./docs/roadmap/README.md)**
 
 规划树使用稳定分支编号组织场景、AI 角色、玩家、剧情导演、开源生态和
-横向工程能力。每个版本从多个分支选择节点组成一个可交付的“版本切片”。
-当前 `v0.6` 已有存档、盆栽状态和首个自主活动闭环；下一阶段以规划树
-`C9`“生活感与行为连续性”为主线，优先实现 Utility AI、微行为、真实浇水
-交互样板和双角色共同活动。
+横向工程能力。每个版本从多个分支选择节点组成一个可交付的"版本切片"。
+文档结构已按分支拆分，每个开发方向独立成文，便于并行推进。
+
+> 详细规划树索引 → [docs/roadmap/README.md](./docs/roadmap/README.md)
+> 文档维护规范 → [docs/roadmap/CLAUDE.md](./docs/roadmap/CLAUDE.md)
+
+当前 `v0.7` 以规划树 `C9`"生活感与行为连续性"为主线，优先实现
+Utility AI、微行为、真实浇水交互样板和双角色共同活动。
 
 ## 知识库
 
@@ -189,7 +446,7 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 - [KB-03 实现细节](./docs/KB-03-implementation.md)
 - **[PROJECT_ARCHITECTURE](./docs/PROJECT_ARCHITECTURE.md)** — 完整架构文档 (v0.1 新增)
 - **[ASSET_REQUIREMENTS](./docs/ASSET_REQUIREMENTS.md)** — 资产需求清单 (v0.1 新增)
-- **[DEVELOPMENT_ROADMAP_TREE](./docs/DEVELOPMENT_ROADMAP_TREE.md)** — 长期规划树与版本切片
+- **[开发规划文档树](./docs/roadmap/README.md)** — 长期规划树与版本切片（已拆分为多文档结构）
 - **[HUMANLIKE_AGENT_RESEARCH_MAPPING](./docs/HUMANLIKE_AGENT_RESEARCH_MAPPING.md)** — 调研结论到当前实现的映射
 - **[LANGGRAPH_AGENT_RUNTIME](./docs/LANGGRAPH_AGENT_RUNTIME.md)** — 共享认知图、角色状态与 Godot 边界
 

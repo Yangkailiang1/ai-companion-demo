@@ -1,77 +1,82 @@
-# cognitive_cycle.gd — 认知循环主控制器 (Autoload)
-# 设计文档 §二：感知 → 记忆检索 → Codified Logic → LLM → GOAP → 执行
-# 参考 [GA §4] + [CCL §3]
+# cognitive_cycle.gd — Cognitive cycle orchestrator (Autoload)
+# Roadmap: T1, X3, T4.5
+# Responsibility: Orchestrates perception → memory → LLM/fallback → GOAP → execution;
+#   delegates prompt construction, performance resolution and local policy to RefCounted
+#   helpers.  Owns all cross-domain side effects (signals, GOAP creation, archive mutations).
+# Collaborators: MessageBus, SemanticWorld, MemorySystem, CodifiedProfile, AgentPsycheSystem,
+#   PromptBuilder, PerformanceResolver, LocalFallbackDecider, GOAPPlanner
+# Tests: scripts/debug/headless_check.gd, scripts/debug/gesture_pipeline_check.gd,
+#   scripts/debug/multi_agent_check.gd, scripts/debug/agent_psyche_check.gd,
+#   scripts/debug/t4_5_cognitive_split_test.gd
 
 extends Node
 
+# Preload extracted helper classes
+const PromptBuilderScript = preload("res://scripts/core/prompt_builder.gd")
+const PerformanceResolverScript = preload("res://scripts/core/performance_resolver.gd")
+const LocalFallbackDeciderScript = preload("res://scripts/core/local_fallback_decider.gd")
 const MotionIntentRouterScript = preload("res://scripts/characters/motion_intent_router.gd")
 const ExpressionIntentRouterScript = preload("res://scripts/characters/expression_intent_router.gd")
 
-# LLM API 配置
+# LLM API configuration (public — consumed by tests)
 var llm_api_url: String = ""
 var llm_api_key: String = ""
 var llm_model: String = "ecnu-max"
 var llm_provider: String = "openai"  # "openai" | "anthropic"
 
-# 当前是否正在处理
+# Current processing state
 var is_processing: bool = false
 var _pending_player_triggers: Array[Dictionary] = []
-# 自动触发冷却（防止刷屏）
+# Autonomous trigger cooldown (prevents spam)
 var _last_auto_trigger_time: float = 0.0
-const AUTO_TRIGGER_COOLDOWN: float = 15.0  # 秒
+const AUTO_TRIGGER_COOLDOWN: float = 15.0  # seconds
 
-# HTTP 请求节点
+# HTTP request node
 var http_request: HTTPRequest
 
-# 当前触发上下文
+# Current trigger context
 var current_trigger: Dictionary = {}
 var _motion_router
 var _expression_router
 
-# 本地 fallback 响应库（无 LLM 时使用）
-const FALLBACK_GREETINGS = [
-	"你好呀！今天天气真好~",
-	"嗨！你来啦！",
-	"嘿嘿，正想找人聊聊天呢！",
-	"哎呀，欢迎欢迎～"
-]
-const FALLBACK_IDLE_COMMENTS = [
-	"嗯…有点无聊呢。",
-	"（伸了个懒腰）",
-	"要不要看会儿电视？",
-	"那杯奶茶看起来好诱人啊…"
-]
-const FALLBACK_HUNGRY_COMMENTS = [
-	"肚子有点饿了…那杯奶茶正好！",
-	"好想喝点东西…",
-]
-const FALLBACK_BORED_COMMENTS = [
-	"有点无聊，看看电视吧。",
-	"找本书看看也不错。",
-]
+# Extracted helpers (RefCounted, no autoload access beyond CodifiedProfile lookups)
+var _prompt_builder       # PromptBuilder (RefCounted)
+var _perf_resolver        # PerformanceResolver (RefCounted)
+var _fallback_decider     # LocalFallbackDecider (RefCounted)
 
 
-func _ready():
+# === Initialization ===
+
+## [T4.5] Initialize routers, config and extracted helpers; wire HTTP and trigger signal.
+func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	_motion_router = MotionIntentRouterScript.new()
 	if not _motion_router.is_ready():
 		push_warning("CognitiveCycle: motion router catalog unavailable: %s" % _motion_router.load_error)
 	_expression_router = ExpressionIntentRouterScript.new()
 	if not _expression_router.is_ready():
 		push_warning("CognitiveCycle: expression router library unavailable: %s" % _expression_router.load_error)
+
+	# Create extracted helper instances — RefCounted, no scene-tree coupling
+	_prompt_builder = PromptBuilderScript.new()
+	_perf_resolver = PerformanceResolverScript.new()
+	_fallback_decider = LocalFallbackDeciderScript.new(_prompt_builder, _perf_resolver)
+
 	_load_llm_config()
 
-	# 创建 HTTP 请求节点
+	# Create HTTP request node
 	http_request = HTTPRequest.new()
 	http_request.timeout = 20.0
 	add_child(http_request)
 	http_request.request_completed.connect(_on_llm_response)
 
-	# 监听所有触发源
+	# Listen for all trigger sources
 	MessageBus.agent_trigger_cycle.connect(_on_trigger)
 
 
-func _load_llm_config():
+## [X3][T4.5] Load LLM API configuration from json file; no effect if file missing.
+func _load_llm_config() -> void:
 	var path = "res://data/llm_config.json"
 	if not FileAccess.file_exists(path):
 		print("[CognitiveCycle] llm_config.json not found, using local fallback mode")
@@ -90,22 +95,21 @@ func _load_llm_config():
 		print("[CognitiveCycle] LLM configured: %s/%s" % [llm_provider, llm_model])
 
 
-# === 主入口：触发源到达 ===
+# === Main entry: trigger source arrives ===
 
+## [T1][X3][T4.5] Handle an Agent trigger: perceive, retrieve, decide, route to LLM or fallback.
+## Implements FIFO queue for player messages when busy; autonomous triggers respect cooldown.
+## Side effects: reads SemanticWorld/Memory/Codified/Psyche snapshots; updates UI status.
 func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: Dictionary) -> void:
 	if is_processing:
-		# 玩家输入不能静默丢失；自主触发在忙碌时可以安全跳过。
 		if source == AffordanceTypes.TriggerSource.PLAYER_INPUT:
 			_pending_player_triggers.append({"agent_id": agent_id, "source": source, "data": data.duplicate(true)})
 			MessageBus.ui_status_changed.emit("AI 正忙，你的消息已排队（%d）" % _pending_player_triggers.size(), "queued")
 		return
 
-	# Autonomous thoughts never interrupt a physical task selected by the player.
-	# Player messages remain allowed and use AgentBase's latest-decision-wins policy.
 	if source in [AffordanceTypes.TriggerSource.SIMULATION, AffordanceTypes.TriggerSource.IDLE_TIMER] and _is_agent_busy(agent_id):
 		return
 
-	# 自动触发冷却（玩家输入不受限制）
 	if source in [AffordanceTypes.TriggerSource.SIMULATION, AffordanceTypes.TriggerSource.IDLE_TIMER]:
 		var now = Time.get_unix_time_from_system()
 		if now - _last_auto_trigger_time < AUTO_TRIGGER_COOLDOWN:
@@ -119,10 +123,8 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 	else:
 		MessageBus.ui_status_changed.emit("%s正在自主思考…" % CodifiedProfile.get_agent_display_name(agent_id), "thinking")
 
-	# Step 1: Perception — 世界语义快照
 	var semantic_snapshot = SemanticWorld.generate_semantic_snapshot(agent_id)
 
-	# Step 2: Memory Retrieval — 检索相关记忆
 	var player_message = ""
 	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT:
 		player_message = data.get("text", "")
@@ -131,12 +133,11 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 
 	var memory_context = MemorySystem.format_for_llm_for_agent(agent_id, player_message)
 
-	# Step 3: Codified Profile — 角色逻辑触发
 	var triggered = CodifiedProfile.parse_by_scene_for_agent(agent_id, semantic_snapshot, player_message)
 	var codified_context = CodifiedProfile.get_triggered_log(triggered)
 	var psychology_context = AgentPsycheSystem.build_cognitive_context(agent_id)
 
-	# Step 4: 决定使用 LLM 还是本地 fallback
+	# Step 4: Decide LLM vs local fallback
 	if llm_api_url.is_empty() or llm_api_key.is_empty():
 		MessageBus.ui_status_changed.emit("本地规则模式正在生成回复…", "local")
 		_use_local_fallback(player_message, source, triggered)
@@ -155,65 +156,27 @@ func _on_trigger(agent_id: String, source: AffordanceTypes.TriggerSource, data: 
 		_send_llm_request(prompt)
 
 
-# === Prompt 构造 ===
+# === Prompt construction (public facade — used by test suites) ===
 
+## [T1][T4.5] Assemble the full LLM prompt from structured cognitive inputs.
+## Delegates to PromptBuilder while preserving the original public signature.
 func build_prompt(semantic: String, memory: String, codified: String, psychology: String, triggered: Array,
-				  player_msg: String, source: AffordanceTypes.TriggerSource, agent_id: String = "main_agent") -> String:
-
-	var identity = CodifiedProfile.get_identity_for_agent(agent_id)
-
-	var explicit_instruction = _build_explicit_player_instruction(player_msg)
-	var prompt = """%s
-
-%s
-
-%s
-
-%s
-
-[角色当前的心理与注意状态]
-%s
-
-[本轮玩家消息]
-%s
-
-[本轮约束]
-%s
-
-请根据以上信息，决定你现在要做什么。
-如果当前是因为需求触发（饿了/渴了/无聊），优先满足自己的需求。
-如果玩家跟你说话了，本轮玩家消息拥有最高优先级。先直接回应玩家当前所说的内容，不要被角色偏好或旧记忆带偏，也不要无故转移到奶茶。
-
-你必须回复一个 JSON 对象，格式如下：
-{"thought": "你的内心想法", "goal": "一个简洁的目标名称(如drink_milk_tea/watch_tv/read_book/rest_on_sofa/patrol_room/wander_room/chat_with_player)", "goal_reason": "为什么做这个决定", "emotion": "情绪(happy/sad/angry/surprised/neutral/bored/excited)", "emotion_intensity": 0.5, "speech": "你说的话（可以为空字符串）", "speech_tone": "语气(cheerful/neutral/nervous/sad/angry)", "gesture": "身体动作兜底(必须从以下选择一个:idle/walk/wave/nod/think/happy/sit/talk)", "motion_query": "用于动作库语义检索的短句，例如'开心地挥手问候'或'自然地走向电视'", "expression_query": "用于表情库语义检索的短句，例如'害羞但开心地笑'或'疑惑地歪头'", "plan": [{"action": "patrol", "route": "room_perimeter", "laps": 1}]}
-
-plan 是可选字段，最多 6 步。action 只能是 navigate_object/navigate_waypoint/patrol/wander/look_at/interact/wait；目标只能引用当前场景已有物体或已知路径点。不要输出坐标。"""
-
-	# 对自主触发，强调优先满足需求
-	if source == AffordanceTypes.TriggerSource.SIMULATION:
-		prompt += "\n\n重要提示：你需要优先满足自己的生理需求。"
-
-	var formatted = prompt % [
-		identity,
-		semantic,
-		memory,
-		codified if not codified.is_empty() else "[没有特殊的角色反应]",
-		psychology,
-		player_msg if not player_msg.is_empty() else "[无，本轮为自主行为]",
-		explicit_instruction,
-	]
-
-	return formatted
+				  player_msg: String, source: AffordanceTypes.TriggerSource,
+				  agent_id: String = "main_agent") -> String:
+	return _prompt_builder.build_prompt(semantic, memory, codified, psychology, triggered,
+		player_msg, source, agent_id)
 
 
-# === LLM 通信 ===
+# === LLM communication ===
 
+## [T1][X3] Send an LLM API request with provider-appropriate envelope.
+## Side effects: initiates async HTTP request.
 func _send_llm_request(prompt: String) -> void:
 	if llm_api_url.is_empty() or llm_api_key.is_empty():
 		_use_local_fallback("", AffordanceTypes.TriggerSource.IDLE_TIMER, [])
 		return
 
-	# OpenAI 兼容格式 (ECNU-Max, GPT, DeepSeek 等)
+	# OpenAI-compatible envelope (ECNU-Max, GPT, DeepSeek etc.)
 	var body = {
 		"model": llm_model,
 		"messages": [
@@ -224,7 +187,7 @@ func _send_llm_request(prompt: String) -> void:
 		"temperature": 0.7,
 	}
 
-	# Anthropic 格式需要特殊处理
+	# Anthropic format requires a different envelope
 	var headers: PackedStringArray
 	if llm_provider == "anthropic":
 		body = {
@@ -238,7 +201,6 @@ func _send_llm_request(prompt: String) -> void:
 			"anthropic-version: 2023-06-01",
 		]
 	else:
-		# OpenAI 兼容格式
 		headers = [
 			"Content-Type: application/json",
 			"Authorization: Bearer " + llm_api_key,
@@ -251,6 +213,8 @@ func _send_llm_request(prompt: String) -> void:
 		_use_local_fallback(current_trigger.get("data", {}).get("text", ""), current_trigger.get("source", AffordanceTypes.TriggerSource.IDLE_TIMER), [])
 
 
+## [T1] Handle LLM HTTP response: extract content, parse JSON, dispatch to decision handler.
+## Falls back to local rules on any failure.
 func _on_llm_response(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
 	var raw_body = body.get_string_from_utf8()
 	print("[CognitiveCycle] ← Response code=%d" % response_code)
@@ -279,13 +243,15 @@ func _on_llm_response(result: int, response_code: int, headers: PackedStringArra
 	_handle_decision(parsed)
 
 
+## [T1] Extract the raw text content from a provider-specific API response.
+## Pure parsing; no side effects.
 func _extract_content(response: Dictionary) -> String:
-	# OpenAI 兼容格式
+	# OpenAI-compatible format
 	if response.has("choices") and response["choices"] is Array and response["choices"].size() > 0:
 		var msg = response["choices"][0].get("message", {})
 		return msg.get("content", "")
 
-	# Anthropic 格式
+	# Anthropic format
 	if response.has("content") and response["content"] is Array:
 		for block in response["content"]:
 			if block is Dictionary and block.get("type") == "text":
@@ -294,6 +260,8 @@ func _extract_content(response: Dictionary) -> String:
 	return ""
 
 
+## [T1] Parse JSON object from (possibly markdown-wrapped) LLM text output.
+## Pure parsing; no side effects.
 func _parse_llm_output(content: String) -> Dictionary:
 	var cleaned = content.replace("```json", "").replace("```", "").strip_edges()
 	var start = cleaned.find("{")
@@ -314,8 +282,12 @@ func _parse_llm_output(content: String) -> Dictionary:
 	return {}
 
 
-# === 决策处理 ===
+# === Decision handling ===
 
+## [T1][C1][T4.5] Convert a parsed LLM decision into world actions and performance cues.
+## Reads current_trigger for agent/player context; delegates motion/expression resolution
+## to PerformanceResolver and GOAP decomposition to _resolve_actions_from_goal.
+## Side effects: emits MessageBus signals, creates GOAPPlanner, updates memory.
 func _handle_decision(decision: Dictionary) -> void:
 	var agent_id: String = current_trigger.get("agent_id", "main_agent")
 	var goal: String = decision.get("goal", "idle")
@@ -328,26 +300,27 @@ func _handle_decision(decision: Dictionary) -> void:
 	var motion_query: String = decision.get("motion_query", player_message)
 	var expression_query: String = decision.get("expression_query", "")
 
-	# 校验并净化 gesture
-	gesture = _validate_and_sanitize_gesture(gesture)
+	gesture = _perf_resolver.validate_and_sanitize_gesture(gesture)
 
-	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity, motion_query)
+	var performance: Dictionary = _perf_resolver.resolve_player_performance(
+		player_message, gesture, emotion, emotion_intensity, motion_query, _motion_router)
 	gesture = performance["gesture"]
-	var expression_performance := _resolve_expression_performance(
+	var expression_performance: Dictionary = _perf_resolver.resolve_expression_performance(
 		expression_query,
 		String(performance.get("expression", emotion)),
 		emotion_intensity,
 		player_message,
-		speech
-	)
+		speech,
+		_expression_router)
 
+	# Determine goal from router or explicit player instruction
 	var router_goal := String(performance.get("goal", ""))
-	var explicit_goal = router_goal if not router_goal.is_empty() else _infer_explicit_player_goal(player_message)
+	var explicit_goal = router_goal if not router_goal.is_empty() else _prompt_builder.infer_explicit_player_goal(player_message)
 	var compiled_plan: Array = []
 	if not explicit_goal.is_empty():
 		goal = explicit_goal
 		var router_reply := String(performance.get("reply", ""))
-		speech = router_reply if not router_reply.is_empty() else _ensure_relevant_acknowledgement(explicit_goal, speech)
+		speech = router_reply if not router_reply.is_empty() else _prompt_builder.ensure_goal_acknowledgement(explicit_goal, speech)
 	elif performance.get("plan", []) is Array and not performance.get("plan", []).is_empty():
 		compiled_plan = PlanValidator.new().compile(performance.get("plan", []))
 		var router_reply := String(performance.get("reply", ""))
@@ -356,52 +329,25 @@ func _handle_decision(decision: Dictionary) -> void:
 	else:
 		compiled_plan = PlanValidator.new().compile(decision.get("plan", []))
 
-	# 记录记忆
+	# Record memory
 	if not thought.is_empty():
 		MemorySystem.add_episode_for_agent(agent_id, "[思考] " + thought, 4.0)
 
-	# 如果有对话内容 → 先输出对话
+	# Emit dialogue and performance cues
 	MessageBus.route_agent_output(agent_id, speech, emotion)
+	_emit_performance_cues(gesture, emotion, agent_id, performance, expression_performance, "llm")
 
-	# 发出表现层 cue
-	MessageBus.performance_cue.emit(gesture, {
-		"source": "llm",
-		"agent_id": agent_id,
-		"emotion": emotion,
-		"motion_provider": performance["provider"],
-		"generation_prompt": performance["generation_prompt"],
-		"router_action_id": performance.get("action_id", ""),
-		"router_target": performance.get("target", ""),
-	})
-	_emit_expression_performance(expression_performance, {
-		"source": "llm",
-		"agent_id": agent_id,
-		"motion_provider": performance["provider"],
-		"router_action_id": performance.get("action_id", ""),
-	})
-
-	# Goal → GOAP 分解
-	var goap = GOAPPlanner.new()
-	add_child(goap)
-
-	var actions: Array
-	if not compiled_plan.is_empty():
-		actions = compiled_plan
-	elif goal == "chat_with_player" or goal == "idle":
-		actions = [AffordanceTypes.PrimitiveAction.new(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
-	else:
-		actions = goap.plan(goal)
-		if actions.is_empty() or (actions.size() == 1 and actions[0].type == AffordanceTypes.Primitive.IDLE):
-			actions = _infer_actions_from_goal(goal)
-
-	# 发送给 Agent
+	# GOAP decomposition and dispatch
+	var actions := _resolve_actions_from_goal(goal, compiled_plan)
 	MessageBus.emit_actions.emit(agent_id, actions)
 
-	goap.queue_free()
 	MessageBus.ui_status_changed.emit("AI 已回复（%s/%s）" % [llm_provider, llm_model], "done")
 	_finish_cycle()
 
 
+## [T1][T4.5] Infer GOAP actions from a goal keyword when formal planning fails.
+## Creates a temporary GOAPPlanner for auto_plan resolution.
+## Side effects: creates and frees a GOAPPlanner node.
 func _infer_actions_from_goal(goal: String) -> Array:
 	var goal_keywords = {
 		"drink": "milk_tea", "eat": "milk_tea",
@@ -421,146 +367,16 @@ func _infer_actions_from_goal(goal: String) -> Array:
 	return [AffordanceTypes.PrimitiveAction.new(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
 
 
-# === Fallback：无 LLM 时用本地规则 ===
+# === Extracted helpers (shared between LLM and fallback paths) ===
 
-func _use_local_fallback(player_message: String, source: AffordanceTypes.TriggerSource, triggered: Array) -> void:
-	var agent_id: String = current_trigger.get("agent_id", "main_agent")
-	var speech = ""
-	var emotion = "neutral"
-	var goal = "idle"
-	var gesture = "idle"
-	var emotion_intensity := 0.65
-	var compiled_plan: Array = []
-
-	var sim = WorldSimulator.get_state_snapshot()
-	var needs = sim["needs"]
-
-	# 玩家说话 → 给一个温和回应
-	if source == AffordanceTypes.TriggerSource.PLAYER_INPUT and not player_message.is_empty():
-		var msg_lower = player_message.to_lower()
-		var routed := _route_player_intent(player_message, gesture, emotion, emotion_intensity)
-		var routed_is_actionable := _is_actionable_router_decision(routed)
-
-		# 检查触发规则中的情绪
-		if not triggered.is_empty():
-			emotion = triggered[0].get("emotion", "neutral")
-
-		# B7: 显式 gesture 测试句
-		if routed_is_actionable:
-			speech = String(routed.get("reply", ""))
-			if speech.is_empty():
-				speech = _ensure_relevant_acknowledgement(String(routed.get("goal", "")), "")
-			goal = String(routed.get("goal", goal))
-			gesture = String(routed.get("clip", gesture))
-			emotion = String(routed.get("expression", emotion))
-			emotion_intensity = clampf(float(routed.get("intensity", emotion_intensity)), 0.0, 1.0)
-			if routed.get("plan", []) is Array and not routed.get("plan", []).is_empty():
-				compiled_plan = PlanValidator.new().compile(routed.get("plan", []))
-		elif ("绕" in msg_lower or "转" in msg_lower) and "房间" in msg_lower and ("一圈" in msg_lower or "巡逻" in msg_lower):
-			speech = "好呀，我去绕房间走一圈！"
-			goal = "patrol_room"
-			gesture = "walk"
-			emotion = "happy"
-		elif "巡逻" in msg_lower:
-			speech = "收到，我去房间里巡逻一圈。"
-			goal = "patrol_room"
-			gesture = "walk"
-		elif "随便走走" in msg_lower or "逛逛" in msg_lower or "走一走" in msg_lower:
-			speech = "好呀，我在房间里随便逛逛～"
-			goal = "wander_room"
-			gesture = "walk"
-		elif "挥挥" in msg_lower and "手" in msg_lower:
-			speech = "嗨嗨，我在挥手呢～"
-			gesture = "wave"
-			emotion = "happy"
-		elif "点点" in msg_lower and "头" in msg_lower:
-			speech = "嗯嗯！我点点头～"
-			gesture = "nod"
-			emotion = "happy"
-		elif "想一想" in msg_lower or "想想" in msg_lower:
-			speech = "让我想一想……（思考中）"
-			gesture = "think"
-			emotion = "neutral"
-		elif "开心" in msg_lower and "一点" in msg_lower:
-			speech = "好嘞！开心起来～"
-			gesture = "happy"
-			emotion = "happy"
-		elif "你好" in msg_lower or "嗨" in msg_lower or "hi" in msg_lower:
-			speech = FALLBACK_GREETINGS[randi() % FALLBACK_GREETINGS.size()]
-			emotion = "happy"
-		elif "饿" in msg_lower or "吃" in msg_lower:
-			speech = "对呀对呀，要不要一起喝杯奶茶？"
-			goal = "drink_milk_tea"
-			emotion = "excited"
-		elif "玩" in msg_lower or "无聊" in msg_lower:
-			speech = "嗯嗯！我们找点事情做吧！"
-			emotion = "happy"
-		elif "再见" in msg_lower or "拜拜" in msg_lower:
-			speech = "好的，下次再来找我玩哦～"
-			emotion = "neutral"
-		elif "开电视" in msg_lower or "看电视" in msg_lower or "tv" in msg_lower:
-			speech = "好呀！我们一起看电视，我来找找遥控器～"
-			goal = "watch_tv"
-			emotion = "happy"
-		elif "浇" in msg_lower and "植物" in msg_lower or "花" in msg_lower:
-			speech = "对哦，小绿好像缺水了，我来浇一下！"
-			goal = "water_plant"
-			emotion = "happy"
-		elif "看书" in msg_lower or "读书" in msg_lower:
-			speech = "好呀，一起看看书！"
-			goal = "read_book"
-			emotion = "happy"
-		elif "坐" in msg_lower or "休息" in msg_lower:
-			speech = "好的，休息一下～"
-			goal = "rest_on_sofa"
-			emotion = "neutral"
-		else:
-			speech = "嗯嗯，我听到了！" if randi() % 2 == 0 else "哈哈，你说得对～"
-			emotion = "happy" if randf() > 0.5 else "neutral"
-
-	# 自主触发 → 需求驱动 + 随机闲话
-	elif source == AffordanceTypes.TriggerSource.SIMULATION:
-		var need_type = current_trigger.get("data", {}).get("need_type")
-		if need_type == AffordanceTypes.NeedType.HUNGER and needs["hunger"] < 40:
-			speech = FALLBACK_HUNGRY_COMMENTS[randi() % FALLBACK_HUNGRY_COMMENTS.size()]
-			goal = "drink_milk_tea"
-		elif need_type == AffordanceTypes.NeedType.FUN and needs["fun"] < 30:
-			speech = FALLBACK_BORED_COMMENTS[randi() % FALLBACK_BORED_COMMENTS.size()]
-			goal = "watch_tv"
-		elif not triggered.is_empty():
-			speech = triggered[0].get("reaction", "")
-			emotion = triggered[0].get("emotion", "neutral")
-
-	# 空闲触发 → 随机闲话
-	elif source == AffordanceTypes.TriggerSource.IDLE_TIMER:
-		if needs["hunger"] < 40:
-			speech = FALLBACK_HUNGRY_COMMENTS[randi() % FALLBACK_HUNGRY_COMMENTS.size()]
-			goal = "drink_milk_tea"
-		elif needs["fun"] < 30:
-			speech = FALLBACK_BORED_COMMENTS[randi() % FALLBACK_BORED_COMMENTS.size()]
-			goal = "watch_tv"
-		elif randf() < 0.12:
-			goal = "wander_room"
-		elif randf() < 0.1:
-			speech = FALLBACK_IDLE_COMMENTS[randi() % FALLBACK_IDLE_COMMENTS.size()]
-
-	var performance := _resolve_player_performance(player_message, gesture, emotion, emotion_intensity)
-	gesture = performance["gesture"]
-	var expression_performance := _resolve_expression_performance(
-		player_message,
-		String(performance.get("expression", emotion)),
-		emotion_intensity,
-		player_message,
-		speech
-	)
-
-	# 输出
-	if not speech.is_empty():
-		MessageBus.route_agent_output(agent_id, speech, emotion)
-
-	# 发出表现层 cue
+## [T1][T4.5] Emit a MessageBus performance cue and delegate expression emission to PerformanceResolver.
+## Shared between _handle_decision and _use_local_fallback to avoid duplicated emission blocks.
+## Side effects: emits MessageBus.performance_cue and delegates to _perf_resolver.emit_expression_performance.
+func _emit_performance_cues(gesture: String, emotion: String, agent_id: String,
+							performance: Dictionary, expression_performance: Dictionary,
+							source_label: String) -> void:
 	MessageBus.performance_cue.emit(gesture, {
-		"source": "local",
+		"source": source_label,
 		"agent_id": agent_id,
 		"emotion": emotion,
 		"motion_provider": performance["provider"],
@@ -568,30 +384,83 @@ func _use_local_fallback(player_message: String, source: AffordanceTypes.Trigger
 		"router_action_id": performance.get("action_id", ""),
 		"router_target": performance.get("target", ""),
 	})
-	_emit_expression_performance(expression_performance, {
-		"source": "local",
+	_perf_resolver.emit_expression_performance(expression_performance, {
+		"source": source_label,
 		"agent_id": agent_id,
 		"motion_provider": performance["provider"],
 		"router_action_id": performance.get("action_id", ""),
 	})
 
-	# GOAP 分解。纯聊天/无决定时只短暂停顿，不交给规划器制造未知 Goal 警告。
-	var actions: Array
+
+## [T1][T4.5] Resolve GOAP actions from a goal; prefers compiled_plan, falls back to GOAPPlanner.
+## Includes _infer_actions_from_goal fallback when formal planning returns only IDLE.
+## Side effects: creates and frees a GOAPPlanner node when formal planning is attempted.
+func _resolve_actions_from_goal(goal: String, compiled_plan: Array) -> Array:
 	if not compiled_plan.is_empty():
-		actions = compiled_plan
-	elif goal == "idle" or goal == "chat_with_player":
-		actions = [AffordanceTypes.PrimitiveAction.new(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
-	else:
-		var goap = GOAPPlanner.new()
-		add_child(goap)
-		actions = goap.plan(goal)
-		goap.queue_free()
+		return compiled_plan
+	if goal == "idle" or goal == "chat_with_player":
+		return [AffordanceTypes.PrimitiveAction.new(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
+	var goap = GOAPPlanner.new()
+	add_child(goap)
+	var actions = goap.plan(goal)
+	if actions.is_empty() or (actions.size() == 1 and actions[0].type == AffordanceTypes.Primitive.IDLE):
+		actions = _infer_actions_from_goal(goal)
+	goap.queue_free()
+	return actions
+
+
+# === Local fallback: deterministic rules when no LLM ===
+
+## [T1][C1][X3] Execute local-rule fallback decision path.
+## Gets a structured decision from LocalFallbackDecider, then resolves performance
+## and emits side effects (signals, GOAP).
+## Side effects: emits speech, performance cues, GOAP actions, status.
+func _use_local_fallback(player_message: String, source: AffordanceTypes.TriggerSource, triggered: Array) -> void:
+	var agent_id: String = current_trigger.get("agent_id", "main_agent")
+	var sim = WorldSimulator.get_state_snapshot()
+	var needs = sim["needs"]
+
+	# Get a pure decision from the extracted fallback policy — no side effects yet
+	var trigger_need_type = current_trigger.get("data", {}).get("need_type")
+	var decision: Dictionary = _fallback_decider.decide(
+		player_message, source, triggered, needs, _motion_router, trigger_need_type)
+
+	var speech: String = decision["speech"]
+	var emotion: String = decision["emotion"]
+	var goal: String = decision["goal"]
+	var gesture: String = decision["gesture"]
+	var emotion_intensity: float = decision["emotion_intensity"]
+	var compiled_plan: Array = decision["compiled_plan"]
+
+	# Resolve performance
+	var performance: Dictionary = _perf_resolver.resolve_player_performance(
+		player_message, gesture, emotion, emotion_intensity, "", _motion_router)
+	gesture = performance["gesture"]
+	var expression_performance: Dictionary = _perf_resolver.resolve_expression_performance(
+		player_message,
+		String(performance.get("expression", emotion)),
+		emotion_intensity,
+		player_message,
+		speech,
+		_expression_router)
+
+	# Emit speech
+	if not speech.is_empty():
+		MessageBus.route_agent_output(agent_id, speech, emotion)
+
+	# Emit performance cues and actions
+	_emit_performance_cues(gesture, emotion, agent_id, performance, expression_performance, "local")
+	var actions := _resolve_actions_from_goal(goal, compiled_plan)
 	MessageBus.emit_actions.emit(agent_id, actions)
 
 	MessageBus.ui_status_changed.emit("已使用本地规则回复", "done")
 	_finish_cycle()
 
 
+# === Cycle lifecycle ===
+
+## [T4.5] Complete the current processing cycle; dequeue next pending player trigger if any.
+## Side effects: may call _on_trigger deferred.
 func _finish_cycle() -> void:
 	is_processing = false
 	if _pending_player_triggers.is_empty():
@@ -600,168 +469,10 @@ func _finish_cycle() -> void:
 	call_deferred("_on_trigger", next_trigger["agent_id"], next_trigger["source"], next_trigger["data"])
 
 
+## [T4.5] Check whether an agent is currently performing a non-idle activity.
+## Pure query; no side effects.
 func _is_agent_busy(agent_id: String) -> bool:
 	for node in get_tree().get_nodes_in_group("agents"):
 		if node.agent_name == agent_id and node.current_activity != "idle":
 			return true
 	return false
-
-
-# 校验并净化 LLM 返回的 gesture 字段
-func _validate_and_sanitize_gesture(gesture: String) -> String:
-	var normalized = gesture.strip_edges().to_lower()
-	if not PerformanceCueTypes.is_valid_gesture(normalized):
-		push_warning("CognitiveCycle: unknown gesture '%s' from LLM, falling back to idle" % gesture)
-		return "idle"
-	return normalized
-
-
-func _resolve_player_performance(player_message: String, fallback_gesture: String, emotion: String, intensity: float, motion_query: String = "") -> Dictionary:
-	var safe_gesture := _validate_and_sanitize_gesture(fallback_gesture)
-	var safe_expression := emotion.strip_edges().to_lower()
-	if safe_expression not in ["neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk"]:
-		safe_expression = "neutral"
-	if player_message.strip_edges().is_empty() or not _motion_router or not _motion_router.is_ready():
-		return {
-			"gesture": safe_gesture,
-			"expression": safe_expression,
-			"provider": "library",
-			"generation_prompt": "",
-			"goal": "",
-			"plan": [],
-			"reply": "",
-			"target": "",
-			"action_id": "",
-		}
-
-	var route_text := motion_query.strip_edges() if not motion_query.strip_edges().is_empty() else player_message
-	var routed: Dictionary = _route_player_intent(route_text, safe_gesture, safe_expression, intensity)
-	var routed_clip := String(routed.get("clip", safe_gesture))
-	if routed.get("action_id", "") == "talk" and float(routed.get("confidence", 0.0)) <= 0.25:
-		routed_clip = safe_gesture
-	if routed.get("provider", "library") == "light_t2m":
-		routed_clip = String(routed.get("fallback_clip", safe_gesture))
-	if not PerformanceCueTypes.is_valid_gesture(routed_clip):
-		routed_clip = safe_gesture
-	return {
-		"gesture": routed_clip,
-		"expression": String(routed.get("expression", safe_expression)),
-		"provider": String(routed.get("provider", "library")),
-		"generation_prompt": String(routed.get("generation_prompt", "")),
-		"goal": String(routed.get("goal", "")),
-		"plan": routed.get("plan", []),
-		"reply": String(routed.get("reply", "")),
-		"target": String(routed.get("target", "")),
-		"action_id": String(routed.get("action_id", "")),
-	}
-
-
-func _resolve_expression_performance(expression_query: String, fallback_expression: String, intensity: float, player_message: String, speech: String) -> Dictionary:
-	var safe_expression := fallback_expression.strip_edges().to_lower()
-	if safe_expression not in ["neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk"]:
-		safe_expression = "neutral"
-	if not _expression_router or not _expression_router.is_ready():
-		return {
-			"expression": safe_expression,
-			"intensity": clampf(intensity, 0.0, 1.0),
-			"morph_weights": {},
-			"provider": "fallback",
-		}
-	var query := expression_query.strip_edges()
-	if query.is_empty():
-		query = player_message.strip_edges()
-	if query.is_empty():
-		query = speech.strip_edges()
-	if query.is_empty():
-		query = safe_expression
-	return _expression_router.route(query, safe_expression, intensity)
-
-
-func _emit_expression_performance(expression_performance: Dictionary, context: Dictionary) -> void:
-	var merged_context := context.duplicate(true)
-	merged_context["expression_provider"] = String(expression_performance.get("provider", "fallback"))
-	merged_context["expression_components"] = expression_performance.get("components", [])
-	var weights: Dictionary = expression_performance.get("morph_weights", {})
-	if weights.is_empty():
-		MessageBus.expression_cue.emit(
-			String(expression_performance.get("expression", "neutral")),
-			float(expression_performance.get("intensity", 1.0)),
-			merged_context
-		)
-	else:
-		MessageBus.expression_blend_cue.emit(expression_performance, merged_context)
-
-
-func _route_player_intent(player_message: String, fallback_gesture: String, emotion: String, intensity: float) -> Dictionary:
-	if player_message.strip_edges().is_empty() or not _motion_router or not _motion_router.is_ready():
-		return {}
-	return _motion_router.route(player_message, {
-		"gesture": fallback_gesture,
-		"emotion": emotion,
-		"intensity": intensity,
-	})
-
-
-func _is_actionable_router_decision(routed: Dictionary) -> bool:
-	if routed.is_empty() or float(routed.get("confidence", 0.0)) < 0.5:
-		return false
-	if not String(routed.get("goal", "")).is_empty():
-		return true
-	if routed.get("plan", []) is Array and not routed.get("plan", []).is_empty():
-		return true
-	var locomotion := String(routed.get("locomotion", "none"))
-	return locomotion not in ["", "none"]
-
-
-func _infer_explicit_player_goal(player_message: String) -> String:
-	var routed := _route_player_intent(player_message, "idle", "neutral", 0.5)
-	var routed_goal := String(routed.get("goal", ""))
-	if not routed_goal.is_empty() and float(routed.get("confidence", 0.0)) >= 0.5:
-		return routed_goal
-	var message = player_message.to_lower()
-	if (("绕" in message or "转" in message) and "房间" in message and "一圈" in message) or "巡逻" in message:
-		return "patrol_room"
-	if "随便走走" in message or "房间逛逛" in message or "走一走" in message:
-		return "wander_room"
-	if "看电视" in message or "开电视" in message or "电视节目" in message or "tv" in message:
-		return "watch_tv"
-	if "看书" in message or "读书" in message or "读小说" in message:
-		return "read_book"
-	if "浇花" in message or "浇水" in message or "浇植物" in message:
-		return "water_plant"
-	if "休息" in message or "坐沙发" in message:
-		return "rest_on_sofa"
-	if "喝奶茶" in message:
-		return "drink_milk_tea"
-	return ""
-
-
-func _build_explicit_player_instruction(player_message: String) -> String:
-	var goal = _infer_explicit_player_goal(player_message)
-	if goal.is_empty():
-		return "自然、直接地回应本轮玩家消息。"
-	return "玩家提出了明确可执行意图，goal 必须为 '%s'，speech 必须直接回应这项活动。" % goal
-
-
-func _ensure_relevant_acknowledgement(goal: String, speech: String) -> String:
-	var required_keywords = {
-		"patrol_room": ["绕", "巡逻", "一圈"],
-		"wander_room": ["走走", "逛"],
-		"watch_tv": ["电视", "节目"],
-		"read_book": ["书", "小说"],
-		"water_plant": ["浇", "小绿", "植物"],
-		"rest_on_sofa": ["休息", "沙发", "坐"],
-		"drink_milk_tea": ["奶茶", "喝"],
-	}
-	for keyword in required_keywords.get(goal, []):
-		if keyword in speech:
-			return speech
-	match goal:
-		"patrol_room": return "好呀，我去绕房间走一圈！"
-		"wander_room": return "好呀，我在房间里随便走走～"
-		"watch_tv": return "好呀，我们一起看电视吧！"
-		"read_book": return "好呀，我们一起看会儿书吧！"
-		"water_plant": return "好呀，我们一起给小绿浇水吧！"
-		"rest_on_sofa": return "好呀，我们去沙发上休息一下吧。"
-		"drink_milk_tea": return "好呀，我们一起喝奶茶吧！"
-	return speech
