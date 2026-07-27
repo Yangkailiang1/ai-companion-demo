@@ -15,6 +15,7 @@ var _plan_document: Dictionary = {}
 var _plan_error := ""
 var _failed := false
 var _submitted_script := ""
+var _required_agents: Array[String] = []
 
 
 ## [D3][X3] 延迟启动真实 ECNU 动态编剧验收。
@@ -39,6 +40,7 @@ func _run() -> void:
 	bus.story_plan_ready.connect(_on_plan_ready)
 	bus.story_plan_failed.connect(_on_plan_failed)
 	_submitted_script = _resolve_source_script()
+	_required_agents = _derive_required_agents(_submitted_script)
 	if not planner.plan_script(_submitted_script):
 		_fail("planner refused live request: %s" % planner.get_last_error())
 		_finish(scene)
@@ -68,6 +70,21 @@ func _resolve_source_script() -> String:
 	return " ".join(args).strip_edges()
 
 
+## [D3][C6.2] 把玩家剧本中点名的注册角色转为本次必须出现的 Agent ID。
+func _derive_required_agents(source: String) -> Array[String]:
+	var required: Array[String] = []
+	var registry := root.get_node("CharacterAdapterRegistry")
+	for agent_id in registry.get_registered_agent_ids():
+		var adapter: Dictionary = registry.get_character_adapter(agent_id)
+		var display_name := String(adapter.get(
+			"display_name",
+			root.get_node("CodifiedProfile").get_agent_display_name(agent_id),
+		))
+		if not display_name.is_empty() and display_name in source:
+			required.append(agent_id)
+	return required
+
+
 ## [D3] 等待 LLM 规划或失败信号，实施真实网络超时。
 func _wait_for_plan(timeout_ms: int) -> void:
 	var started := Time.get_ticks_msec()
@@ -93,7 +110,9 @@ func _wait_for_director(director: Node, timeout_ms: int) -> void:
 func _verify_plan_contract() -> void:
 	var cast: Array = _plan_document.get("cast", [])
 	var beats: Array = _plan_document.get("beats", [])
-	_assert("main_agent" in cast and "jue_agent" in cast, "ECNU plan did not cast both agents")
+	_assert(not _required_agents.is_empty(), "source script did not name any registered actor")
+	for agent_id in _required_agents:
+		_assert(agent_id in cast, "ECNU plan omitted named actor %s" % agent_id)
 	_assert(beats.size() >= 4, "ECNU plan is too short for a multi-character scene")
 	var actors := {}
 	var has_movement := false
@@ -110,7 +129,8 @@ func _verify_plan_contract() -> void:
 			interactions["%s.%s" % [
 				interaction.get("object", ""), interaction.get("verb", ""),
 			]] = true
-	_assert(actors.has("main_agent") and actors.has("jue_agent"), "one cast member received no beats")
+	for agent_id in _required_agents:
+		_assert(actors.has(agent_id), "named actor %s received no beats" % agent_id)
 	_assert(has_movement, "ECNU plan contains no embodied movement")
 	_assert(has_performance, "ECNU plan contains no gesture or expression")
 	_assert(has_dialogue, "ECNU plan contains no dialogue")
@@ -124,14 +144,14 @@ func _verify_plan_contract() -> void:
 		_assert(interactions.has("book.read"), "ECNU plan omitted requested book.read")
 
 
-## [D2][C5] 验证导演成功完成，并分别为两名角色增加剧情记忆。
+## [D2][C5] 验证导演成功完成，并为每名被点名角色增加剧情记忆。
 func _verify_execution(director: Node, memory: Node) -> void:
 	_assert(
 		String(director.get_diagnostics().last_error).is_empty(),
 		"director rejected live plan: %s" % director.get_diagnostics().last_error,
 	)
 	var summary := String(_plan_document.get("memory_summary", ""))
-	for agent_id in ["main_agent", "jue_agent"]:
+	for agent_id in _required_agents:
 		_assert(
 			_has_story_memory(memory, agent_id, summary),
 			"%s did not receive live-story memory" % agent_id,

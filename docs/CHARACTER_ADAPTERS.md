@@ -138,6 +138,11 @@ All three packages use the same runtime contract:
 - a generated multi-role story can target all available local actors without
   hard-coding their model skeletons in StoryDirector.
 
+The live ECNU acceptance now derives required cast members from every registered
+display name mentioned in the player's script. A five-character test using
+咕咕嘎嘎、诀、卡提希娅、相里要 and 遐蝶 produced and executed 16 beats with
+movement, object interaction, dialogue, expressions and per-character memory.
+
 The converted GLB and its manifest are ignored by Git. Open-source checkouts
 therefore run with the built-in characters only, while an authorized local
 installation can add multiple manifests without editing StoryDirector.
