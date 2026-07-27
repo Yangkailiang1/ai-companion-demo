@@ -198,11 +198,13 @@ func _look_at(params: Dictionary) -> void:
 
 
 func _pick_up(params: Dictionary) -> void:
+	_perform_object_verb(String(params.get("object", "")), "pick_up")
 	await get_tree().create_timer(0.5).timeout
 	_on_action_finished()
 
 
 func _put_down(params: Dictionary) -> void:
+	_perform_object_verb(String(params.get("object", "")), "put_down")
 	await get_tree().create_timer(0.5).timeout
 	_on_action_finished()
 
@@ -215,6 +217,15 @@ func _sit(params: Dictionary) -> void:
 		_apply_object_effects(object)
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
+
+
+## [C4.4] 让 PICK_UP/PUT_DOWN 原语调用真实物体处理器，而不是只等待动画时间。
+func _perform_object_verb(object_id: String, verb: String) -> void:
+	var object = SemanticWorld.get_object(object_id)
+	if object == null or not is_instance_valid(object.godot_node):
+		return
+	if object.godot_node.has_method("perform_interaction"):
+		object.godot_node.perform_interaction(verb, _agent_id())
 
 
 # === 内部 ===

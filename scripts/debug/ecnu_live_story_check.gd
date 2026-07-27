@@ -142,6 +142,12 @@ func _verify_plan_contract() -> void:
 		_assert(interactions.has("plant.water"), "ECNU plan omitted requested plant.water")
 	if "读一会儿书" in _submitted_script:
 		_assert(interactions.has("book.read"), "ECNU plan omitted requested book.read")
+	if "关闭壁灯" in _submitted_script:
+		_assert(interactions.has("room_lights.turn_off"), "ECNU plan omitted room_lights.turn_off")
+	if "浏览书架" in _submitted_script:
+		_assert(interactions.has("bookshelf.browse"), "ECNU plan omitted bookshelf.browse")
+	if "查看茶几" in _submitted_script:
+		_assert(interactions.has("coffee_table.inspect"), "ECNU plan omitted coffee_table.inspect")
 
 
 ## [D2][C5] 验证导演成功完成，并为每名被点名角色增加剧情记忆。

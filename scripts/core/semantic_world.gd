@@ -92,6 +92,12 @@ func _create_default_objects() -> void:
 		 "consumable": true, "effects": {"hunger": -5, "fun": 10}},
 		{"id": "plant", "name": "绿植", "description": "一盆翠绿的盆栽", "state": "需要浇水",
 		 "affordances": ["water", "prune", "look_at"], "pos": [-2.0, 0, 3.5], "ip": [-2.0, 0, 2.8]},
+		{"id": "coffee_table", "name": "茶几", "description": "一张结实的木质茶几", "state": "桌面整洁",
+		 "affordances": ["inspect", "place_item"], "pos": [0.65, 0.19, 0.72], "ip": [0.65, 0, -0.05]},
+		{"id": "bookshelf", "name": "书架", "description": "靠墙的白色书架", "state": "书籍排列整齐",
+		 "affordances": ["browse", "take_book", "put_book_back"], "pos": [3.72, 1.1, -2.05], "ip": [3.05, 0, -1.75]},
+		{"id": "room_lights", "name": "客厅壁灯开关", "description": "控制暖色壁灯", "state": "暖光已开启",
+		 "affordances": ["turn_on", "turn_off", "dim"], "pos": [-3.82, 1.2, -0.65], "ip": [-3.15, 0, -0.65]},
 	]
 	for d in defaults:
 		var obj = ObjectData.new()

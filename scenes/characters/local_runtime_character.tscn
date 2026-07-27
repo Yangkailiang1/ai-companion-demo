@@ -22,6 +22,9 @@ agent_name = "local_character"
 position = Vector3(0, 0.65, 0)
 shape = SubResource("CapsuleShape_character")
 
+[node name="CarryAnchor" type="Marker3D" parent="."]
+position = Vector3(0, 1.18, 0.34)
+
 [node name="ModelRoot" type="Node3D" parent="."]
 
 [node name="CharacterRuntimeBinding" type="Node" parent="."]

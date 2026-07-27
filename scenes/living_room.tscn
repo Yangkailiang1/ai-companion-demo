@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=89 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -33,6 +33,7 @@
 [ext_resource type="Script" path="res://scripts/objects/plant_state.gd" id="31_plant_state"]
 [ext_resource type="Script" path="res://scripts/objects/tv_state.gd" id="32_tv_state"]
 [ext_resource type="Script" path="res://scripts/characters/local_character_spawner.gd" id="33_local_character_spawner"]
+[ext_resource type="Script" path="res://scripts/objects/room_lights_state.gd" id="34_room_lights_state"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -48,6 +49,38 @@ size = Vector3(2, 0.5, 0.8)
 
 [sub_resource type="BoxShape3D" id="shape_sofa"]
 size = Vector3(2, 0.5, 0.8)
+
+[sub_resource type="BoxShape3D" id="shape_floor"]
+size = Vector3(8, 0.1, 8)
+
+[sub_resource type="BoxShape3D" id="shape_wall_back"]
+size = Vector3(8, 3, 0.2)
+
+[sub_resource type="BoxShape3D" id="shape_wall_side"]
+size = Vector3(0.2, 3, 8)
+
+[sub_resource type="BoxShape3D" id="shape_table"]
+size = Vector3(2.1, 0.5, 1.1)
+
+[sub_resource type="BoxShape3D" id="shape_tv"]
+size = Vector3(2.5, 1.2, 0.24)
+
+[sub_resource type="BoxShape3D" id="shape_book"]
+size = Vector3(0.3, 0.08, 0.2)
+
+[sub_resource type="CylinderShape3D" id="shape_cup"]
+radius = 0.15
+height = 0.3
+
+[sub_resource type="CylinderShape3D" id="shape_plant"]
+radius = 0.38
+height = 1.1
+
+[sub_resource type="BoxShape3D" id="shape_bookshelf"]
+size = Vector3(0.72, 2.35, 0.48)
+
+[sub_resource type="BoxShape3D" id="shape_wall_switch"]
+size = Vector3(0.08, 0.22, 0.06)
 
 [sub_resource type="BoxMesh" id="mesh_table"]
 size = Vector3(2.1, 0.35, 1.1)
@@ -277,6 +310,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
 mesh = SubResource("mesh_floor")
 surface_material_override/0 = SubResource("mat_floor")
 
+[node name="FloorPhysics" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.05, 0)
+
+[node name="FloorCollision" type="CollisionShape3D" parent="FloorPhysics"]
+shape = SubResource("shape_floor")
+
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 script = ExtResource("7_navigation_region")
 
@@ -284,6 +323,12 @@ script = ExtResource("7_navigation_region")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4)
 mesh = SubResource("mesh_wall")
 surface_material_override/0 = SubResource("mat_wall")
+
+[node name="WallBackPhysics" type="StaticBody3D" parent="."]
+position = Vector3(0, 1.5, -4)
+
+[node name="WallBackCollision" type="CollisionShape3D" parent="WallBackPhysics"]
+shape = SubResource("shape_wall_back")
 
 [node name="BaseboardBack" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.08, -3.87)
@@ -375,10 +420,32 @@ light_color = Color(1, 0.62, 0.34, 1)
 light_energy = 0.5
 omni_range = 2.2
 
+[node name="RoomLightSwitch" type="StaticBody3D" parent="."]
+position = Vector3(-3.82, 1.2, -0.65)
+script = ExtResource("1_interact")
+object_id = "room_lights"
+object_name = "客厅壁灯开关"
+
+[node name="SwitchMesh" type="MeshInstance3D" parent="RoomLightSwitch"]
+mesh = SubResource("mesh_wall_lamp_base")
+surface_material_override/0 = SubResource("mat_shelf_wood")
+
+[node name="SwitchCollision" type="CollisionShape3D" parent="RoomLightSwitch"]
+shape = SubResource("shape_wall_switch")
+
+[node name="RoomLightsState" type="Node" parent="RoomLightSwitch"]
+script = ExtResource("34_room_lights_state")
+
 [node name="WallLeft" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
 mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
+
+[node name="WallLeftPhysics" type="StaticBody3D" parent="."]
+position = Vector3(-4, 1.5, 0)
+
+[node name="WallLeftCollision" type="CollisionShape3D" parent="WallLeftPhysics"]
+shape = SubResource("shape_wall_side")
 
 [node name="BaseboardLeft" type="MeshInstance3D" parent="."]
 position = Vector3(-3.87, 0.08, 0)
@@ -389,6 +456,12 @@ surface_material_override/0 = SubResource("mat_baseboard")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 0)
 mesh = SubResource("mesh_wall_side")
 surface_material_override/0 = SubResource("mat_wall")
+
+[node name="WallRightPhysics" type="StaticBody3D" parent="."]
+position = Vector3(4, 1.5, 0)
+
+[node name="WallRightCollision" type="CollisionShape3D" parent="WallRightPhysics"]
+shape = SubResource("shape_wall_side")
 
 [node name="BaseboardRight" type="MeshInstance3D" parent="."]
 position = Vector3(3.87, 0.08, 0)
@@ -451,21 +524,33 @@ scale = Vector3(1.75, 1.75, 1.75)
 [node name="TVState" type="Node" parent="TV"]
 script = ExtResource("32_tv_state")
 
-[node name="CoffeeTable" type="Node3D" parent="."]
+[node name="TVCollision" type="CollisionShape3D" parent="TV"]
+shape = SubResource("shape_tv")
+
+[node name="CoffeeTable" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.19, 0.72)
+script = ExtResource("1_interact")
+object_id = "coffee_table"
+object_name = "茶几"
 
 [node name="CoffeeTableModel" parent="CoffeeTable" instance=ExtResource("10_table_model")]
 position = Vector3(0, -0.19, 0)
 rotation = Vector3(0, 1.570796, 0)
 scale = Vector3(1.55, 1.55, 1.55)
 
+[node name="CoffeeTableCollision" type="CollisionShape3D" parent="CoffeeTable"]
+position = Vector3(0, 0.1, 0)
+shape = SubResource("shape_table")
+
 [node name="Rug" type="MeshInstance3D" parent="."]
 transform = Transform3D(1.25, 0, 0, 0, 1, 0, 0, 0, 1.2, -0.2, 0.005, 0.9)
 mesh = SubResource("mesh_rug")
 surface_material_override/0 = SubResource("mat_rug")
 
-[node name="Book" type="StaticBody3D" parent="."]
+[node name="Book" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 0.46, 0.72)
+mass = 0.25
+freeze = true
 script = ExtResource("1_interact")
 object_id = "book"
 object_name = "一本书"
@@ -474,8 +559,13 @@ object_name = "一本书"
 mesh = SubResource("mesh_book")
 surface_material_override/0 = SubResource("mat_book")
 
-[node name="MilkTea" type="StaticBody3D" parent="."]
+[node name="BookCollision" type="CollisionShape3D" parent="Book"]
+shape = SubResource("shape_book")
+
+[node name="MilkTea" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.55, 0.72)
+mass = 0.35
+freeze = true
 script = ExtResource("1_interact")
 object_id = "milk_tea"
 object_name = "奶茶"
@@ -483,6 +573,9 @@ object_name = "奶茶"
 [node name="MilkTeaMesh" type="MeshInstance3D" parent="MilkTea"]
 mesh = SubResource("mesh_cup")
 surface_material_override/0 = SubResource("mat_milk_tea")
+
+[node name="MilkTeaCollision" type="CollisionShape3D" parent="MilkTea"]
+shape = SubResource("shape_cup")
 
 [node name="Plant" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 0.3, -2.65)
@@ -502,6 +595,10 @@ scale = Vector3(0.82, 0.82, 0.82)
 [node name="PlantState" type="Node" parent="Plant"]
 script = ExtResource("31_plant_state")
 
+[node name="PlantCollision" type="CollisionShape3D" parent="Plant"]
+position = Vector3(0, 0.25, 0)
+shape = SubResource("shape_plant")
+
 [node name="PlantStatusLabel" type="Label3D" parent="Plant"]
 position = Vector3(0.42, 1.08, 0)
 text = "💧需要浇水"
@@ -512,10 +609,19 @@ outline_modulate = Color(0.05, 0.08, 0.12, 0.95)
 billboard = 1
 no_depth_test = true
 
-[node name="BookshelfModel" parent="." instance=ExtResource("13_shelf_model")]
+[node name="Bookshelf" type="StaticBody3D" parent="."]
 position = Vector3(3.72, 0, -2.05)
+script = ExtResource("1_interact")
+object_id = "bookshelf"
+object_name = "书架"
+
+[node name="BookshelfModel" parent="Bookshelf" instance=ExtResource("13_shelf_model")]
 rotation = Vector3(0, -1.570796, 0)
 scale = Vector3(1.05, 1.05, 1.05)
+
+[node name="BookshelfCollision" type="CollisionShape3D" parent="Bookshelf"]
+position = Vector3(0, 1.175, 0)
+shape = SubResource("shape_bookshelf")
 
 [node name="CeilingLampModel" parent="." instance=ExtResource("14_lamp_model")]
 position = Vector3(0.45, 2.8, 0.55)
@@ -533,6 +639,9 @@ agent_name = "main_agent"
 [node name="AgentCollision" type="CollisionShape3D" parent="Agent"]
 position = Vector3(0, 0.625, 0)
 shape = SubResource("shape_agent")
+
+[node name="CarryAnchor" type="Marker3D" parent="Agent"]
+position = Vector3(0, 1.15, 0.38)
 
 [node name="AgentBody" type="MeshInstance3D" parent="Agent"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -609,6 +718,9 @@ agent_name = "jue_agent"
 [node name="AgentCollision" type="CollisionShape3D" parent="JueAgent"]
 position = Vector3(0, 0.78, 0)
 shape = SubResource("shape_agent")
+
+[node name="CarryAnchor" type="Marker3D" parent="JueAgent"]
+position = Vector3(0, 1.55, 0.38)
 
 [node name="JueModelRoot" type="Node3D" parent="JueAgent"]
 position = Vector3(0, 0.02, 0)

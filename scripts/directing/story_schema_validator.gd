@@ -9,13 +9,19 @@ const VALID_GESTURES: PackedStringArray = ["idle", "walk", "wave", "nod", "think
 const VALID_EXPRESSIONS: PackedStringArray = [
 	"neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk",
 ]
-const VALID_OBJECTS: PackedStringArray = ["sofa", "tv", "book", "milk_tea", "plant"]
+const VALID_OBJECTS: PackedStringArray = [
+	"sofa", "tv", "book", "milk_tea", "plant",
+	"coffee_table", "bookshelf", "room_lights",
+]
 const VALID_INTERACTIONS := {
 	"sofa": ["sit", "lie_down"],
 	"tv": ["turn_on", "turn_off", "watch", "change_channel"],
 	"book": ["read", "pick_up", "put_down"],
 	"milk_tea": ["drink", "pick_up", "put_down", "throw"],
 	"plant": ["water", "prune", "look_at"],
+	"coffee_table": ["inspect", "place_item"],
+	"bookshelf": ["browse", "take_book", "put_book_back"],
+	"room_lights": ["turn_on", "turn_off", "dim"],
 }
 const PAUSE_MIN: float = 0.1
 const PAUSE_MAX: float = 5.0

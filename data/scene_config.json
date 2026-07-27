@@ -1,7 +1,7 @@
 {
   "scene_info": {
     "name": "客厅",
-    "description": "一个温馨的客厅，阳光从窗户照进来，沙发柔软舒适，茶几上摆着小说，餐桌上有杯珍珠奶茶"
+    "description": "一个温馨的客厅，阳光从窗户照进来，沙发、茶几、书架和暖色壁灯都可以被角色使用"
   },
   "navigation": {
     "bounds": {"min": [-3.25, 0.0, -3.15], "max": [3.25, 0.0, 3.15]},
@@ -91,6 +91,36 @@
       "properties": {"moisture": 28.0, "health": 82.0, "growth_stage": 1, "healthy_hours": 0},
       "position": [2.75, 0.3, -2.65],
       "interaction_point": [2.2, 0.0, -2.0],
+      "needs_proximity": true
+    },
+    {
+      "id": "coffee_table",
+      "name": "茶几",
+      "description": "一张结实的木质茶几，可以查看或摆放小物件",
+      "state": "桌面整洁",
+      "affordances": ["inspect", "place_item"],
+      "position": [0.65, 0.19, 0.72],
+      "interaction_point": [0.65, 0.0, -0.05],
+      "needs_proximity": true
+    },
+    {
+      "id": "bookshelf",
+      "name": "书架",
+      "description": "靠墙的白色书架，摆着不同类型的读物",
+      "state": "书籍排列整齐",
+      "affordances": ["browse", "take_book", "put_book_back"],
+      "position": [3.72, 1.1, -2.05],
+      "interaction_point": [3.05, 0.0, -1.75],
+      "needs_proximity": true
+    },
+    {
+      "id": "room_lights",
+      "name": "客厅壁灯开关",
+      "description": "控制两侧暖色壁灯的开关和亮度",
+      "state": "暖光已开启",
+      "affordances": ["turn_on", "turn_off", "dim"],
+      "position": [-3.82, 1.2, -0.65],
+      "interaction_point": [-3.15, 0.0, -0.65],
       "needs_proximity": true
     }
   ]
