@@ -96,6 +96,7 @@ func play_story_document(document: Dictionary) -> int:
 	_did_pause_autonomy = false
 	_phase = Phase.PLAYING
 	if _resolve_cast_nodes():
+		_set_cast_collision_exceptions(true)
 		_pause_autonomy()
 		_interrupt_cast()
 		call_deferred("_execute_story")
@@ -313,7 +314,13 @@ func _await_move(actor_id: String, agent: Node3D, target: Vector3, epoch: int) -
 
 	if not is_instance_valid(agent) or agent.global_position.distance_to(target) > MOVE_ARRIVAL_TOLERANCE:
 		if epoch == _run_epoch:
-			_finish_story(false, "走位未到达: %s" % actor_id)
+			var distance := (
+				agent.global_position.distance_to(target)
+				if is_instance_valid(agent) else INF
+			)
+			_finish_story(false, "走位未到达: %s beat=%d target=%s distance=%.2f" % [
+				actor_id, _beat_index, target, distance,
+			])
 		return false
 	return true
 
@@ -378,6 +385,25 @@ func _interrupt_cast() -> void:
 		MessageBus.emit_actions.emit(actor_id, [])
 
 
+## [D2][C4] 演出期间仅让 cast 成员互相穿行，仍保留墙体和家具碰撞。
+## LLM 可能先把一名角色放在另一名角色的后续站位旁；临时例外避免互相卡死。
+func _set_cast_collision_exceptions(enabled: bool) -> void:
+	for index in range(_cast_ids.size()):
+		var actor = _cast_nodes.get(_cast_ids[index])
+		if not actor is CollisionObject3D:
+			continue
+		for other_index in range(index + 1, _cast_ids.size()):
+			var other = _cast_nodes.get(_cast_ids[other_index])
+			if not other is CollisionObject3D:
+				continue
+			if enabled:
+				actor.add_collision_exception_with(other)
+				other.add_collision_exception_with(actor)
+			else:
+				actor.remove_collision_exception_with(other)
+				other.remove_collision_exception_with(actor)
+
+
 ## [D2][T4.5] 统一幂等清理：成功时写剧情记忆和清空 last_error；
 ## 失败/取消保留 last_error；恢复自主调度原值；重置 run 状态。
 ## 取消后禁止写剧情记忆。
@@ -387,6 +413,7 @@ func _finish_story(success: bool, reason: String) -> void:
 		_last_error = ""  # 成功后 last_error 为空
 	else:
 		_last_error = reason
+	_set_cast_collision_exceptions(false)
 	_cast_nodes.clear()
 	_current_story = {}
 	_beat_index = 0

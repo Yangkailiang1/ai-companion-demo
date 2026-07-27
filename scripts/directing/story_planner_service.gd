@@ -8,12 +8,16 @@ extends Node
 const PromptBuilderScript = preload("res://scripts/directing/story_planning_prompt_builder.gd")
 const ValidatorScript = preload("res://scripts/directing/story_schema_validator.gd")
 const MAX_REPAIR_ATTEMPTS := 1
+const MAX_TRANSPORT_RETRIES := 1
+const REQUEST_TIMEOUT_SECONDS := 60.0
 
 var is_planning := false
 var _http: HTTPRequest
 var _source_script := ""
 var _last_prompt := ""
 var _repair_attempts := 0
+var _transport_retries := 0
+var _pending_prompt := ""
 var _last_error := ""
 
 
@@ -21,7 +25,7 @@ var _last_error := ""
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_http = HTTPRequest.new()
-	_http.timeout = 35.0
+	_http.timeout = REQUEST_TIMEOUT_SECONDS
 	add_child(_http)
 	_http.request_completed.connect(_on_request_completed)
 	MessageBus.performance_script_requested.connect(plan_script)
@@ -41,6 +45,7 @@ func plan_script(script_text: String) -> bool:
 	is_planning = true
 	_source_script = clean
 	_repair_attempts = 0
+	_transport_retries = 0
 	_last_error = ""
 	_last_prompt = PromptBuilderScript.new().build(clean)
 	MessageBus.story_plan_started.emit(clean)
@@ -63,6 +68,17 @@ func get_last_error() -> String:
 	return _last_error
 
 
+## [D3][X3] 返回不包含密钥或完整玩家文本的规划诊断摘要。
+func get_diagnostics() -> Dictionary:
+	return {
+		"is_planning": is_planning,
+		"repair_attempts": _repair_attempts,
+		"transport_retries": _transport_retries,
+		"last_error": _last_error,
+		"source_chars": _source_script.length(),
+	}
+
+
 ## [D3][T4.5] 接受可注入的 LLM 文本输出，供离线验收与未来本地模型复用。
 ## allow_repair 仅供真实网络响应使用；测试或本地模型失败时直接返回错误。
 func accept_planner_output(content: String, allow_repair: bool = false) -> bool:
@@ -75,13 +91,16 @@ func accept_planner_output(content: String, allow_repair: bool = false) -> bool:
 
 
 ## [D3][X3] 发送 OpenAI/Anthropic 兼容的结构化编剧请求。
-func _send_request(prompt: String) -> bool:
+func _send_request(prompt: String, reset_transport_retry: bool = true) -> bool:
+	_pending_prompt = prompt
+	if reset_transport_retry:
+		_transport_retries = 0
 	var body: Dictionary
 	var headers: PackedStringArray
 	if CognitiveCycle.llm_provider == "anthropic":
 		body = {
 			"model": CognitiveCycle.llm_model,
-			"max_tokens": 2200,
+			"max_tokens": 1800,
 			"messages": [{"role": "user", "content": prompt}],
 		}
 		headers = PackedStringArray([
@@ -96,8 +115,8 @@ func _send_request(prompt: String) -> bool:
 				{"role": "system", "content": "你是游戏演出编剧，只输出严格 JSON。"},
 				{"role": "user", "content": prompt},
 			],
-			"max_tokens": 2200,
-			"temperature": 0.55,
+			"max_tokens": 1800,
+			"temperature": 0.45,
 		}
 		headers = PackedStringArray([
 			"Content-Type: application/json",
@@ -121,6 +140,14 @@ func _on_request_completed(
 	if not is_planning or not ExperienceModeManager.is_performance_mode():
 		return
 	if response_code != 200:
+		if (
+			(response_code == 0 or response_code >= 500)
+			and _transport_retries < MAX_TRANSPORT_RETRIES
+		):
+			_transport_retries += 1
+			MessageBus.ui_status_changed.emit("编剧连接中断，正在重试一次…", "retrying")
+			_send_request(_pending_prompt, false)
+			return
 		_fail("编剧模型请求失败，HTTP %d" % response_code)
 		return
 	var envelope = JSON.parse_string(body.get_string_from_utf8())
@@ -135,6 +162,7 @@ func _on_request_completed(
 func _validate_and_play(document: Dictionary, allow_repair: bool) -> bool:
 	if document.has("story") and document["story"] is Dictionary:
 		document = document["story"]
+	document = _sanitize_optional_fields(document)
 	var validator = ValidatorScript.new(CharacterAdapterRegistry.get_registered_agent_ids())
 	if not validator.validate(document):
 		var errors: Array = validator.get_errors()
@@ -153,6 +181,25 @@ func _validate_and_play(document: Dictionary, allow_repair: bool) -> bool:
 	MessageBus.story_plan_ready.emit(normalized)
 	MessageBus.ui_status_changed.emit("AI 编排完成，开始演出《%s》" % normalized.title, "playing")
 	return true
+
+
+## [D3] 删除 LLM 常见的空可选字段；不修正角色、能力、地点或交互语义。
+## 这一步只把 `say: ""` 等价转换为“该 Beat 没有此字段”。
+func _sanitize_optional_fields(document: Dictionary) -> Dictionary:
+	var sanitized := document.duplicate(true)
+	var beats = sanitized.get("beats", [])
+	if not beats is Array:
+		return sanitized
+	for index in range(beats.size()):
+		if not beats[index] is Dictionary:
+			continue
+		var beat: Dictionary = beats[index]
+		for field in ["say", "gesture", "expression", "look_at_actor", "look_at_object"]:
+			if beat.has(field) and beat[field] is String and String(beat[field]).strip_edges().is_empty():
+				beat.erase(field)
+		beats[index] = beat
+	sanitized["beats"] = beats
+	return sanitized
 
 
 ## [D3] 将校验错误连同原始契约反馈给 LLM，最多自动修复一次。

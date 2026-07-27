@@ -30,7 +30,11 @@ func _on_agent_spoke(speaker_id: String, text: String, emotion: String) -> void:
 		_maybe_trigger_social_reply(listener_id, speaker_id, text)
 
 
+## [C5][D3] 自由模式可自发回应；演出模式对白由导演独占，禁止追加 LLM 台词。
 func _maybe_trigger_social_reply(listener_id: String, speaker_id: String, text: String) -> void:
+	if has_node("/root/ExperienceModeManager"):
+		if get_node("/root/ExperienceModeManager").is_performance_mode():
+			return
 	if randf() > SOCIAL_REPLY_PROBABILITY:
 		return
 	var pair_key := "%s<-:%s" % [listener_id, speaker_id]

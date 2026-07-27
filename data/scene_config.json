@@ -44,7 +44,7 @@
       "state": "空着",
       "affordances": ["sit", "lie_down"],
       "position": [-1.5, 0.25, 1.8],
-      "interaction_point": [-1.5, 0.0, 1.0],
+      "interaction_point": [-1.5, 0.0, 0.38],
       "needs_proximity": true,
       "effects": {"energy": 15, "fun": 5}
     },

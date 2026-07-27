@@ -145,15 +145,27 @@ func _strip_mode_prefix(text: String) -> String:
 	return text
 
 
-# World Simulator 事件 → 路由到 Agent
+## [C9][D3] 自由模式下把世界事件路由到角色；演出模式由导演独占角色控制。
 func route_simulation_event(agent_id: String, event_type: String, data: Dictionary) -> void:
 	world_state_changed.emit(event_type, data)
+	if _is_performance_mode():
+		return
 	agent_trigger_cycle.emit(agent_id, AffordanceTypes.TriggerSource.SIMULATION, data)
 
 
-# Idle Timer → 路由到 Agent
+## [C9][D3] 只在自由模式响应角色 IdleTimer，避免演出期间出现旁路认知请求。
 func route_idle_wake(agent_id: String) -> void:
+	if _is_performance_mode():
+		return
 	agent_trigger_cycle.emit(agent_id, AffordanceTypes.TriggerSource.IDLE_TIMER, {})
+
+
+## [D3] 查询模式边界；管理器未加载时安全回退到自由模式。
+func _is_performance_mode() -> bool:
+	return (
+		has_node("/root/ExperienceModeManager")
+		and get_node("/root/ExperienceModeManager").is_performance_mode()
+	)
 
 
 # Agent 输出 → 路由到 UI

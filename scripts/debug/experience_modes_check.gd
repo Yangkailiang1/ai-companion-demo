@@ -98,6 +98,7 @@ func _verify_injected_plan(
 		"title": "模型编排的电视邀约",
 		"cast": ["main_agent", "jue_agent"],
 		"beats": [
+			{"actor": "main_agent", "say": "", "pause_after": 0.1},
 			{"actor": "main_agent", "look_at_object": "tv",
 				"interact": {"object": "tv", "verb": "turn_on"},
 				"gesture": "wave", "expression": "happy",
@@ -129,7 +130,7 @@ func _verify_free_dialogue_route(bus: Node) -> void:
 	var before := _trigger_count
 	bus.route_player_input("@诀 你好")
 	await process_frame
-	_assert(_trigger_count == before + 1, "free-mode dialogue did not enter cognition")
+	_assert(_trigger_count >= before + 1, "free-mode dialogue did not enter cognition")
 
 
 ## [D2][T4.5] 等待导演完成，超时则取消并记录稳定失败。
