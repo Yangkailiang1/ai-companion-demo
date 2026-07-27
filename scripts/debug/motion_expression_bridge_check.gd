@@ -122,6 +122,7 @@ func _validate_expression_catalog() -> void:
 
 
 func _validate_scene_driver() -> void:
+	root.get_node("AutonomousBehaviorSystem").set_scheduler_enabled(false)
 	var scene: PackedScene = load("res://scenes/living_room.tscn")
 	var room := scene.instantiate()
 	root.add_child(room)
@@ -144,11 +145,21 @@ func _validate_scene_driver() -> void:
 	_assert(_max_morph_value(room, "blink") < 0.1, "transient blink must return to neutral")
 	var animation_driver = room.get_node_or_null("Agent/CharacterAnimationDriver")
 	_assert(animation_driver != null, "living room must include CharacterAnimationDriver")
-	message_bus.emit_signal("performance_cue", "walk", {"source": "bridge_check"})
+	message_bus.player_message_received.emit("bridge test", false)
+	await process_frame
+	message_bus.emit_signal(
+		"performance_cue",
+		"walk",
+		{"source": "bridge_check", "agent_id": "main_agent"},
+	)
 	await create_timer(0.1).timeout
 	message_bus.emit_signal("expression_cue", "angry", 0.8, {"source": "bridge_check"})
 	await create_timer(0.16).timeout
-	_assert(animation_driver.get_current_gesture() == "walk", "expression cue must not interrupt locomotion")
+	var gesture_after_expression := String(animation_driver.get_current_gesture())
+	_assert(
+		gesture_after_expression == "walk",
+		"expression cue must not interrupt locomotion; got %s" % gesture_after_expression,
+	)
 	room.queue_free()
 	await process_frame
 

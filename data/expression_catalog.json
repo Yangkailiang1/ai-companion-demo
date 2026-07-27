@@ -18,13 +18,13 @@
     },
     "sad": {
       "aliases": ["难过", "伤心", "沮丧", "sad", "upset"],
-      "morph_weights": {"blink": 0.12, "angry": 0.08},
+      "morph_weights": {"sad": 1.0, "blink": 0.08},
       "bone_fallback": {"head_pitch_degrees": 10.0, "eye_pitch_degrees": -4.0},
       "approximate": true
     },
     "surprised": {
       "aliases": ["惊讶", "吃惊", "意外", "surprised", "wow"],
-      "morph_weights": {"a": 0.25},
+      "morph_weights": {"surprised": 1.0, "a": 0.12},
       "bone_fallback": {"head_pitch_degrees": -7.0},
       "approximate": true
     },
@@ -36,7 +36,7 @@
     },
     "bored": {
       "aliases": ["无聊", "没意思", "bored"],
-      "morph_weights": {"blink": 0.2},
+      "morph_weights": {"bored": 0.9, "blink": 0.08},
       "bone_fallback": {"head_roll_degrees": 6.0},
       "approximate": true
     },

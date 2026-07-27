@@ -65,6 +65,11 @@ GLB 可以分别声明动作 clip、语义骨骼和表情 morph 映射，并自�
 跳过，不破坏公开构建。三名角色已同时通过点名路由、挥手、微笑、动态剧本
 cast 和独立记忆验收。
 
+`v0.8.6` 进一步验证三名角色的循环行走语义骨骼层，以及模型原生的
+`悲しい/困る/驚き/びっくり/照れ2/なごみ/じと目` 等表情通道。这里的行走仍是
+运行时 Overlay，不等同于已经烘焙 HumanML3D 动作；本地 HumanML3D 目录目前只有
+均值/方差统计量，待补充真实动作样本后才能进行离线重定向。
+
 适配配置以 `data/examples/chibi_character_manifest.example.json` 为模板。
 运行时由 `character_runtime_binding.gd` 注册，不需要为每个 Q 版角色复制
 StoryDirector、LLM、MemorySystem 或动作/表情路由器。

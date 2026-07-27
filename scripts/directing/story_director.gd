@@ -385,16 +385,16 @@ func _interrupt_cast() -> void:
 		MessageBus.emit_actions.emit(actor_id, [])
 
 
-## [D2][C4] 演出期间仅让 cast 成员互相穿行，仍保留墙体和家具碰撞。
-## LLM 可能先把一名角色放在另一名角色的后续站位旁；临时例外避免互相卡死。
+## [D2][C4] 演出期间让 cast 穿过所有角色，仍保留墙体和家具碰撞。
+## 非 cast 居民也可能站在导演规划的路径上；临时例外避免多角色场景卡死。
 func _set_cast_collision_exceptions(enabled: bool) -> void:
-	for index in range(_cast_ids.size()):
-		var actor = _cast_nodes.get(_cast_ids[index])
+	var all_agents := get_tree().get_nodes_in_group("agents")
+	for actor_id in _cast_ids:
+		var actor = _cast_nodes.get(actor_id)
 		if not actor is CollisionObject3D:
 			continue
-		for other_index in range(index + 1, _cast_ids.size()):
-			var other = _cast_nodes.get(_cast_ids[other_index])
-			if not other is CollisionObject3D:
+		for other in all_agents:
+			if other == actor or not other is CollisionObject3D:
 				continue
 			if enabled:
 				actor.add_collision_exception_with(other)

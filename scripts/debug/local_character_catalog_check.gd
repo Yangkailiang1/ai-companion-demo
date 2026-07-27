@@ -11,18 +11,27 @@ const LOCAL_ROLES := [
 		"name": "遐蝶",
 		"node": "CastoriceAgent",
 		"model": "res://assets/local_characters/castorice/castorice.glb",
+		"surprised_morph": "驚き",
+		"sad_morph": "悲しい",
+		"shy_morph": "なごみ",
 	},
 	{
 		"id": "cartethyia_agent",
 		"name": "卡提希娅",
 		"node": "CartethyiaAgent",
 		"model": "res://assets/local_characters/cartethyia/cartethyia.glb",
+		"surprised_morph": "びっくり",
+		"sad_morph": "困る",
+		"shy_morph": "照れ2",
 	},
 	{
 		"id": "xiangliyao_agent",
 		"name": "相里要",
 		"node": "XiangliyaoAgent",
 		"model": "res://assets/local_characters/xiangliyao/xiangliyao.glb",
+		"surprised_morph": "びっくり",
+		"sad_morph": "困る",
+		"shy_morph": "照れ2",
 	},
 ]
 
@@ -83,11 +92,39 @@ func _verify_each_role(scene: Node) -> void:
 		var driver := agent.get_node("CharacterExpressionDriver")
 		var morphs: PackedStringArray = driver.get_available_morph_names()
 		_assert("笑い" in morphs and "まばたき" in morphs, "%s morph aliases missing" % agent_id)
+		for key in ["surprised_morph", "sad_morph", "shy_morph"]:
+			_assert(String(role[key]) in morphs, "%s missing %s" % [agent_id, role[key]])
 		bus.performance_cue.emit("wave", {"agent_id": agent_id, "source": "catalog_test"})
 		bus.expression_cue.emit("happy", 0.8, {"agent_id": agent_id, "source": "catalog_test"})
 		await create_timer(0.22).timeout
 		_assert(overlay.get_current_overlay_gesture() == "wave", "%s did not wave" % agent_id)
 		_assert(_morph_value(agent, "笑い") > 0.3, "%s did not smile" % agent_id)
+		await _verify_library_extensions(bus, agent, overlay, role)
+
+
+## [C2.2][C3.2] 验证循环行走和模型专属惊讶、难过、害羞 Morph。
+func _verify_library_extensions(bus: Node, agent: Node, overlay: Node, role: Dictionary) -> void:
+	var agent_id := String(role.id)
+	bus.performance_cue.emit("walk", {"agent_id": agent_id, "source": "catalog_test"})
+	await create_timer(0.12).timeout
+	_assert(overlay.get_current_overlay_gesture() == "walk", "%s walk overlay missing" % agent_id)
+	bus.performance_cue.emit("idle", {"agent_id": agent_id, "source": "catalog_test"})
+	await process_frame
+	_assert(overlay.get_current_overlay_gesture() == "idle", "%s walk overlay did not stop" % agent_id)
+	bus.expression_cue.emit("surprised", 0.8, {"agent_id": agent_id, "source": "catalog_test"})
+	await create_timer(0.22).timeout
+	_assert(_morph_value(agent, String(role.surprised_morph)) > 0.35, "%s surprise missing" % agent_id)
+	bus.expression_cue.emit("sad", 0.8, {"agent_id": agent_id, "source": "catalog_test"})
+	await create_timer(0.22).timeout
+	_assert(_morph_value(agent, String(role.sad_morph)) > 0.35, "%s sad morph missing" % agent_id)
+	bus.expression_blend_cue.emit({
+		"expression": "shy_happy",
+		"morph_weights": {"shy": 1.0},
+		"intensity": 0.8,
+		"fade_duration": 0.12,
+	}, {"agent_id": agent_id, "source": "catalog_test"})
+	await create_timer(0.16).timeout
+	_assert(_morph_value(agent, String(role.shy_morph)) > 0.35, "%s shy morph missing" % agent_id)
 
 
 ## [D1][D2] 为当前存在的本地角色生成一场非写死角色数量的问候演出。

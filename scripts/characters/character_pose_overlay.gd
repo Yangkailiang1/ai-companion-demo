@@ -85,8 +85,13 @@ func _apply_runtime_pose() -> void:
 	_merge_pose(pose, _build_idle_pose(now_msec))
 	if _gesture_name != "idle" and _gesture_duration > 0.0:
 		var elapsed := float(now_msec - _gesture_started_msec) / 1000.0
-		var t := clampf(elapsed / _gesture_duration, 0.0, 1.0)
-		if t >= 1.0:
+		var overlay: Dictionary = _gesture_overlays.get(_gesture_name, {})
+		var is_looping := bool(overlay.get("loop", false))
+		var t := (
+			fposmod(elapsed, _gesture_duration) / _gesture_duration
+			if is_looping else clampf(elapsed / _gesture_duration, 0.0, 1.0)
+		)
+		if not is_looping and t >= 1.0:
 			_gesture_name = "idle"
 			_gesture_duration = 0.0
 		else:
@@ -117,7 +122,7 @@ func _build_gesture_pose(name: String, t: float) -> Dictionary:
 	if overlay.is_empty():
 		return {}
 	var result := {}
-	var envelope := sin(t * PI)
+	var envelope := 1.0 if bool(overlay.get("continuous", false)) else sin(t * PI)
 	var wave := sin(t * TAU * float(overlay.get("cycles", 1.0)))
 	for key in overlay.get("degrees", {}):
 		result[key] = _vec3_from_array(overlay["degrees"][key]) * envelope
@@ -161,6 +166,10 @@ func _on_performance_cue(gesture: String, context: Dictionary) -> void:
 	var normalized := gesture.strip_edges().to_lower()
 	if has_node("/root/CharacterAdapterRegistry"):
 		normalized = String(get_node("/root/CharacterAdapterRegistry").map_clip(agent_id, normalized, normalized))
+	if normalized == "idle":
+		_gesture_name = "idle"
+		_gesture_duration = 0.0
+		return
 	if not _gesture_overlays.has(normalized):
 		return
 	_gesture_name = normalized

@@ -111,7 +111,8 @@ func _on_world_state_changed(change_type: String, data: Dictionary) -> void:
 	_evaluation_pending = true
 	get_tree().create_timer(1.0).timeout.connect(func():
 		_evaluation_pending = false
-		evaluate_now()
+		if _scheduler_enabled:
+			evaluate_now()
 	)
 
 

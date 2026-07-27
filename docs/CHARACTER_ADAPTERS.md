@@ -138,6 +138,13 @@ All three packages use the same runtime contract:
 - a generated multi-role story can target all available local actors without
   hard-coding their model skeletons in StoryDirector.
 
+`v0.8.6` extends that contract with a looping semantic `walk` overlay. Movement
+still comes from the navigation controller, while mapped MMD hip, leg and arm
+bones provide visible gait until the controller emits `idle`. The expression
+adapter also maps shared `sad`, `surprised`, `shy`, `bored` and `confused`
+channels to each model's native Japanese morph names. These channels are
+validated against the live meshes, not merely accepted as configuration.
+
 The live ECNU acceptance now derives required cast members from every registered
 display name mentioned in the player's script. A five-character test using
 咕咕嘎嘎、诀、卡提希娅、相里要 and 遐蝶 produced and executed 16 beats with
@@ -156,6 +163,11 @@ To truly use the offline motion library across models:
 3. Bake each action id into character-specific animation clips.
 4. Export those clips into Godot as `AnimationPlayer` animations.
 5. Keep the LLM/router layer unchanged.
+
+The current local catalog has no real HumanML3D motion sample beyond dataset
+statistics (`Mean.npy` and `Std.npy`). Therefore `walk/wave/nod/think/happy/talk`
+currently use reviewed semantic bone overlays; richer full-body clips still
+require `.npy`/BVH/VMD source motion, offline retargeting and baking.
 
 This keeps intelligence and asset adaptation separate:
 

@@ -525,6 +525,8 @@ visible = false
 
 [node name="Agent" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0, 0.4)
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("2_agent")
 agent_name = "main_agent"
 
@@ -599,6 +601,8 @@ no_depth_test = true
 
 [node name="JueAgent" type="CharacterBody3D" parent="."]
 transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 1.62, 0, 0.1)
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("2_agent")
 agent_name = "jue_agent"
 
