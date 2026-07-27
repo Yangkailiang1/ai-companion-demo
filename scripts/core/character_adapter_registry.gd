@@ -37,6 +37,15 @@ func get_motion_adapter_type(agent_id: String) -> String:
 	return String(get_motion_adapter(agent_id).get("type", "animation_player"))
 
 
+## [C6][D1] 返回已注册的角色 ID 列表，纯读取。
+func get_registered_agent_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for key in _characters.keys():
+		ids.append(String(key))
+	ids.sort()
+	return ids
+
+
 func map_clip(agent_id: String, action_id: String, fallback_clip: String = "idle") -> String:
 	var motion_adapter := get_motion_adapter(agent_id)
 	var clip_map: Dictionary = motion_adapter.get("clip_map", {})

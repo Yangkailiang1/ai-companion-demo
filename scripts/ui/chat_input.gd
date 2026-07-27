@@ -35,6 +35,7 @@ var _input_base_scale := Vector2.ONE
 var _focus_caret_indicator: ColorRect
 
 
+## [S1][D1] 初始化温馨聊天 UI、输入焦点和剧情命令提示。
 func _ready():
 	if not line_edit or not send_button:
 		push_error("ChatInput: missing LineEdit or SendButton")
@@ -50,7 +51,7 @@ func _ready():
 	MessageBus.ui_status_changed.connect(_on_status_changed)
 	_apply_visual_style()
 	_create_focus_caret_indicator()
-	line_edit.placeholder_text = "和咕咕嘎嘎说点什么…也可以输入“诀，……”"
+	line_edit.placeholder_text = "输入对话 / @诀 / !剧情 cozy_evening"
 	line_edit.focus_mode = Control.FOCUS_CLICK
 	line_edit.mouse_default_cursor_shape = Control.CURSOR_IBEAM
 	line_edit.caret_blink = true

@@ -1,6 +1,6 @@
 # PROJECT_ARCHITECTURE.md — AI Companion Demo 架构文档
 
-> v0.1 | Godot 4.6.1 | GDScript | 最后更新: 2026-07-20
+> v0.8 | Godot 4.6.1 | GDScript | 最后更新: 2026-07-27
 
 ## 一、项目定位
 
@@ -29,6 +29,8 @@ Runtime 层不依赖任何 Demo 层的表现细节，可单独提取为 Godot �
 | **CognitiveCycle** | `scripts/core/cognitive_cycle.gd` | 认知循环主控：感知→记忆检索→Codified→LLM/fallback→GOAP→执行 的完整流程。无 LLM 时使用本地关键词 fallback |
 | **AgentPsycheSystem** | `scripts/core/agent_psyche_system.gd` | 每角色 OCEAN/动机、持续心境、注意、意图、活动厌倦和简化 Theory of Mind；生成 LangGraph 兼容状态 |
 | **AutonomousBehaviorSystem** | `scripts/core/autonomous_behavior_system.gd` | 环境状态驱动的自主任务调度：优先级、冷却、GOAP 组合任务、玩家打断与多角色结果记忆 |
+| **CharacterAdapterRegistry** | `scripts/core/character_adapter_registry.gd` | 按 Agent 注册模型动作、骨骼和表情适配；提供剧情 cast 白名单 |
+| **StoryDirector** | `scripts/directing/story_director.gd` | 执行已验证的小剧本 Beat：多角色走位、动作、表情、对白、取消与恢复 |
 
 ### 非 Autoload 类（Runtime 层）
 
@@ -37,6 +39,7 @@ Runtime 层不依赖任何 Demo 层的表现细节，可单独提取为 Godot �
 | **GOAPPlanner** | `scripts/core/goap_planner.gd` | Goal→Primitive Chain 分解器：10 个 Goal Blueprint（含 patrol/wander），支持模糊匹配、动态 auto_plan 与安全结构化计划 |
 | **ActionExecutor** | `scripts/core/action_executor.gd` | 原子动作执行器：顺序执行 NAVIGATE/INTERACT/SPEAK/IDLE/LOOK_AT/PICK_UP/PUT_DOWN/SIT，每步完成后触发下一步 |
 | **AffordanceTypes** | `scripts/objects/affordance_types.gd` | 纯枚举/类定义：PrimitiveAction、NeedType、TimeOfDay、Emotion、TriggerSource、NeedsState |
+| **StorySchemaValidator** | `scripts/directing/story_schema_validator.gd` | JSON 剧本的纯数据白名单校验与规范化 |
 
 ### Demo 层
 
@@ -47,6 +50,7 @@ Runtime 层不依赖任何 Demo 层的表现细节，可单独提取为 Godot �
 | **InteractableObject** | `scripts/objects/interactable_object.gd` | 可交互物体：挂载到 StaticBody3D，自动注册到 SemanticWorld |
 | **ChatInput** | `scripts/ui/chat_input.gd` | UI 控制器：聊天输入/发送、聊天记录显示（RichTextLabel）、HUD 状态条更新 |
 | **DialogueBubble** | `scripts/ui/dialogue_bubble.gd` | 3D 世界空间对话气泡：Sprite3D + Label3D + Timer 自动消失 |
+| **CharacterAnimationDriver** | `scripts/characters/character_animation_driver.gd` | 把统一动作/表情 cue 映射到各模型自己的动画与表情通道 |
 
 ---
 
@@ -170,6 +174,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 | 扩展点 | 当前状态 | 扩展方式 |
 |--------|---------|---------|
 | 新 Agent | AgentBase 通过 event `agent_id` 过滤 | 场景中添加新 CharacterBody3D+AgentBase，设置不同 `agent_name`；记忆按相同 ID 隔离 |
+| 新角色模型 | 语义表现 cue 与模型解耦 | 在 `character_runtime_adapters.json` 注册动作、骨骼、表情映射 |
+| 新剧情 | JSON Beat 白名单 | 在 `data/stories/` 添加剧本；参考 `docs/STORY_DIRECTOR_RUNTIME.md` |
 | 新角色心理 | OCEAN + motive + baseline mood | 在 `agent_psychology.json` 添加同一 `agent_id` 配置 |
 | 新物体 | SemanticWorld 的 ObjectData 表 | scene_config.json 添加条目 + 场景添加 StaticBody3D+InteractableObject |
 | 新 Goal | GOAP Goal Blueprint | GOAPPlanner._build_blueprints() 添加新映射 |
@@ -225,9 +231,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 
 ## 九、已知限制
 
-1. **无 NavMesh**：导航使用直接位置插值 fallback，Agent 可能穿墙
-2. **无骨骼动画**：角色表现仅限于程序化上下浮动 + 颜色变化
-3. **本地 fallback 决策简单**：仅关键词匹配，无上下文理解；配置 LLM 后自动切换完整推理
-4. **单 Agent**：GOAP/ActionExecutor 为单 Agent 设计，多 Agent 运行时需要实例隔离
-5. **无输入历史**：聊天记录不持久化，重开会清空
-6. **无 Reflection**：MemorySystem 保留了触发接口但未实现 LLM 反思生成
+1. **剧情为顺序时间线**：尚无并行 Beat、镜头轨道和语音时长同步
+2. **角色资产许可受限**：现有第三方 PMX 只能本机验证，不能随开源仓库发布
+3. **本地 fallback 决策简单**：仅关键词匹配，无上下文理解；配置 LLM 后切换完整推理
+4. **动作覆盖取决于模型**：缺少某动作的角色会走适配器回退，表现精度不一致
+5. **聊天记录不持久化**：结构化角色记忆会保存，但 UI 聊天记录重开后清空

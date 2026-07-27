@@ -118,8 +118,10 @@ func _verify_routine_outcome(context: Dictionary, baseline: Dictionary) -> void:
 	var sofa = root.get_node("SemanticWorld").get_object("sofa")
 	_assert(context.main_agent.global_position.distance_to(sofa.interaction_point) <= 0.8, "agent did not finish near sofa")
 	_assert(context.autonomy.get_active_agent_id().is_empty(), "autonomous ownership was not released")
-	var main_memories: Array = context.memory.retrieve_relevant_for_agent("main_agent", "小绿 浇水", 10)
-	var jue_memories: Array = context.memory.retrieve_relevant_for_agent("jue_agent", "小绿 照顾", 10)
+	# 持久化存档可能已有大量同分高重要度记忆；验收应检查事实是否写入，
+	# 而不是依赖相关性检索 Top-K 的不稳定排序。
+	var main_memories: Array = context.memory.agent_memories["main_agent"]["episodes"]
+	var jue_memories: Array = context.memory.agent_memories["jue_agent"]["episodes"]
 	_assert(_contains_episode(main_memories, "主动浇"), "main agent did not remember the completed routine")
 	_assert(_contains_episode(jue_memories, "照顾缺水"), "companion did not remember the social observation")
 	var relationship: Dictionary = context.memory.retrieve_relationship_for_agent("jue_agent", "main_agent")

@@ -96,6 +96,8 @@ func _build_snapshot() -> Dictionary:
 	}
 
 
+## [X1][T4.5] 将待恢复状态一次性应用到已注册 Agent，并移除已消费条目。
+## 未出现在场景中的 Agent 继续保留，供后续 node_added 重试。
 func _apply_pending_agent_states() -> void:
 	for node in get_tree().get_nodes_in_group("agents"):
 		var agent_id := String(node.get("agent_name"))
@@ -106,6 +108,7 @@ func _apply_pending_agent_states() -> void:
 		(node as Node3D).rotation = _array_to_vec3(state.get("rotation", []), (node as Node3D).rotation)
 		node.set("current_activity", String(state.get("activity", "idle")))
 		node.set("current_emotion", String(state.get("emotion", "neutral")))
+		_pending_agent_states.erase(agent_id)
 
 
 func _try_auto_load() -> void:

@@ -178,7 +178,7 @@ offset_left = 16
 offset_top = 11
 offset_right = -14
 offset_bottom = -11
-placeholder_text = "和咕咕嘎嘎说点什么..."
+placeholder_text = "输入对话 / @诀 / !剧情 cozy_evening"
 caret_blink = true
 theme_override_font_sizes/font_size = 21
 

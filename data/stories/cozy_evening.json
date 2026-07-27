@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "story_id": "cozy_evening",
+  "title": "客厅里的小小邀请",
+  "cast": ["main_agent", "jue_agent"],
+  "beats": [
+    {
+      "actor": "main_agent",
+      "move_to": {"waypoint": "room_center"},
+      "look_at_actor": "jue_agent",
+      "gesture": "wave",
+      "expression": "happy",
+      "say": "诀，要不要一起坐下来看看电视？",
+      "pause_after": 1.5
+    },
+    {
+      "actor": "jue_agent",
+      "look_at_actor": "main_agent",
+      "gesture": "nod",
+      "expression": "happy",
+      "say": "好啊，正好我想歇一会儿。",
+      "pause_after": 0.8
+    },
+    {
+      "actor": "main_agent",
+      "gesture": "happy",
+      "expression": "excited",
+      "say": "太好了！我还准备了一杯奶茶，看完电视我们一起喝。",
+      "pause_after": 2.0
+    },
+    {
+      "actor": "jue_agent",
+      "gesture": "think",
+      "expression": "surprised",
+      "say": "哦？难怪茶几上多了一杯，我还以为是给自己的。",
+      "pause_after": 1.2
+    },
+    {
+      "actor": "main_agent",
+      "expression": "happy",
+      "gesture": "idle",
+      "say": "就是给你留的！不过得先看电视，不然奶茶凉了就不好喝了。",
+      "pause_after": 0.5
+    }
+  ],
+  "memory_summary": "和诀在客厅完成了一次温馨的邀约，约好一起看电视喝奶茶。"
+}

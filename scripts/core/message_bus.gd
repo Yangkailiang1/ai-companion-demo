@@ -58,10 +58,25 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-# 玩家发送消息 → 路由到 Agent
+# 信号：剧情导演请求
+signal story_requested(story_id: String)
+
+## [D1][T1] 玩家输入路由：剧情命令 → StoryDirector，普通消息 → CognitiveCycle。
+## 侧效：剧情命令不进入认知循环，保持 ! 非剧情命令的兼容性。
+## 信号：可能发出 ui_add_chat_entry、ui_status_changed、story_requested。
 func route_player_input(text: String) -> void:
 	var is_command = text.begins_with("!")
 	var clean_text = text.trim_prefix("!") if is_command else text
+
+	# [D1] 剧情命令路由：不进入 CognitiveCycle
+	if is_command:
+		var story_id := _parse_story_command(clean_text)
+		if not story_id.is_empty():
+			ui_add_chat_entry.emit("玩家", clean_text, true)
+			ui_status_changed.emit("请求播放剧情: %s" % story_id, "pending")
+			story_requested.emit(story_id)
+			return
+
 	var target_agent_id := _resolve_target_agent(clean_text)
 	clean_text = _strip_agent_mention(clean_text)
 
@@ -97,6 +112,16 @@ func route_agent_output(agent_id: String, speech: String, emotion: String) -> vo
 		})
 		agent_spoke.emit(agent_id, speech, emotion)
 	ui_add_chat_entry.emit(agent_id, speech, false)
+
+
+## [D1] 解析 !剧情 <id> 和 !story <id> 命令，返回 story_id。
+## 不匹配时返回空字符串，让路由继续正常认知流程。
+func _parse_story_command(text: String) -> String:
+	var normalized := text.strip_edges()
+	for prefix in ["故事 ", "剧情 ", "story "]:
+		if normalized.begins_with(prefix):
+			return normalized.substr(prefix.length()).strip_edges()
+	return ""
 
 
 func _resolve_target_agent(text: String) -> String:
