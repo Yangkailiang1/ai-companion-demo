@@ -178,7 +178,7 @@ offset_left = 16
 offset_top = 11
 offset_right = -14
 offset_bottom = -11
-placeholder_text = "输入对话 / @诀 / !剧情 cozy_evening"
+placeholder_text = "自由模式：输入对话 / @诀 / !演出 剧本"
 caret_blink = true
 theme_override_font_sizes/font_size = 21
 

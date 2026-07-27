@@ -10,6 +10,13 @@ const VALID_EXPRESSIONS: PackedStringArray = [
 	"neutral", "happy", "angry", "sad", "surprised", "excited", "bored", "blink", "talk",
 ]
 const VALID_OBJECTS: PackedStringArray = ["sofa", "tv", "book", "milk_tea", "plant"]
+const VALID_INTERACTIONS := {
+	"sofa": ["sit", "lie_down"],
+	"tv": ["turn_on", "turn_off", "watch", "change_channel"],
+	"book": ["read", "pick_up", "put_down"],
+	"milk_tea": ["drink", "pick_up", "put_down", "throw"],
+	"plant": ["water", "prune", "look_at"],
+}
 const PAUSE_MIN: float = 0.1
 const PAUSE_MAX: float = 5.0
 const MAX_BEATS: int = 80
@@ -137,6 +144,7 @@ func _validate_beat(index: int, beat_raw: Variant, cast: Array) -> void:
 		return
 	_validate_beat_move_to(beat, index)
 	_validate_beat_look_at(beat, index, cast)
+	_validate_beat_interaction(beat, index)
 	_validate_beat_gesture(beat, index)
 	_validate_beat_expression(beat, index)
 	_validate_beat_say(beat, index)
@@ -147,7 +155,7 @@ func _validate_beat(index: int, beat_raw: Variant, cast: Array) -> void:
 func _check_beat_allowed_fields(beat: Dictionary, index: int) -> bool:
 	var allowed: Array[String] = [
 		"actor", "move_to", "look_at_actor", "look_at_object",
-		"gesture", "expression", "say", "pause_after",
+		"interact", "gesture", "expression", "say", "pause_after",
 	]
 	for key_raw in beat:
 		var key: String = key_raw if key_raw is String else String(key_raw)
@@ -236,6 +244,29 @@ func _validate_beat_look_at(beat: Dictionary, index: int, cast: Array) -> void:
 			_add_error("beats[%d].look_at_object" % index, "不存在的物体: %s" % look_raw)
 
 
+## [D1][S3.2] 验证场景交互：仅允许已知物体声明过的 affordance 动词。
+func _validate_beat_interaction(beat: Dictionary, index: int) -> void:
+	if not beat.has("interact"):
+		return
+	var raw = beat["interact"]
+	if not raw is Dictionary:
+		_add_error("beats[%d].interact" % index, "interact 必须是对象")
+		return
+	var interaction: Dictionary = raw
+	for key in interaction:
+		if String(key) not in ["object", "verb"]:
+			_add_error("beats[%d].interact" % index, "interact 不允许的字段: %s" % key)
+	if not interaction.get("object") is String or not interaction.get("verb") is String:
+		_add_error("beats[%d].interact" % index, "object 和 verb 必须是字符串")
+		return
+	var object_id := String(interaction["object"])
+	var verb := String(interaction["verb"])
+	if not VALID_INTERACTIONS.has(object_id):
+		_add_error("beats[%d].interact.object" % index, "不存在的物体: %s" % object_id)
+	elif verb not in VALID_INTERACTIONS[object_id]:
+		_add_error("beats[%d].interact.verb" % index, "%s 不支持交互: %s" % [object_id, verb])
+
+
 ## [D1] 验证 gesture 字段：必须属于已知手势白名单。
 func _validate_beat_gesture(beat: Dictionary, index: int) -> void:
 	if not beat.has("gesture"):
@@ -300,6 +331,12 @@ func _normalize_beat(beat: Dictionary) -> Dictionary:
 		result["look_at_actor"] = String(beat["look_at_actor"])
 	if beat.has("look_at_object"):
 		result["look_at_object"] = String(beat["look_at_object"])
+	if beat.has("interact"):
+		var interaction: Dictionary = beat["interact"]
+		result["interact"] = {
+			"object": String(interaction["object"]),
+			"verb": String(interaction["verb"]),
+		}
 	if beat.has("move_to"):
 		var move_raw = beat["move_to"]
 		if not move_raw is Dictionary:

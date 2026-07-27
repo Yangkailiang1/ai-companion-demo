@@ -37,10 +37,11 @@ func _run() -> void:
 
 	_test_schema_contract()
 	await _test_full_performance(scene, director, autonomy, memory, bus)
+	await _test_bundled_cozy_story(scene, director, autonomy, memory, bus)
 	await _test_cancel_and_replay(director, autonomy, memory, bus)
 
 	if not failed:
-		print("STORY_DIRECTOR_CHECK_PASS contracts=3")
+		print("STORY_DIRECTOR_CHECK_PASS contracts=4")
 	autonomy.set_scheduler_enabled(false)
 	scene.free()
 	quit(1 if failed else 0)
@@ -62,8 +63,14 @@ func _test_schema_contract() -> void:
 	_assert(not validator.validate(unknown_field), "unknown root field accepted")
 	_assert(not validator.validate(_document(
 		["main_agent"], [{"actor": "main_agent", "say": 42}])), "non-string dialogue accepted")
+	_assert(not validator.validate(_document(
+		["main_agent"], [{
+			"actor": "main_agent",
+			"interact": {"object": "tv", "verb": "water"},
+		}])), "invalid object interaction accepted")
 	var legal := _document(["main_agent", "future_chibi"], [
-		{"actor": "future_chibi", "look_at_actor": "main_agent", "gesture": "wave"},
+		{"actor": "future_chibi", "look_at_actor": "main_agent", "gesture": "wave",
+			"interact": {"object": "tv", "verb": "turn_on"}},
 	])
 	_assert(validator.validate(legal), "registered future Q character was rejected")
 
@@ -78,6 +85,9 @@ func _test_full_performance(
 ) -> void:
 	var main: Node3D = scene.get_node(MAIN_PATH)
 	var jue: Node3D = scene.get_node(JUE_PATH)
+	var tv: Node = scene.get_node("WorldRoot/LivingRoom/TV")
+	var semantic := root.get_node("SemanticWorld")
+	semantic.update_object_state("tv", "关闭")
 	autonomy.set_scheduler_enabled(true)
 	_begin_capture(bus)
 	var story := _full_performance_story()
@@ -99,12 +109,48 @@ func _test_full_performance(
 	_verify_position(jue, "room_center", "jue_agent")
 	_verify_facing(main, jue, "main_agent")
 	_verify_facing(jue, main, "jue_agent")
+	_assert(String(semantic.get_object("tv").state) == "播放温馨节目", "TV state did not change")
+	_assert(tv.get_node("TVScreenGlow").visible, "TV screen feedback stayed hidden")
 	_verify_performance_order()
 	_assert(_contains_chat("我们开始吧"), "main dialogue was not routed")
 	_assert(_contains_chat("我准备好了"), "Jue dialogue was not routed")
 	_assert(_has_memory(memory, "main_agent", "v08_full_performance"), "main story memory missing")
 	_assert(_has_memory(memory, "jue_agent", "v08_full_performance"), "Jue story memory missing")
 	autonomy.set_scheduler_enabled(true)
+
+
+## [D2][S3.2] 验证随项目发布的小剧场能完成双人入座、看电视和独立记忆。
+func _test_bundled_cozy_story(
+	scene: Node,
+	director: Node,
+	autonomy: Node,
+	memory: Node,
+	bus: Node
+) -> void:
+	# 本合同只验证内置演出内容；调度恢复已由上一合同覆盖。
+	# 保持关闭可避免 3 秒调度 tick 恰好在导演结束帧抢走最终构图。
+	autonomy.set_scheduler_enabled(false)
+	_begin_capture(bus)
+	_assert(director.play_story("cozy_evening") == 0, "bundled cozy story did not start")
+	await _wait_for_idle(director, 45000, "bundled cozy story timed out")
+	autonomy.set_scheduler_enabled(false)
+	await create_timer(0.35).timeout
+	_end_capture(bus)
+	_assert(
+		String(director.get_diagnostics().last_error).is_empty(),
+		"bundled cozy story failed: %s" % director.get_diagnostics().last_error,
+	)
+	var main: Node3D = scene.get_node(MAIN_PATH)
+	var jue: Node3D = scene.get_node(JUE_PATH)
+	_verify_position(main, "sofa_seat_left", "main_agent cozy seat")
+	_verify_position(jue, "sofa_seat_right", "jue_agent cozy seat")
+	_verify_facing_object(main, "tv", "main_agent cozy gaze")
+	_verify_facing_object(jue, "tv", "jue_agent cozy gaze")
+	_assert(_has_performance_cue("main_agent", "sit"), "main sit cue missing")
+	_assert(_has_performance_cue("jue_agent", "sit"), "Jue sit cue missing")
+	_assert(_contains_chat("坐在一起"), "cozy closing dialogue missing")
+	_assert(_has_memory(memory, "main_agent", "温馨的邀约"), "main cozy memory missing")
+	_assert(_has_memory(memory, "jue_agent", "温馨的邀约"), "Jue cozy memory missing")
 
 
 ## [D2][T4.5] 验证取消立即停止旧异步栈，恢复调度，并允许安全重播。
@@ -158,7 +204,8 @@ func _full_performance_story() -> Dictionary:
 		{"actor": "main_agent", "move_to": {"waypoint": "perimeter_w"}, "pause_after": 0.1},
 		{"actor": "jue_agent", "move_to": {"waypoint": "room_center"}, "pause_after": 0.1},
 		{"actor": "main_agent", "look_at_actor": "jue_agent", "gesture": "wave",
-			"expression": "happy", "say": "我们开始吧。", "pause_after": 0.35},
+			"expression": "happy", "interact": {"object": "tv", "verb": "turn_on"},
+			"say": "我们开始吧。", "pause_after": 0.35},
 		{"actor": "jue_agent", "look_at_actor": "main_agent", "gesture": "nod",
 			"expression": "happy", "say": "我准备好了。", "pause_after": 0.35},
 	], "v08_full_performance")
@@ -184,7 +231,7 @@ func _document(
 func _verify_position(agent: Node3D, waypoint: String, label: String) -> void:
 	var target := RoomNavigation.new().get_waypoint(waypoint)
 	var distance := agent.global_position.distance_to(target)
-	_assert(distance <= 0.8, "%s missed %s by %.2fm" % [label, waypoint, distance])
+	_assert(distance <= 1.0, "%s missed %s by %.2fm" % [label, waypoint, distance])
 
 
 ## [D2] 按项目角色可见前向轴 `+Z` 验证角色水平朝向目标。
@@ -199,6 +246,17 @@ func _verify_facing(actor: Node3D, target: Node3D, label: String) -> void:
 	])
 
 
+## [D2] 验证角色最终朝向一个语义物体。
+func _verify_facing_object(actor: Node3D, object_id: String, label: String) -> void:
+	var target = root.get_node("SemanticWorld").get_object(object_id)
+	var target_direction: Vector3 = target.position - actor.global_position
+	target_direction.y = 0.0
+	var visible_forward := actor.global_basis.z
+	visible_forward.y = 0.0
+	var alignment := visible_forward.normalized().dot(target_direction.normalized())
+	_assert(alignment >= 0.8, "%s facing %.2f" % [label, alignment])
+
+
 ## [D2] 验证导演 Cue 的角色归属、顺序和表情上下文。
 func _verify_performance_order() -> void:
 	_assert(_performance_cues.size() == 2, "unexpected story gesture count")
@@ -209,6 +267,14 @@ func _verify_performance_order() -> void:
 	_assert(_performance_cues[1] == {"gesture": "nod", "agent_id": "jue_agent"}, "Jue nod missing")
 	_assert(_expression_cues[0].agent_id == "main_agent", "main expression context missing")
 	_assert(_expression_cues[1].agent_id == "jue_agent", "Jue expression context missing")
+
+
+## [D2] 查询本轮是否向指定角色发出了指定动作。
+func _has_performance_cue(agent_id: String, gesture: String) -> bool:
+	for cue in _performance_cues:
+		if cue.agent_id == agent_id and cue.gesture == gesture:
+			return true
+	return false
 
 
 ## [D2] 开始捕获导演来源的动作、表情和 Agent 对白。

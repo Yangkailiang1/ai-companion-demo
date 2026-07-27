@@ -49,9 +49,10 @@ func _ready():
 	send_button.pressed.connect(_on_button_press)
 	MessageBus.ui_add_chat_entry.connect(_on_chat_entry)
 	MessageBus.ui_status_changed.connect(_on_status_changed)
+	MessageBus.experience_mode_changed.connect(_on_experience_mode_changed)
 	_apply_visual_style()
 	_create_focus_caret_indicator()
-	line_edit.placeholder_text = "输入对话 / @诀 / !剧情 cozy_evening"
+	line_edit.placeholder_text = "自由模式：输入对话 / @诀 / !演出 剧本"
 	line_edit.focus_mode = Control.FOCUS_CLICK
 	line_edit.mouse_default_cursor_shape = Control.CURSOR_IBEAM
 	line_edit.caret_blink = true
@@ -64,6 +65,17 @@ func _ready():
 	if CognitiveCycle.llm_api_url.is_empty() or CognitiveCycle.llm_api_key.is_empty():
 		mode = "本地规则模式（未连接 AI）"
 	_on_status_changed(mode, "ready")
+
+
+## [S1][D3][C9] 根据自由/演出模式切换输入提示，降低两种输入语义的混淆。
+func _on_experience_mode_changed(mode_name: String) -> void:
+	if not line_edit:
+		return
+	line_edit.placeholder_text = (
+		"演出模式：输入自然语言剧本 / !自由 返回"
+		if mode_name == "performance"
+		else "自由模式：输入对话 / @诀 / !演出 剧本"
+	)
 
 
 func _process(_delta: float) -> void:

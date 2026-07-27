@@ -10,7 +10,7 @@
       "look_at_actor": "jue_agent",
       "gesture": "wave",
       "expression": "happy",
-      "say": "诀，要不要一起坐下来看看电视？",
+      "say": "诀，要不要一起看会儿电视？",
       "pause_after": 1.5
     },
     {
@@ -18,29 +18,36 @@
       "look_at_actor": "main_agent",
       "gesture": "nod",
       "expression": "happy",
-      "say": "好啊，正好我想歇一会儿。",
+      "say": "好啊，正好想和你歇一会儿。",
       "pause_after": 0.8
     },
     {
       "actor": "main_agent",
-      "gesture": "happy",
+      "move_to": {"waypoint": "tv_front"},
+      "look_at_object": "tv",
+      "interact": {"object": "tv", "verb": "turn_on"},
+      "gesture": "wave",
       "expression": "excited",
-      "say": "太好了！我还准备了一杯奶茶，看完电视我们一起喝。",
-      "pause_after": 2.0
-    },
-    {
-      "actor": "jue_agent",
-      "gesture": "think",
-      "expression": "surprised",
-      "say": "哦？难怪茶几上多了一杯，我还以为是给自己的。",
-      "pause_after": 1.2
+      "say": "那我来开电视！",
+      "pause_after": 1.0
     },
     {
       "actor": "main_agent",
+      "move_to": {"waypoint": "sofa_seat_left"},
+      "look_at_object": "tv",
+      "gesture": "sit",
       "expression": "happy",
-      "gesture": "idle",
-      "say": "就是给你留的！不过得先看电视，不然奶茶凉了就不好喝了。",
-      "pause_after": 0.5
+      "say": "这边给你留了位置。",
+      "pause_after": 1.0
+    },
+    {
+      "actor": "jue_agent",
+      "move_to": {"waypoint": "sofa_seat_right"},
+      "look_at_object": "tv",
+      "gesture": "sit",
+      "expression": "happy",
+      "say": "嗯，坐在一起果然更有看电视的感觉。",
+      "pause_after": 2.5
     }
   ],
   "memory_summary": "和诀在客厅完成了一次温馨的邀约，约好一起看电视喝奶茶。"

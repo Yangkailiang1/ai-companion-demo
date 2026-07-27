@@ -53,6 +53,14 @@ signal expression_cue(expression: String, intensity: float, context: Dictionary)
 # 表情混合 cue：允许检索层直接下发 morph 权重组合，例如 70% happy + 30% shy。
 signal expression_blend_cue(expression_payload: Dictionary, context: Dictionary)
 
+# 体验模式与自然语言剧本规划。
+signal experience_mode_requested(mode_name: String)
+signal experience_mode_changed(mode_name: String)
+signal performance_script_requested(script_text: String)
+signal story_plan_started(script_text: String)
+signal story_plan_ready(document: Dictionary)
+signal story_plan_failed(reason: String)
+
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -67,6 +75,9 @@ signal story_requested(story_id: String)
 func route_player_input(text: String) -> void:
 	var is_command = text.begins_with("!")
 	var clean_text = text.trim_prefix("!") if is_command else text
+
+	if _route_experience_input(text, is_command):
+		return
 
 	# [D1] 剧情命令路由：不进入 CognitiveCycle
 	if is_command:
@@ -88,6 +99,50 @@ func route_player_input(text: String) -> void:
 	var trigger_source = AffordanceTypes.TriggerSource.PLAYER_INPUT
 	var data = {"text": clean_text, "is_command": is_command}
 	agent_trigger_cycle.emit(target_agent_id, trigger_source, data)
+
+
+## [D3][C9] 路由 !演出、!自由、!模式，以及演出模式下的自然语言剧本。
+## 返回 true 表示输入已消费，不再进入角色认知循环。
+func _route_experience_input(text: String, is_command: bool) -> bool:
+	var clean := text.trim_prefix("!").strip_edges()
+	if is_command and clean in ["自由", "free"]:
+		ui_add_chat_entry.emit("系统", "切换到自由模式", false)
+		experience_mode_requested.emit("free")
+		return true
+	if is_command and clean in ["模式", "mode"]:
+		var current := "unknown"
+		if has_node("/root/ExperienceModeManager"):
+			current = get_node("/root/ExperienceModeManager").get_mode_name()
+		ui_status_changed.emit("当前模式: %s" % current, "ready")
+		return true
+	if is_command and (
+		clean == "演出" or clean.begins_with("演出 ")
+		or clean == "performance" or clean.begins_with("performance ")
+	):
+		var script_text := _strip_mode_prefix(clean)
+		ui_add_chat_entry.emit("玩家剧本", script_text if not script_text.is_empty() else "进入演出模式", true)
+		experience_mode_requested.emit("performance")
+		if script_text.is_empty():
+			ui_status_changed.emit("演出模式已开启，请输入自然语言剧本", "performance")
+		else:
+			performance_script_requested.emit(script_text)
+		return true
+	if not is_command and has_node("/root/ExperienceModeManager"):
+		if get_node("/root/ExperienceModeManager").is_performance_mode():
+			ui_add_chat_entry.emit("玩家剧本", text, true)
+			performance_script_requested.emit(text.strip_edges())
+			return true
+	return false
+
+
+## [D3] 去除演出模式命令前缀，保留玩家原始剧本内容。
+func _strip_mode_prefix(text: String) -> String:
+	for prefix in ["演出", "performance"]:
+		if text == prefix:
+			return ""
+		if text.begins_with(prefix + " "):
+			return text.substr(prefix.length()).strip_edges()
+	return text
 
 
 # World Simulator 事件 → 路由到 Agent

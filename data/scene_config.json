@@ -17,6 +17,8 @@
       "room_center": [-0.2, 0.0, -0.6],
       "window_side": [2.0, 0.0, 1.8],
       "sofa_front": [-1.4, 0.0, 0.3],
+      "sofa_seat_left": [-1.9, 0.0, 0.38],
+      "sofa_seat_right": [-0.78, 0.0, 0.38],
       "tv_front": [-1.4, 0.0, -2.3],
       "stage_left": [-1.4, 0.0, -0.8],
       "stage_right": [0.8, 0.0, -0.8]

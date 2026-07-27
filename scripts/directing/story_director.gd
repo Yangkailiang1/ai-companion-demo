@@ -11,6 +11,7 @@ enum Phase { IDLE, PLAYING, CANCELLING }
 const STORY_PATH_PREFIX := "res://data/stories/"
 const MOVE_TIMEOUT_SECONDS := 12.0
 const STORY_TIMEOUT_SECONDS := 180.0
+const MOVE_ARRIVAL_TOLERANCE := 1.0
 const PAUSE_MIN := 0.1
 const PAUSE_MAX := 5.0
 
@@ -159,7 +160,7 @@ func _execute_story() -> void:
 		_finish_story(true, "completed")
 
 
-## [D2][T4.5] 执行单个 beat：走位→注视→cue→对白→停顿。
+## [D2][S3.2][T4.5] 执行单个 beat：走位→注视→物体交互→cue→对白→停顿。
 ## 每个 await 后校验 epoch，取消后不得继续执行。
 ## 成功返回 true，失败调用 _finish_story 并返回 false。
 func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
@@ -193,6 +194,22 @@ func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
 
 	if epoch != _run_epoch:
 		return false
+	if beat.has("interact") and not _perform_story_interaction(
+		actor_id, beat["interact"], epoch
+	):
+		return false
+
+	if epoch != _run_epoch:
+		return false
+	_emit_beat_performance(actor_id, beat)
+
+	var pause := clampf(float(beat.get("pause_after", 1.5)), PAUSE_MIN, PAUSE_MAX)
+	await _safe_wait(pause, epoch)
+	return epoch == _run_epoch
+
+
+## [D2] 向指定角色发送动作、表情与对白表现提示。
+func _emit_beat_performance(actor_id: String, beat: Dictionary) -> void:
 	if beat.has("gesture"):
 		MessageBus.performance_cue.emit(String(beat["gesture"]), {
 			"agent_id": actor_id,
@@ -204,17 +221,38 @@ func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
 			"agent_id": actor_id,
 			"source": "story_director",
 		})
-
-	if epoch != _run_epoch:
-		return false
 	if beat.has("say"):
-		var speech := String(beat["say"])
-		var emotion := String(beat.get("expression", "neutral"))
-		MessageBus.route_agent_output(actor_id, speech, emotion)
+		MessageBus.route_agent_output(
+			actor_id,
+			String(beat["say"]),
+			String(beat.get("expression", "neutral")),
+		)
 
-	var pause := clampf(float(beat.get("pause_after", 1.5)), PAUSE_MIN, PAUSE_MAX)
-	await _safe_wait(pause, epoch)
-	return epoch == _run_epoch
+
+## [D2][S3.2] 通过语义物体节点执行一个已验证的场景交互。
+## 未注册、无处理器或拒绝该动词时终止演出，避免只演动画却不改变世界。
+func _perform_story_interaction(
+	actor_id: String,
+	interaction: Dictionary,
+	epoch: int
+) -> bool:
+	var object_id := String(interaction.get("object", ""))
+	var verb := String(interaction.get("verb", ""))
+	var object = SemanticWorld.get_object(object_id)
+	if object == null or not is_instance_valid(object.godot_node):
+		if epoch == _run_epoch:
+			_finish_story(false, "交互物体不可用: %s" % object_id)
+		return false
+	if not object.godot_node.has_method("perform_interaction"):
+		if epoch == _run_epoch:
+			_finish_story(false, "交互物体没有处理器: %s" % object_id)
+		return false
+	var result: Dictionary = object.godot_node.perform_interaction(verb, actor_id)
+	if not bool(result.get("handled", false)):
+		if epoch == _run_epoch:
+			_finish_story(false, "交互被拒绝: %s.%s" % [object_id, verb])
+		return false
+	return true
 
 
 ## [D2][T4.5] 解析并执行单个 Beat 的安全走位，取消时立即返回。
@@ -273,7 +311,7 @@ func _await_move(actor_id: String, agent: Node3D, target: Vector3, epoch: int) -
 			return false
 		await get_tree().process_frame
 
-	if not is_instance_valid(agent) or agent.global_position.distance_to(target) > 0.8:
+	if not is_instance_valid(agent) or agent.global_position.distance_to(target) > MOVE_ARRIVAL_TOLERANCE:
 		if epoch == _run_epoch:
 			_finish_story(false, "走位未到达: %s" % actor_id)
 		return false

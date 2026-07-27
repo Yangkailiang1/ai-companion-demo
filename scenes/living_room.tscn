@@ -1,4 +1,4 @@
-[gd_scene load_steps=76 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=77 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -31,6 +31,7 @@
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="29_pose_overlay"]
 [ext_resource type="Script" path="res://scripts/characters/penguin_animation_adapter.gd" id="30_penguin_anim_adapter"]
 [ext_resource type="Script" path="res://scripts/objects/plant_state.gd" id="31_plant_state"]
+[ext_resource type="Script" path="res://scripts/objects/tv_state.gd" id="32_tv_state"]
 
 [sub_resource type="BoxMesh" id="mesh_floor"]
 size = Vector3(8, 0.1, 8)
@@ -445,6 +446,9 @@ visible = false
 position = Vector3(0, -0.55, 0.18)
 rotation = Vector3(0, 0, 0)
 scale = Vector3(1.75, 1.75, 1.75)
+
+[node name="TVState" type="Node" parent="TV"]
+script = ExtResource("32_tv_state")
 
 [node name="CoffeeTable" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.19, 0.72)
