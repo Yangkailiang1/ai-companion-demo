@@ -31,7 +31,7 @@ var target_position: Vector3
 var has_target: bool = false
 
 # --- Movement parameters ---
-const MOVE_SPEED: float = 3.0
+@export_range(0.8, 3.0, 0.05) var move_speed_mps: float = 1.8
 const ARRIVE_THRESHOLD: float = 0.5
 const MOVEMENT_TIMEOUT: float = 20.0
 const STUCK_TIMEOUT: float = 2.5
@@ -193,7 +193,7 @@ func _physics_process(delta: float) -> void:
 			_finish_movement(reached_target, "arrived" if reached_target else "unreachable")
 			return
 		var next_pos: Vector3 = navigation_agent.get_next_path_position()
-		var desired_velocity: Vector3 = (next_pos - global_position).normalized() * MOVE_SPEED
+		var desired_velocity: Vector3 = (next_pos - global_position).normalized() * move_speed_mps
 		navigation_agent.velocity = desired_velocity
 	else:
 		var to_target := target_position - global_position
@@ -201,7 +201,7 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector3.ZERO
 			_finish_movement(true, "arrived")
 			return
-		velocity = to_target.normalized() * MOVE_SPEED
+		velocity = to_target.normalized() * move_speed_mps
 		move_and_slide()
 		_update_post_movement(delta)
 

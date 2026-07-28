@@ -49,7 +49,12 @@ func _run() -> void:
 		"agent_id": agent_id,
 		"source": "preview",
 	})
-	await create_timer(0.24).timeout
+	if gesture == "walk":
+		for _frame in range(14):
+			agent.position.z -= 0.025
+			await process_frame
+	else:
+		await create_timer(0.24).timeout
 	await RenderingServer.frame_post_draw
 	var image := root.get_texture().get_image()
 	var error := image.save_png(output_path)

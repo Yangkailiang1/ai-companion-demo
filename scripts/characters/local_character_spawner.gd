@@ -68,6 +68,7 @@ func _configure_spawn(actor: CharacterBody3D, value: Variant) -> void:
 	var spawn: Dictionary = value if value is Dictionary else {}
 	actor.position = _vec3(spawn.get("position", [0, 0, 0]))
 	actor.rotation_degrees = _vec3(spawn.get("rotation_degrees", [0, 0, 0]))
+	actor.move_speed_mps = clampf(float(spawn.get("move_speed_mps", 1.7)), 0.8, 2.6)
 	var scale_value := float(spawn.get("model_scale", 1.0))
 	(actor.get_node("ModelRoot") as Node3D).scale = Vector3.ONE * scale_value
 	var collision := actor.get_node("AgentCollision") as CollisionShape3D

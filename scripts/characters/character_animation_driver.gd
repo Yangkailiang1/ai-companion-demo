@@ -29,6 +29,7 @@ var _is_talking: bool = false
 var _procedural_base_position := Vector3.ZERO
 var _procedural_base_rotation := Vector3.ZERO
 var _motion_adapter_type := "animation_player"
+var _locomotion_profile: Dictionary = {}
 const LOOPING_GESTURES := ["idle", "walk"]
 
 # Sound/vocal hook (placeholder for future audio)
@@ -43,6 +44,7 @@ func _ready() -> void:
 	if has_node("/root/CharacterAdapterRegistry"):
 		var registry := get_node("/root/CharacterAdapterRegistry")
 		_motion_adapter_type = registry.get_motion_adapter_type(agent_id)
+		_locomotion_profile = registry.get_motion_adapter(agent_id).get("locomotion_profile", {})
 		if not registry.runtime_adapter_registered.is_connected(_on_runtime_adapter_registered):
 			registry.runtime_adapter_registered.connect(_on_runtime_adapter_registered)
 	if not procedural_root:
@@ -69,11 +71,35 @@ func _ready() -> void:
 	call_deferred("_play_default_after_tree_ready")
 
 
+## [C2.3][C2.4] 让原生行走剪辑跟随实际水平速度；停止或非行走动作恢复正常速率。
+func _process(_delta: float) -> void:
+	if not animation_player:
+		return
+	var walk_clip := _map_gesture_for_character("walk")
+	if animation_player.current_animation != walk_clip:
+		animation_player.speed_scale = 1.0
+		return
+	var actor := get_parent() as CharacterBody3D
+	if not actor:
+		return
+	var horizontal_speed := Vector2(actor.velocity.x, actor.velocity.z).length()
+	if horizontal_speed <= 0.05:
+		animation_player.speed_scale = 0.0
+		return
+	var reference_speed := maxf(float(_locomotion_profile.get("reference_speed_mps", 1.8)), 0.1)
+	var minimum_scale := float(_locomotion_profile.get("min_playback_scale", 0.65))
+	var maximum_scale := maxf(float(_locomotion_profile.get("max_playback_scale", 1.45)), minimum_scale)
+	animation_player.speed_scale = clampf(horizontal_speed / reference_speed, minimum_scale, maximum_scale)
+
+
 ## [C6.2][C2.1] 当前角色 manifest 注册后刷新动作后端，消除子节点加载顺序依赖。
 func _on_runtime_adapter_registered(registered_agent_id: String) -> void:
 	if registered_agent_id != agent_id:
 		return
 	_motion_adapter_type = CharacterAdapterRegistry.get_motion_adapter_type(agent_id)
+	_locomotion_profile = CharacterAdapterRegistry.get_motion_adapter(agent_id).get(
+		"locomotion_profile", {}
+	)
 	if animation_player == null:
 		animation_player = _find_animation_player()
 	call_deferred("_play_default_after_tree_ready")

@@ -1,5 +1,13 @@
+# Roadmap: C2.1, C2.3, C3.1
+# Responsibility: 合成角色骨骼待机、手势、步态与表情姿势；不移动角色或选择动作。
+# Collaborators: CharacterLocomotionPose, CharacterGesturePose, CharacterAdapterRegistry
+# Tests: scripts/debug/locomotion_quality_check.gd, scripts/debug/multi_agent_check.gd
+
 class_name CharacterPoseOverlay
 extends Node
+
+const LocomotionPoseClass = preload("res://scripts/characters/character_locomotion_pose.gd")
+const GesturePoseClass = preload("res://scripts/characters/character_gesture_pose.gd")
 
 @export var agent_id: String = ""
 @export var enabled: bool = true
@@ -17,6 +25,7 @@ var _gesture_duration := 0.0
 var _expression_pose: Dictionary = {}
 var _expression_until_msec := 0
 var _baseline_rotations: Dictionary = {}
+var _locomotion_pose = LocomotionPoseClass.new()
 
 
 func _ready() -> void:
@@ -36,12 +45,14 @@ func _ready() -> void:
 		MessageBus.expression_cue.connect(_on_expression_cue)
 
 
-func _process(_delta: float) -> void:
+## [C2.3][C2.4] 每帧组合待机、米制步态、手势和表情骨骼姿势。
+func _process(delta: float) -> void:
 	if not enabled or not _skeleton:
 		return
-	_apply_runtime_pose()
+	_apply_runtime_pose(delta)
 
 
+## [C2.3][C3.1] 读取当前角色的骨骼、手势、表情和步态 Profile。
 func _load_adapter() -> void:
 	if not has_node("/root/CharacterAdapterRegistry"):
 		return
@@ -54,6 +65,8 @@ func _load_adapter() -> void:
 	_idle_motion = _adapter.get("idle_motion", {})
 	_gesture_overlays = _adapter.get("gesture_overlays", {})
 	_expression_bone_map = _adapter.get("expression_bone_map", {})
+	var motion_adapter: Dictionary = get_node("/root/CharacterAdapterRegistry").get_motion_adapter(agent_id)
+	_locomotion_pose.configure(motion_adapter.get("locomotion_profile", {}))
 
 
 func is_overlay_enabled() -> bool:
@@ -79,11 +92,20 @@ func get_active_expression_pose_keys() -> PackedStringArray:
 	return PackedStringArray(_expression_pose.keys())
 
 
-func _apply_runtime_pose() -> void:
+## [C2.4][C3.1] 按层合成运行时姿势；步态仅消费位移，不产生 root motion。
+func _apply_runtime_pose(delta_seconds: float) -> void:
 	var now_msec := Time.get_ticks_msec()
 	var pose := _copy_pose(_rest_pose)
 	_merge_pose(pose, _build_idle_pose(now_msec))
-	if _gesture_name != "idle" and _gesture_duration > 0.0:
+	var actor := get_parent() as Node3D
+	if actor:
+		_merge_pose(pose, _locomotion_pose.sample(
+			delta_seconds,
+			actor.global_position,
+			_gesture_name == "walk",
+			_gesture_overlays.get("walk", {}),
+		))
+	if _gesture_name not in ["idle", "walk"] and _gesture_duration > 0.0:
 		var elapsed := float(now_msec - _gesture_started_msec) / 1000.0
 		var overlay: Dictionary = _gesture_overlays.get(_gesture_name, {})
 		var is_looping := bool(overlay.get("loop", false))
@@ -95,7 +117,7 @@ func _apply_runtime_pose() -> void:
 			_gesture_name = "idle"
 			_gesture_duration = 0.0
 		else:
-			_merge_pose(pose, _build_gesture_pose(_gesture_name, t))
+			_merge_pose(pose, GesturePoseClass.sample(overlay, t))
 	if now_msec < _expression_until_msec:
 		_merge_pose(pose, _expression_pose)
 	else:
@@ -114,20 +136,6 @@ func _build_idle_pose(now_msec: int) -> Dictionary:
 		result[key] = _vec3_from_array(_idle_motion["breath_degrees"][key]) * amount
 	for key in _idle_motion.get("sway_degrees", {}):
 		result[key] = _vec3_from_array(_idle_motion["sway_degrees"][key]) * sway
-	return result
-
-
-func _build_gesture_pose(name: String, t: float) -> Dictionary:
-	var overlay: Dictionary = _gesture_overlays.get(name, {})
-	if overlay.is_empty():
-		return {}
-	var result := {}
-	var envelope := 1.0 if bool(overlay.get("continuous", false)) else sin(t * PI)
-	var wave := sin(t * TAU * float(overlay.get("cycles", 1.0)))
-	for key in overlay.get("degrees", {}):
-		result[key] = _vec3_from_array(overlay["degrees"][key]) * envelope
-	for key in overlay.get("oscillate_degrees", {}):
-		result[key] = _vec3_from_array(overlay["oscillate_degrees"][key]) * envelope * wave
 	return result
 
 

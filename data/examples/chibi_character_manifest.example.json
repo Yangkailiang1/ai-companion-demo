@@ -8,6 +8,7 @@
     "position": [0.0, 0.0, -1.5],
     "rotation_degrees": [0.0, 0.0, 0.0],
     "model_scale": 1.0,
+    "move_speed_mps": 1.65,
     "collision_height": 1.3,
     "collision_radius": 0.32,
     "label_height": 1.55,
@@ -19,6 +20,14 @@
     "model_family": "humanoid_chibi_glb",
     "motion_adapter": {
       "type": "animation_player",
+      "locomotion_profile": {
+        "reference_speed_mps": 1.65,
+        "stride_meters": 0.72,
+        "min_playback_scale": 0.65,
+        "max_playback_scale": 1.4,
+        "blend_seconds": 0.16,
+        "root_motion": "in_place"
+      },
       "clip_map": {
         "idle": "idle",
         "walk": "walk",
@@ -44,7 +53,36 @@
         "left_hand": ["LeftHand"],
         "right_upper_arm": ["RightUpperArm"],
         "right_lower_arm": ["RightLowerArm"],
-        "right_hand": ["RightHand"]
+        "right_hand": ["RightHand"],
+        "left_upper_leg": ["LeftUpperLeg"],
+        "left_lower_leg": ["LeftLowerLeg"],
+        "left_foot": ["LeftFoot"],
+        "right_upper_leg": ["RightUpperLeg"],
+        "right_lower_leg": ["RightLowerLeg"],
+        "right_foot": ["RightFoot"]
+      },
+      "gesture_overlays": {
+        "walk": {
+          "duration": 0.68,
+          "loop": true,
+          "continuous": true,
+          "oscillate_degrees": {
+            "left_upper_leg": [16, 0, 0],
+            "right_upper_leg": [-16, 0, 0],
+            "left_upper_arm": [-9, 0, 0],
+            "right_upper_arm": [9, 0, 0],
+            "hips": [0, 3, 0]
+          },
+          "positive_degrees": {
+            "left_lower_leg": [22, 0, 0],
+            "left_foot": [-7, 0, 0]
+          },
+          "negative_degrees": {
+            "right_lower_leg": [22, 0, 0],
+            "right_foot": [-7, 0, 0]
+          },
+          "bounce_degrees": {"hips": [-1.4, 0, 0]}
+        }
       }
     },
     "expression_adapter": {

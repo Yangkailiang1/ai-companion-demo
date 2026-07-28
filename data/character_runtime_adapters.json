@@ -16,6 +16,14 @@
           "sit": "sit",
           "talk": "idle",
           "offline_smoke_walk": "offline_smoke_walk"
+        },
+        "locomotion_profile": {
+          "reference_speed_mps": 1.7,
+          "stride_meters": 0.82,
+          "min_playback_scale": 0.62,
+          "max_playback_scale": 1.35,
+          "blend_seconds": 0.16,
+          "root_motion": "in_place"
         }
       },
       "skeleton_adapter": {
@@ -96,6 +104,14 @@
           "talk": "talk",
           "offline_smoke_walk": "walk"
         },
+        "locomotion_profile": {
+          "reference_speed_mps": 1.8,
+          "stride_meters": 1.15,
+          "min_playback_scale": 0.65,
+          "max_playback_scale": 1.4,
+          "blend_seconds": 0.2,
+          "root_motion": "in_place"
+        },
         "next_step": "retarget baked HumanML3D/motion-library clips to Jue skeleton and export named Godot clips"
       },
       "skeleton_adapter": {
@@ -113,7 +129,13 @@
           "right_clavicle": ["Bip001_R_Clavicle"],
           "right_upper_arm": ["Bip001_R_UpperArm"],
           "right_lower_arm": ["Bip001_R_Forearm"],
-          "right_hand": ["Bip001_R_Hand"]
+          "right_hand": ["Bip001_R_Hand"],
+          "left_upper_leg": ["Bip001_L_Thigh"],
+          "left_lower_leg": ["Bip001_L_Calf"],
+          "left_foot": ["Bip001_L_Foot"],
+          "right_upper_leg": ["Bip001_R_Thigh"],
+          "right_lower_leg": ["Bip001_R_Calf"],
+          "right_foot": ["Bip001_R_Foot"]
         },
         "rest_pose_degrees": {
           "left_clavicle": [0, 0, 0],
@@ -140,6 +162,30 @@
           }
         },
         "gesture_overlays": {
+          "walk": {
+            "duration": 0.72,
+            "loop": true,
+            "continuous": true,
+            "oscillate_degrees": {
+              "left_upper_leg": [20, 0, 0],
+              "right_upper_leg": [-20, 0, 0],
+              "left_upper_arm": [-9, 0, 0],
+              "right_upper_arm": [9, 0, 0],
+              "hips": [0, 2.2, 0]
+            },
+            "positive_degrees": {
+              "left_lower_leg": [24, 0, 0],
+              "left_foot": [-8, 0, 0]
+            },
+            "negative_degrees": {
+              "right_lower_leg": [24, 0, 0],
+              "right_foot": [-8, 0, 0]
+            },
+            "bounce_degrees": {
+              "hips": [-1.2, 0, 0],
+              "chest": [0.8, 0, 0]
+            }
+          },
           "wave": {
             "duration": 1.25,
             "cycles": 3.0,

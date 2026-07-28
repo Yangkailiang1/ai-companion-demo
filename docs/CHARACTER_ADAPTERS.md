@@ -21,6 +21,8 @@ The adapter has two separate mapping layers:
 
 - `motion_adapter.clip_map`: maps a shared action id/gesture to the clip or safe
   fallback this model can actually play.
+- `motion_adapter.locomotion_profile`: defines reference speed, stride length,
+  playback bounds, start/stop blend and the mandatory `in_place` root-motion policy.
 - `skeleton_adapter`: maps shared semantic bones (`head`, `left_upper_arm`, etc.) to
   imported skeleton bone names, then applies a natural rest pose and lightweight
   runtime overlays while true retargeted clips are still missing.
@@ -40,12 +42,15 @@ The adapter has two separate mapping layers:
 - Skeleton overlay: disabled because this character already has reviewed clips; the
   overlay should not fight the `AnimationPlayer`.
 - This is the current best-supported character.
+- Walk quality: native clip, with playback rate synchronized to actual horizontal
+  velocity. The clip never owns world translation.
 
 ### 诀 (`jue_agent`)
 
 - Asset: optional local FBX under `assets/local_characters/jue/`; public checkout keeps
   the same Agent contract with a redistributable primitive placeholder.
-- Motion: procedural fallback on `JueModelRoot`.
+- Motion: additive semantic-skeleton fallback. `walk` now drives verified
+  `Bip001_L/R_Thigh`, `Calf`, and `Foot` chains from actual traveled distance.
 - Material: the LOD0 body, face, hair, iris and the first two clothing groups now
   use the FBX package's imported D/N/E textures. The runtime no longer replaces
   the whole outfit with guessed flat gray colors. Unretargeted VFX cloth groups
@@ -70,7 +75,7 @@ data/humanml3d_jue_bone_map.json
 ```
 
 诀 now uses a character-specific additive skeleton overlay for lightweight
-`idle`, `wave`, `nod`, `think`, `happy`, and `talk` cues. It captures the FBX
+`idle`, `walk`, `wave`, `nod`, `think`, `happy`, and `talk` cues. It captures the FBX
 import pose first and adds semantic-bone deltas on top, so the imported pelvis
 and chest rotations are never replaced with identity rotations. This keeps the
 model upright and lets the idle pose lower both arms from the source T-pose.
@@ -140,9 +145,11 @@ All three packages use the same runtime contract:
 - a generated multi-role story can target all available local actors without
   hard-coding their model skeletons in StoryDirector.
 
-`v0.8.6` extends that contract with a looping semantic `walk` overlay. Movement
-still comes from the navigation controller, while mapped MMD hip, leg and arm
-bones provide visible gait until the controller emits `idle`. The expression
+`v0.8.7` upgrades that contract to a distance-driven semantic `walk` overlay. Movement
+still comes from the navigation controller, while mapped MMD hip, upper/lower leg,
+foot and arm bones provide visible gait. A blocked actor freezes its gait phase and
+blends back toward rest instead of walking in place. The three local profiles use
+slightly different stride and swing values rather than one identical cycle. The expression
 adapter also maps shared `sad`, `surprised`, `shy`, `bored` and `confused`
 channels to each model's native Japanese morph names. These channels are
 validated against the live meshes, not merely accepted as configuration.
@@ -166,10 +173,18 @@ To truly use the offline motion library across models:
 4. Export those clips into Godot as `AnimationPlayer` animations.
 5. Keep the LLM/router layer unchanged.
 
-The current local catalog has no real HumanML3D motion sample beyond dataset
-statistics (`Mean.npy` and `Std.npy`). Therefore `walk/wave/nod/think/happy/talk`
-currently use reviewed semantic bone overlays; richer full-body clips still
-require `.npy`/BVH/VMD source motion, offline retargeting and baking.
+The current local catalog has one generated `smoke_walk` fixture/package plus dataset
+statistics (`Mean.npy` and `Std.npy`), but no reviewed real HumanML3D corpus clip baked
+for every skeleton. Therefore Jue/Q `walk/wave/nod/think/happy/talk` currently use
+reviewed semantic bone overlays; richer full-body clips still require real
+`.npy`/BVH/VMD source motion, offline retargeting and baking.
+
+| Character family | Current walk backend | Status |
+|---|---|---|
+| 咕咕嘎嘎 | Native `AnimationPlayer` `walk` | Production baseline |
+| 诀 | Distance-driven semantic leg overlay | Temporary until retarget bake |
+| Local MMD Q cast | Per-character distance-driven gait profiles | Local reviewed baseline |
+| HumanML3D `smoke_walk` | Offline fixture/package | Pipeline smoke test, not a corpus |
 
 This keeps intelligence and asset adaptation separate:
 
@@ -212,4 +227,11 @@ Optional local PMX conversion and runtime coverage:
   --script scripts/debug/local_character_runtime_check.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
   --script scripts/debug/local_character_catalog_check.gd
+```
+
+Locomotion synchronization and gait quality:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/locomotion_quality_check.gd
 ```

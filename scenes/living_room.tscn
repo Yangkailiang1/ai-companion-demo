@@ -652,6 +652,7 @@ collision_layer = 2
 collision_mask = 1
 script = ExtResource("2_agent")
 agent_name = "main_agent"
+move_speed_mps = 3.0
 
 [node name="AgentCollision" type="CollisionShape3D" parent="Agent"]
 position = Vector3(0, 0.625, 0)
@@ -732,6 +733,7 @@ collision_layer = 2
 collision_mask = 1
 script = ExtResource("2_agent")
 agent_name = "jue_agent"
+move_speed_mps = 3.0
 
 [node name="AgentCollision" type="CollisionShape3D" parent="JueAgent"]
 position = Vector3(0, 0.78, 0)
