@@ -34,7 +34,10 @@ func _ready():
 func _register_in_semantic_world():
 	if object_id.is_empty(): return
 
-	var obj = SemanticWorld.get_object(object_id)
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world == null:
+		return
+	var obj = semantic_world.get_object(object_id)
 	if obj:
 		obj.godot_node = self
 		_registered = true
@@ -120,20 +123,21 @@ func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
 			var result: Dictionary = child.perform_interaction(verb, actor_id)
 			if bool(result.get("handled", false)):
 				return result
-	if not SemanticWorld.can_interact(object_id, verb):
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world == null or not semantic_world.can_interact(object_id, verb):
 		return {"handled": false}
 	var physics_result := _perform_physics_interaction(verb, actor_id)
 	if not physics_result.is_empty():
 		return physics_result
 	var new_state := _generic_interaction_state(verb, actor_id)
 	if not new_state.is_empty():
-		SemanticWorld.update_object_state(object_id, new_state)
+		semantic_world.update_object_state(object_id, new_state)
 	return {"handled": true, "state": new_state}
 
 
 ## [S3.2] 为没有专用组件的常见 affordance 提供可见、可保存的语义状态。
 func _generic_interaction_state(verb: String, actor_id: String) -> String:
-	var actor_name := CodifiedProfile.get_agent_display_name(actor_id)
+	var actor_name := _agent_display_name(actor_id)
 	match verb:
 		"sit":
 			return "%s坐在这里" % actor_name
@@ -150,7 +154,9 @@ func _generic_interaction_state(verb: String, actor_id: String) -> String:
 		"throw":
 			return "被放到一边"
 		"look_at":
-			return SemanticWorld.get_object(object_id).state
+			var semantic_world := _autoload("SemanticWorld")
+			var obj = semantic_world.get_object(object_id) if semantic_world != null else null
+			return obj.state if obj != null else ""
 		"browse":
 			return "%s正在浏览书架" % actor_name
 		"take_book":
@@ -213,8 +219,10 @@ func _pick_up_body(body: Node3D, actor: Node3D, actor_id: String) -> Dictionary:
 	body.transform = Transform3D.IDENTITY
 	_carried_by = actor_id
 	_reservation.commit(actor_id)
-	var state := "被%s拿在手中" % CodifiedProfile.get_agent_display_name(actor_id)
-	SemanticWorld.update_object_state(object_id, state)
+	var state := "被%s拿在手中" % _agent_display_name(actor_id)
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world != null:
+		semantic_world.update_object_state(object_id, state)
 	return {"handled": true, "success": true, "state": state}
 
 
@@ -244,8 +252,10 @@ func _release_body(
 	_carried_by = ""
 	_reservation.release(actor_id)
 	var state := "被%s抛出" if throwing else "由%s放在附近"
-	state = state % CodifiedProfile.get_agent_display_name(actor_id)
-	SemanticWorld.update_object_state(object_id, state)
+	state = state % _agent_display_name(actor_id)
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world != null:
+		semantic_world.update_object_state(object_id, state)
 	return {"handled": true, "success": true, "state": state}
 
 
@@ -255,3 +265,19 @@ func _find_agent(actor_id: String) -> Node3D:
 		if String(node.get("agent_name")) == actor_id and node is Node3D:
 			return node as Node3D
 	return null
+
+
+## [S4.2] 通过 SceneTree 查询 Autoload，保证脚本也可由参数化工厂动态加载。
+func _autoload(singleton_name: String) -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return null
+	return tree.root.get_node_or_null(singleton_name)
+
+
+## [S4.2] 查询角色显示名；Autoload 缺失时回退到稳定 actor_id。
+func _agent_display_name(actor_id: String) -> String:
+	var profiles := _autoload("CodifiedProfile")
+	if profiles != null and profiles.has_method("get_agent_display_name"):
+		return String(profiles.get_agent_display_name(actor_id))
+	return actor_id if not actor_id.is_empty() else "角色"

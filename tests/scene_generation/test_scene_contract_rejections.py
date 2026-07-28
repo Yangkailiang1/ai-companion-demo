@@ -105,6 +105,25 @@ class TestSceneContractRejections(ShadowContractFixture, unittest.TestCase):
         self.recipe["seed"] = "forty-two"
         self.assert_contract_error()
 
+    def test_unknown_layout_generator(self):
+        self.recipe["variable_fields"][0]["constraints"] = {
+            "generator": "teleport_anywhere"
+        }
+        self.assert_contract_error()
+
+    def test_follow_target_must_exist(self):
+        self.recipe["variable_fields"][2]["constraints"] = {
+            "generator": "follow",
+            "target": "missing_table",
+        }
+        self.assert_contract_error()
+
+    def test_multiple_openings_on_same_wall_are_rejected_in_v1(self):
+        duplicate = copy.deepcopy(self.recipe["room"]["openings"][0])
+        duplicate["opening_id"] = "second_window"
+        self.recipe["room"]["openings"].append(duplicate)
+        self.assert_contract_error()
+
 
 if __name__ == "__main__":
     unittest.main()

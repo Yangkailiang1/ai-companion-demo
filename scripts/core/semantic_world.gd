@@ -113,6 +113,33 @@ func _create_default_objects() -> void:
 		objects[obj.id] = obj
 
 
+## [S4.2] 用生成场景 Manifest 的 placement 新增或刷新语义物体。
+## 保留相同 object_id 已有的存档状态，仅同步空间、能力和 Godot 节点引用。
+func upsert_generated_object(data: Dictionary, godot_node: Node3D) -> void:
+	var object_id := String(data.get("semantic_id", ""))
+	if object_id.is_empty():
+		return
+	var obj: ObjectData = objects.get(object_id)
+	if obj == null:
+		obj = ObjectData.new()
+		obj.id = object_id
+		obj.state = String(data.get("initial_state", ""))
+		objects[object_id] = obj
+	obj.name = String(data.get("display_name", object_id))
+	obj.description = String(data.get("description", ""))
+	obj.affordances.assign(data.get("affordances", []))
+	obj.position = _dict_to_vec3(data.get("position", [0, 0, 0]))
+	obj.interaction_point = _dict_to_vec3(
+		data.get("interaction_point", data.get("position", [0, 0, 0]))
+	)
+	obj.needs_proximity = bool(data.get("needs_proximity", true))
+	obj.consumable = bool(data.get("consumable", false))
+	obj.effects = data.get("effects", {}).duplicate(true)
+	var generated_properties: Dictionary = data.get("properties", {}).duplicate(true)
+	obj.properties.merge(generated_properties, true)
+	obj.godot_node = godot_node
+
+
 # 获取物体
 func get_object(obj_id: String) -> ObjectData:
 	return objects.get(obj_id)

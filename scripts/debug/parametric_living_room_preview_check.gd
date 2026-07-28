@@ -3,7 +3,12 @@
 
 extends SceneTree
 
-const OUTPUT_PATH := "/private/tmp/parametric_living_room_preview.png"
+const OUTPUTS := {
+	"res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json":
+		"/private/tmp/parametric_living_room_preview.png",
+	"res://data/scene_generation/manifests/living_room_shadow.seed43.manifest.json":
+		"/private/tmp/parametric_living_room_seed43_preview.png",
+}
 
 
 func _init() -> void:
@@ -20,19 +25,24 @@ func _run() -> void:
 		push_error("PARAMETRIC_LIVING_ROOM_PREVIEW_FAIL: scene missing")
 		quit(1)
 		return
-	var scene := packed.instantiate()
-	root.add_child(scene)
-	current_scene = scene
-	for _frame in range(16):
+	for manifest_path in OUTPUTS:
+		var scene := packed.instantiate()
+		scene.set("manifest_path", manifest_path)
+		root.add_child(scene)
+		current_scene = scene
+		for _frame in range(16):
+			await process_frame
+		await RenderingServer.frame_post_draw
+		var image := root.get_texture().get_image()
+		var output_path: String = OUTPUTS[manifest_path]
+		var error := image.save_png(output_path)
+		if error != OK:
+			push_error("PARAMETRIC_LIVING_ROOM_PREVIEW_FAIL: save error=%d" % error)
+			quit(1)
+			return
+		print("PARAMETRIC_LIVING_ROOM_PREVIEW_PASS seed=%s path=%s size=%dx%d" % [
+			manifest_path, output_path, image.get_width(), image.get_height(),
+		])
+		scene.queue_free()
 		await process_frame
-	await RenderingServer.frame_post_draw
-	var image := root.get_texture().get_image()
-	var error := image.save_png(OUTPUT_PATH)
-	if error != OK:
-		push_error("PARAMETRIC_LIVING_ROOM_PREVIEW_FAIL: save error=%d" % error)
-		quit(1)
-		return
-	print("PARAMETRIC_LIVING_ROOM_PREVIEW_PASS path=%s size=%dx%d" % [
-		OUTPUT_PATH, image.get_width(), image.get_height(),
-	])
 	quit(0)

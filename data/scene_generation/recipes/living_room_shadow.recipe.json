@@ -3,7 +3,7 @@
   "recipe_id": "living_room_shadow",
   "recipe_version": "1.0.0",
   "registry_id": "living_room_shadow",
-  "registry_version": "1.0.0",
+  "registry_version": "1.1.0",
   "seed": 42,
   "description": "Shadow recipe capturing the current living room as a deterministic contract. Positions, waypoints and object slots are taken from data/scene_config.json. This recipe serves as the baseline for parametric generation validation; the actual scene remains living_room.tscn.",
   "room": {
@@ -214,6 +214,45 @@
       "affordances": ["inspect", "look_at"],
       "effects": {},
       "initial_state": "挂在墙上"
+    },
+    {
+      "semantic_id": "reading_armchair",
+      "asset_id": "reading_armchair",
+      "display_name": "阅读扶手椅",
+      "description": "铺着两个软靠垫的单人扶手椅，适合坐下来读书",
+      "position": [2.75, 0.5, 2.1],
+      "rotation_deg": [0, -30, 0],
+      "interaction_point": [2.2, 0.0, 1.15],
+      "needs_proximity": true,
+      "affordances": ["sit", "inspect"],
+      "effects": {"energy": 8, "fun": 4},
+      "initial_state": "空着"
+    },
+    {
+      "semantic_id": "standing_lamp",
+      "asset_id": "standing_lamp",
+      "display_name": "落地灯",
+      "description": "沙发旁的暖色落地灯，让阅读角显得更加温馨",
+      "position": [-3.25, 0.86, 2.5],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-2.75, 0.0, 2.45],
+      "needs_proximity": true,
+      "affordances": ["turn_on", "turn_off", "inspect"],
+      "effects": {},
+      "initial_state": "暖光已开启"
+    },
+    {
+      "semantic_id": "conversation_rug",
+      "asset_id": "conversation_rug",
+      "display_name": "客厅地毯",
+      "description": "划分沙发和茶几交流区的柔软地毯",
+      "position": [-0.1, 0.04, 1.0],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-0.1, 0.0, 1.0],
+      "needs_proximity": false,
+      "affordances": [],
+      "effects": {},
+      "initial_state": "铺得很平整"
     }
   ],
   "waypoints": {
@@ -301,39 +340,107 @@
   "variable_fields": [
     {
       "field_path": "object_slots[sofa].position",
-      "description": "Sofa may shift laterally along right wall within clearance constraints."
+      "description": "Sofa may shift laterally while retaining a clear path.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [-0.22, 0.0, -0.05],
+        "offset_max": [0.22, 0.0, 0.12],
+        "move_interaction_point": true
+      }
     },
     {
       "field_path": "object_slots[coffee_table].position",
-      "description": "Coffee table relative position can vary as long as it stays between sofa and TV within floor_center zone."
+      "description": "Coffee table varies inside the central conversation zone.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [-0.28, 0.0, -0.18],
+        "offset_max": [0.28, 0.0, 0.05],
+        "move_interaction_point": true
+      }
     },
     {
       "field_path": "object_slots[book].position",
-      "description": "Book surface position varies with coffee table position."
+      "description": "Book follows the coffee-table surface.",
+      "constraints": {
+        "generator": "follow",
+        "target": "coffee_table"
+      }
     },
     {
       "field_path": "object_slots[milk_tea].position",
-      "description": "Milk tea surface position varies with coffee table position."
+      "description": "Milk tea follows the coffee-table surface.",
+      "constraints": {
+        "generator": "follow",
+        "target": "coffee_table"
+      }
     },
     {
       "field_path": "object_slots[bookshelf].position",
-      "description": "Bookshelf may shift along right wall within clearance constraints."
+      "description": "Bookshelf may shift along the right wall.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [0.0, 0.0, -0.3],
+        "offset_max": [0.0, 0.0, 0.3],
+        "move_interaction_point": true
+      }
     },
     {
       "field_path": "object_slots[room_lights].position",
-      "description": "Wall switch height may adjust within standard reach range."
+      "description": "Wall switch height may adjust within standard reach range.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [0.0, -0.12, 0.0],
+        "offset_max": [0.0, 0.12, 0.0],
+        "move_interaction_point": false
+      }
     },
     {
       "field_path": "object_slots[wall_art].position",
-      "description": "Wall art position on back wall may vary within back wall bounds."
+      "description": "Wall art position on back wall may vary.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [-0.16, -0.08, 0.0],
+        "offset_max": [0.16, 0.08, 0.0],
+        "move_interaction_point": false
+      }
     },
     {
       "field_path": "object_slots[back_wall_shelf].position",
-      "description": "Back wall shelf position may vary within back wall bounds."
+      "description": "Back wall shelf position may vary.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [-0.22, -0.08, 0.0],
+        "offset_max": [0.22, 0.08, 0.0],
+        "move_interaction_point": false
+      }
     },
     {
       "field_path": "object_slots[leaf_art].position",
-      "description": "Leaf art position on back wall may vary within back wall bounds."
+      "description": "Leaf art position on back wall may vary.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [-0.16, -0.08, 0.0],
+        "offset_max": [0.16, 0.08, 0.0],
+        "move_interaction_point": false
+      }
+    },
+    {
+      "field_path": "object_slots[reading_armchair].position",
+      "description": "Reading chair may drift outward within its conversation-zone clearance.",
+      "constraints": {
+        "generator": "uniform_offset",
+        "baseline_seed": 42,
+        "offset_min": [0.0, 0.0, 0.0],
+        "offset_max": [0.18, 0.0, 0.14],
+        "move_interaction_point": true
+      }
     },
     {
       "field_path": "seed",

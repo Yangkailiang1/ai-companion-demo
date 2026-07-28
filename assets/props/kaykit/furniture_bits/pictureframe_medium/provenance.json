@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "asset_id": "pictureframe_medium",
+  "provider": "KayKit",
+  "official_page": "https://kaylousberg.itch.io/furniture-bits",
+  "download_url": "https://kaylousberg.itch.io/furniture-bits",
+  "license": "CC0-1.0",
+  "redistribution": "allowed",
+  "accessed_at": "2026-07-28",
+  "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4",
+  "gltf_sha256": "768ebf5e81d2d4dfe87276e70b7373ee541592ca409a57067e5e76626a010926"
+}

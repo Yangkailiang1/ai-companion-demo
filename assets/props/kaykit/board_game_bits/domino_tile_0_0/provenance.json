@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "asset_id": "domino_tile_0_0",
+  "provider": "KayKit",
+  "official_page": "https://kaylousberg.itch.io/board-game-bits",
+  "download_url": "https://kaylousberg.itch.io/board-game-bits",
+  "license": "CC0-1.0",
+  "redistribution": "allowed",
+  "accessed_at": "2026-07-28",
+  "source_sha256": "4b593501cc6c0ca63e883a76c987baded0674da34d03ebf354b1aaf9e0ba0cfc",
+  "gltf_sha256": "a14c0fe0147ea72c1bb659b1af5602d38bc7495f84438c0367b5e3fb5a3d8fda"
+}

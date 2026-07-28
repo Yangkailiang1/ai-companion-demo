@@ -1,9 +1,10 @@
 # Validate manifest + registry placement/model/fallback/physics counts.
 # Run: Godot --headless --path . --script scripts/debug/parametric_living_room_builder_check.gd
 #
-# Verifies: S4.1
+# Verifies: S4.1, S4.2
 # Responsibility: 验证 ParametricSceneBuilder + ParametricAssetFactory 的
-# 12 个 placement、6 个模型、6 个 fallback、11 个碰撞、9 个 static、2 个 rigid 和 1 个 none。
+# 全部 Manifest placement 均由模型库加载、物理角色与 Registry 一致，
+# 且每个碰撞物体完成 InteractableObject / SemanticWorld 绑定。
 # Covers: manifest加载 → registry索引 → 工厂创建 → builder报告 → 位置验证
 
 extends SceneTree
@@ -108,26 +109,27 @@ func _run_check() -> void:
 
 	# Verify expected counts.
 	var errors := 0
-	if placement_count != 12:
-		printerr("FAIL: expected 12 placements, got %d" % placement_count)
+	var expected := _expected_counts(manifest, registry)
+	if placement_count != int(expected.placements):
+		printerr("FAIL: expected %d placements, got %d" % [expected.placements, placement_count])
 		errors += 1
-	if loaded_count != 6:
-		printerr("FAIL: expected 6 models, got %d" % loaded_count)
+	if loaded_count != int(expected.placements):
+		printerr("FAIL: expected %d models, got %d" % [expected.placements, loaded_count])
 		errors += 1
-	if fallback_count != 6:
-		printerr("FAIL: expected 6 fallbacks, got %d" % fallback_count)
+	if fallback_count != 0:
+		printerr("FAIL: expected 0 fallbacks, got %d" % fallback_count)
 		errors += 1
-	if collision_count != 11:
-		printerr("FAIL: expected 11 collisions, got %d" % collision_count)
+	if collision_count != int(expected.collisions):
+		printerr("FAIL: expected %d collisions, got %d" % [expected.collisions, collision_count])
 		errors += 1
-	if rigid_count != 2:
-		printerr("FAIL: expected 2 rigid, got %d" % rigid_count)
+	if rigid_count != int(expected.rigid):
+		printerr("FAIL: expected %d rigid, got %d" % [expected.rigid, rigid_count])
 		errors += 1
-	if static_count != 9:
-		printerr("FAIL: expected 9 static, got %d" % static_count)
+	if static_count != int(expected.static):
+		printerr("FAIL: expected %d static, got %d" % [expected.static, static_count])
 		errors += 1
-	if none_count != 1:
-		printerr("FAIL: expected 1 none, got %d" % none_count)
+	if none_count != int(expected.none):
+		printerr("FAIL: expected %d none, got %d" % [expected.none, none_count])
 		errors += 1
 
 	# Verify positions match manifest within 0.001 m.
@@ -157,7 +159,7 @@ func _run_check() -> void:
 
 		# Verify AnchorApproach exists and position matches interaction_point.
 		var expected_ip := _array_to_vector3(mp.get("interaction_point", [0.0, 0.0, 0.0]))
-		var anchor := (child as Node3D).get_node_or_null("AnchorApproach") as Node3D
+		var anchor := (child as Node3D).find_child("AnchorApproach", true, false) as Marker3D
 		if anchor == null:
 			printerr("FAIL: '%s' missing AnchorApproach node" % sid)
 			errors += 1
@@ -203,6 +205,19 @@ func _run_check() -> void:
 				if body != null:
 					printerr("FAIL: '%s' has none physics but PhysicsBody exists" % sid)
 					errors += 1
+		var expected_semantic_node: Node3D = body if body != null else child
+		var semantic_world := root.get_node("SemanticWorld")
+		var semantic_object = semantic_world.get_object(sid)
+		if semantic_object == null or semantic_object.godot_node != expected_semantic_node:
+			printerr("FAIL: '%s' is not bound to SemanticWorld" % sid)
+			errors += 1
+		elif semantic_object.interaction_point.distance_to(expected_ip) > 0.001:
+			printerr("FAIL: '%s' SemanticWorld interaction point mismatch" % sid)
+			errors += 1
+		if body != null:
+			if not body.has_method("perform_interaction"):
+				printerr("FAIL: '%s' physics body is not interactable" % sid)
+				errors += 1
 
 	if errors > 0:
 		printerr("\nFAIL: %d error(s)" % errors)
@@ -213,6 +228,28 @@ func _run_check() -> void:
 	check_root.free()
 	print("\n=== PASS ===\n")
 	quit(0)
+
+
+## [S4.2] 从 Manifest + Registry 推导物理计数，避免新增模型后测试写死数量。
+func _expected_counts(manifest: Dictionary, registry: Dictionary) -> Dictionary:
+	var roles := {}
+	for asset in registry.get("assets", []):
+		roles[String(asset.get("asset_id", ""))] = String(
+			asset.get("roles", {}).get("physics", "none")
+		)
+	var result := {
+		"placements": manifest.get("placements", []).size(),
+		"collisions": 0,
+		"rigid": 0,
+		"static": 0,
+		"none": 0,
+	}
+	for placement in manifest.get("placements", []):
+		var role: String = roles.get(String(placement.get("asset_id", "")), "none")
+		result[role] += 1
+		if role != "none":
+			result.collisions += 1
+	return result
 
 
 ## [S4.1] 从 res:// 路径加载并解析 JSON，返回 Dictionary。

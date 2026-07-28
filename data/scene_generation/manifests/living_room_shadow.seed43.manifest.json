@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "manifest_id": "living_room_shadow-42-3359c75fe5f7",
+  "manifest_id": "living_room_shadow-43-018d8f1b0e27",
   "recipe_id": "living_room_shadow",
   "recipe_version": "1.0.0",
   "registry_id": "living_room_shadow",
   "registry_version": "1.1.0",
-  "seed": 42,
-  "generation_hash": "3359c75fe5f76c0c0dfdcacf60421840d49edcf641969f84289cfdf1b6ccfbc3",
+  "seed": 43,
+  "generation_hash": "018d8f1b0e27ea5b9d8b9752406c113be2c2e091ce4d8715b637c82dd2d40d79",
   "room": {
     "name": "客厅",
     "dimensions_m": {
@@ -73,9 +73,9 @@
       "asset_id": "sofa_current",
       "display_name": "沙发",
       "position": [
-        -1.5,
+        -1.6227,
         0.25,
-        1.8
+        1.8445
       ],
       "rotation_deg": [
         0,
@@ -83,9 +83,9 @@
         0
       ],
       "interaction_point": [
-        -1.5,
+        -1.6227,
         0.0,
-        0.38
+        0.4245
       ],
       "description": "一张柔软的米色布艺沙发，靠垫有点歪",
       "needs_proximity": true,
@@ -140,9 +140,9 @@
       "asset_id": "book_current",
       "display_name": "一本书",
       "position": [
-        0.55,
+        0.3949,
         0.4,
-        0.7
+        0.5427
       ],
       "rotation_deg": [
         0,
@@ -150,9 +150,9 @@
         0
       ],
       "interaction_point": [
-        0.55,
+        0.3949,
         0.0,
-        0.0
+        -0.1573
       ],
       "description": "一本翻到第42页的悬疑小说，主角刚刚发现了一个重要线索",
       "needs_proximity": true,
@@ -173,9 +173,9 @@
       "asset_id": "milk_tea_cup",
       "display_name": "奶茶",
       "position": [
-        1.55,
+        1.3949,
         0.52,
-        0.7
+        0.5427
       ],
       "rotation_deg": [
         0,
@@ -183,9 +183,9 @@
         0
       ],
       "interaction_point": [
-        1.55,
+        1.3949,
         0.0,
-        0.0
+        -0.1573
       ],
       "description": "一杯刚做好的珍珠奶茶，杯子外壁挂着水珠，吸管还没插上",
       "needs_proximity": true,
@@ -244,9 +244,9 @@
       "asset_id": "coffee_table_current",
       "display_name": "茶几",
       "position": [
-        0.65,
+        0.4949,
         0.19,
-        0.72
+        0.5627
       ],
       "rotation_deg": [
         0,
@@ -254,9 +254,9 @@
         0
       ],
       "interaction_point": [
-        0.65,
+        0.4949,
         0.0,
-        -0.05
+        -0.2073
       ],
       "description": "一张结实的木质茶几，可以查看或摆放小物件",
       "needs_proximity": true,
@@ -276,7 +276,7 @@
       "position": [
         3.72,
         1.1,
-        -2.05
+        -1.8916
       ],
       "rotation_deg": [
         0,
@@ -286,7 +286,7 @@
       "interaction_point": [
         3.05,
         0.0,
-        -1.75
+        -1.5916
       ],
       "description": "靠墙的白色书架，摆着不同类型的读物",
       "needs_proximity": true,
@@ -306,7 +306,7 @@
       "display_name": "客厅壁灯开关",
       "position": [
         -3.82,
-        1.2,
+        1.2114,
         -0.65
       ],
       "rotation_deg": [
@@ -336,8 +336,8 @@
       "asset_id": "wall_art_frame",
       "display_name": "墙上的画",
       "position": [
-        -3.18,
-        1.62,
+        -3.1172,
+        1.6459,
         -3.78
       ],
       "rotation_deg": [
@@ -396,8 +396,8 @@
       "asset_id": "back_wall_shelf_decor",
       "display_name": "墙面搁板",
       "position": [
-        0.55,
-        1.32,
+        0.3891,
+        1.3059,
         -3.83
       ],
       "rotation_deg": [
@@ -426,8 +426,8 @@
       "asset_id": "leaf_art_panel",
       "display_name": "叶子装饰画",
       "position": [
-        -1.58,
-        1.78,
+        -1.4846,
+        1.7998,
         -3.86
       ],
       "rotation_deg": [
@@ -456,9 +456,9 @@
       "asset_id": "reading_armchair",
       "display_name": "阅读扶手椅",
       "position": [
-        2.75,
+        2.8223,
         0.5,
-        2.1
+        2.1027
       ],
       "rotation_deg": [
         0,
@@ -466,9 +466,9 @@
         0
       ],
       "interaction_point": [
-        2.2,
+        2.2723,
         0.0,
-        1.15
+        1.1527
       ],
       "description": "铺着两个软靠垫的单人扶手椅，适合坐下来读书",
       "needs_proximity": true,

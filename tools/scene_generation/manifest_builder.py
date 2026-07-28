@@ -14,6 +14,8 @@ import re
 from typing import Any, Optional
 
 from tools.scene_generation.contract_validator import validate_registry, validate_recipe
+from tools.scene_generation.layout_constraints import validate_sampled_layout
+from tools.scene_generation.layout_sampler import sample_layout
 from tools.scene_generation.scene_contract_error import SceneContractError
 
 # manifest_id must match the generated_scene_manifest schema pattern:
@@ -61,6 +63,8 @@ def compile_recipe(
         }
     )
     gen_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    sampled_slots = sample_layout(recipe)
+    validate_sampled_layout(recipe, registry, sampled_slots)
 
     if output_path is None:
         # Validation-only mode: print summary
@@ -77,9 +81,9 @@ def compile_recipe(
         return gen_hash
 
     # Build manifest
-    manifest = _build_manifest(recipe, gen_hash)
+    manifest = _build_manifest(recipe, gen_hash, sampled_slots)
     manifest["audit"] = {
-        "compiler_version": "1.0.0",
+        "compiler_version": "1.1.0",
         "warnings": [],
     }
 
@@ -97,7 +101,7 @@ def _canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
-def _build_manifest(recipe: dict, gen_hash: str) -> dict:
+def _build_manifest(recipe: dict, gen_hash: str, sampled_slots: list[dict]) -> dict:
     """[S4.1] Build the generated_scene_manifest from a validated recipe."""
     short_hash = gen_hash[:12]
     manifest_id = f"{recipe['recipe_id']}-{recipe['seed']}-{short_hash}"
@@ -110,7 +114,7 @@ def _build_manifest(recipe: dict, gen_hash: str) -> dict:
         )
 
     placements = []
-    for slot in recipe["object_slots"]:
+    for slot in sampled_slots:
         placements.append(
             {
                 "semantic_id": slot["semantic_id"],
@@ -119,8 +123,13 @@ def _build_manifest(recipe: dict, gen_hash: str) -> dict:
                 "position": slot["position"],
                 "rotation_deg": slot.get("rotation_deg", [0, 0, 0]),
                 "interaction_point": slot["interaction_point"],
+                "description": slot.get("description", ""),
+                "needs_proximity": slot.get("needs_proximity", True),
                 "affordances": slot.get("affordances", []),
+                "effects": slot.get("effects", {}),
                 "initial_state": slot.get("initial_state", ""),
+                "properties": slot.get("properties", {}),
+                "consumable": slot.get("consumable", False),
             }
         )
 

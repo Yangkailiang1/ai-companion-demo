@@ -62,7 +62,7 @@ class TestCompileSceneRecipe(ShadowContractFixture, unittest.TestCase):
             self.assertEqual(
                 len(manifest["placements"]), len(self.recipe["object_slots"])
             )
-            self.assertEqual(manifest["audit"]["compiler_version"], "1.0.0")
+            self.assertEqual(manifest["audit"]["compiler_version"], "1.1.0")
             self.assertNotIn("generated_at", manifest["audit"])
             # [S4.1] New assertions: manifest room carries bounds, floor, walls, openings.
             self.assertIn("bounds", manifest["room"])

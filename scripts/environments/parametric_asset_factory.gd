@@ -17,6 +17,7 @@ const _ROLE_COLORS := {
 	"structure": Color(0.82, 0.85, 0.92, 1.0), # pale blue-white
 }
 const _FALLBACK_COLOR := Color(0.55, 0.55, 0.55, 1.0)
+const _INTERACTABLE_SCRIPT := preload("res://scripts/objects/interactable_object.gd")
 
 var _registry_index: Dictionary = {}
 
@@ -43,8 +44,10 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 	parent.add_child(container)
 
 	var asset_entry: Dictionary = _registry_index.get(asset_id, {})
-	var aabb_m: Array = asset_entry.get("geometry", {}).get("aabb_m", [0.3, 0.3, 0.3])
+	var geometry: Dictionary = asset_entry.get("geometry", {})
+	var aabb_m: Array = geometry.get("aabb_m", [0.3, 0.3, 0.3])
 	var aabb_vec := _array_to_vector3(aabb_m)
+	var fit_mode: String = geometry.get("fit_mode", "uniform")
 	var physics_role: String = asset_entry.get("roles", {}).get("physics", "none")
 	var visual_role: String = asset_entry.get("roles", {}).get("visual", "clutter")
 	var resource_path: String = asset_entry.get("resource_path", "")
@@ -62,21 +65,24 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 	if resource_path.is_empty():
 		visual = _create_primitive(aabb_vec, visual_role)
 	else:
-		visual = _create_from_model(resource_path, aabb_vec)
+		visual = _create_from_model(resource_path, aabb_vec, fit_mode)
 	visual.name = "Visual"
 
 	# Add visual to container first (ensures it has a parent for reparent).
 	container.add_child(visual)
 
 	# Create physics body if needed.
+	var physics_node: CollisionObject3D = null
 	if physics_role != "none":
-		var physics_node: CollisionObject3D
 		if physics_role == "static":
 			physics_node = StaticBody3D.new()
 		else:
 			physics_node = RigidBody3D.new()
 			(physics_node as RigidBody3D).freeze = true
 		physics_node.name = "PhysicsBody"
+		physics_node.set_script(_INTERACTABLE_SCRIPT)
+		physics_node.set("object_id", semantic_id)
+		physics_node.set("object_name", placement.get("display_name", semantic_id))
 		container.add_child(physics_node)
 		# Now reparent the visual into the physics body.
 		visual.reparent(physics_node, false)
@@ -91,17 +97,39 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 
 	# Write metadata on the placement container.
 	_write_metadata(container, asset_id, semantic_id, asset_entry)
+	_add_role_components(container, visual_role, aabb_vec)
 
 	# Create AnchorApproach at interaction_point.
-	_create_anchor(container, placement)
+	var anchor_parent: Node3D = physics_node if physics_node != null else container
+	var anchor := _create_anchor(anchor_parent, placement)
+	if physics_node != null:
+		physics_node.set("interaction_point", anchor)
 
 	return container
+
+
+## [S4.2] 根据视觉角色添加轻量运行时组件；灯具自动获得暖色局部光。
+func _add_role_components(
+	container: Node3D, visual_role: String, bounds: Vector3
+) -> void:
+	if visual_role != "lighting":
+		return
+	var light := OmniLight3D.new()
+	light.name = "GeneratedWarmLight"
+	light.position = Vector3(0.0, bounds.y * 0.35, 0.0)
+	light.light_color = Color(1.0, 0.72, 0.43)
+	light.light_energy = 1.15
+	light.omni_range = 4.0
+	light.shadow_enabled = true
+	container.add_child(light)
 
 
 ## [S4.1] 从 Registry resource_path 加载并实例化模型，缩放到声明 AABB。
 ## 保持图片比例，将测量到的 AABB 中心移到局部 (0,0,0)。
 ## 副作用：缩放并平移实例节点。
-func _create_from_model(resource_path: String, target_size: Vector3) -> Node3D:
+func _create_from_model(
+	resource_path: String, target_size: Vector3, fit_mode: String
+) -> Node3D:
 	var packed := load(resource_path) as PackedScene
 	if packed == null:
 		return _create_primitive(target_size, "decor")
@@ -118,9 +146,12 @@ func _create_from_model(resource_path: String, target_size: Vector3) -> Node3D:
 			target_size.y / actual.size.y,
 			target_size.z / actual.size.z,
 		)
-		var uniform_scale := minf(minf(scale_factor.x, scale_factor.y), scale_factor.z)
-		instance.scale = Vector3(uniform_scale, uniform_scale, uniform_scale)
-		instance.position = -actual.get_center() * uniform_scale
+		var applied_scale := scale_factor
+		if fit_mode != "axis":
+			var uniform := minf(minf(scale_factor.x, scale_factor.y), scale_factor.z)
+			applied_scale = Vector3(uniform, uniform, uniform)
+		instance.scale = applied_scale
+		instance.position = -actual.get_center() * applied_scale
 
 	return visual_root
 
@@ -155,15 +186,16 @@ func _write_metadata(container: Node3D, asset_id: String, semantic_id: String, a
 
 
 ## [S4.1] 在世界坐标 interaction_point 处创建 AnchorApproach 标记节点。
-func _create_anchor(container: Node3D, placement: Dictionary) -> void:
+func _create_anchor(container: Node3D, placement: Dictionary) -> Marker3D:
 	var ip: Array = placement.get("interaction_point", [])
 	if ip.size() < 3:
-		return
+		return null
 	var world_ip := _array_to_vector3(ip)
-	var anchor := Node3D.new()
+	var anchor := Marker3D.new()
 	anchor.name = "AnchorApproach"
 	container.add_child(anchor)
 	anchor.global_position = world_ip
+	return anchor
 
 
 ## [S4.1] 递归计算节点以自身为根的子树的联合包围盒（局部空间）。

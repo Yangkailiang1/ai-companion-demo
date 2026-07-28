@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "registry_id": "living_room_shadow",
-  "registry_version": "1.0.0",
-  "description": "Baseline shadow registry capturing the 12 semantic objects in the current living room scene. This serves as a contract reference; structural objects and procedurally authored assets have placeholder resource_paths.",
+  "registry_version": "1.1.0",
+  "description": "Accepted public asset library for the manifest-driven living room, including interactive objects and ambient furniture.",
   "assets": [
     {
       "asset_id": "sofa_current",
@@ -83,11 +83,13 @@
     {
       "asset_id": "book_current",
       "display_name": "一本书",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/book_single/book_single.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
       },
       "geometry": {
         "aabb_m": [0.3, 0.08, 0.2],
@@ -100,7 +102,7 @@
         "semantic": ["observable", "interactable", "portable"],
         "placement": "surface"
       },
-      "style_tags": ["project_authored", "clutter", "cozy"],
+      "style_tags": ["kaykit", "low_poly", "clutter", "cozy"],
       "interaction_profile": "interactable",
       "capabilities": {
         "affordances": ["read", "pick_up", "put_down"],
@@ -118,11 +120,13 @@
     {
       "asset_id": "milk_tea_cup",
       "display_name": "奶茶",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/jar_b_medium/jar_B_medium.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
       },
       "geometry": {
         "aabb_m": [0.3, 0.3, 0.3],
@@ -135,7 +139,7 @@
         "semantic": ["observable", "interactable", "portable"],
         "placement": "surface"
       },
-      "style_tags": ["project_authored", "clutter", "consumable"],
+      "style_tags": ["kaykit", "low_poly", "clutter", "consumable"],
       "interaction_profile": "interactable",
       "capabilities": {
         "affordances": ["drink", "pick_up", "put_down", "throw"],
@@ -262,16 +266,19 @@
     {
       "asset_id": "room_lights_switch",
       "display_name": "客厅壁灯开关",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/board_game_bits/domino_tile_0_0/domino_tile_0-0.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/board-game-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "4b593501cc6c0ca63e883a76c987baded0674da34d03ebf354b1aaf9e0ba0cfc"
       },
       "geometry": {
         "aabb_m": [0.08, 0.22, 0.06],
         "front_axis": "+Z",
-        "up_axis": "+Y"
+        "up_axis": "+Y",
+        "fit_mode": "axis"
       },
       "roles": {
         "visual": "clutter",
@@ -279,7 +286,7 @@
         "semantic": ["observable", "interactable", "stateful"],
         "placement": "wall"
       },
-      "style_tags": ["project_authored", "tech"],
+      "style_tags": ["kaykit", "low_poly", "tech"],
       "interaction_profile": "interactable",
       "capabilities": {
         "affordances": ["turn_on", "turn_off", "dim"],
@@ -333,26 +340,29 @@
       "status": "accepted"
     },
     {
-      "asset_id": "window_panel",
+    "asset_id": "window_panel",
       "display_name": "窗户",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/wall_window_closed/wall_window_closed.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
       },
       "geometry": {
         "aabb_m": [1.92, 1.15, 0.08],
         "front_axis": "+Z",
-        "up_axis": "+Y"
+        "up_axis": "+Y",
+        "fit_mode": "axis"
       },
       "roles": {
         "visual": "structure",
-        "physics": "none",
+      "physics": "static",
         "semantic": ["observable", "interactable"],
         "placement": "wall"
       },
-      "style_tags": ["project_authored", "structure", "cozy"],
+      "style_tags": ["kaykit", "low_poly", "structure", "cozy"],
       "interaction_profile": "decor",
       "capabilities": {
         "affordances": ["inspect", "look_at"],
@@ -371,11 +381,13 @@
     {
       "asset_id": "back_wall_shelf_decor",
       "display_name": "墙面搁板",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/shelf_B_small_decorated/shelf_B_small_decorated.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
       },
       "geometry": {
         "aabb_m": [1.35, 0.4, 0.28],
@@ -388,7 +400,7 @@
         "semantic": ["observable", "interactable"],
         "placement": "wall"
       },
-      "style_tags": ["project_authored", "decor", "cozy"],
+      "style_tags": ["kaykit", "low_poly", "decor", "cozy"],
       "interaction_profile": "decor",
       "capabilities": {
         "affordances": ["inspect", "look_at"],
@@ -407,11 +419,13 @@
     {
       "asset_id": "leaf_art_panel",
       "display_name": "叶子装饰画",
-      "resource_path": "",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/pictureframe_medium/pictureframe_medium.gltf",
       "provenance": {
-        "provider": "Project-authored",
-        "license": "Project-authored",
-        "redistribution": "internal"
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
       },
       "geometry": {
         "aabb_m": [0.92, 0.54, 0.08],
@@ -424,7 +438,7 @@
         "semantic": ["observable", "interactable"],
         "placement": "wall"
       },
-      "style_tags": ["project_authored", "decor", "cozy"],
+      "style_tags": ["kaykit", "low_poly", "decor", "cozy"],
       "interaction_profile": "decor",
       "capabilities": {
         "affordances": ["inspect", "look_at"],
@@ -437,6 +451,121 @@
         "preferred_zone": "wall_back",
         "min_clearance_m": 0.0,
         "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "reading_armchair",
+      "display_name": "阅读扶手椅",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/armchair_pillows/armchair_pillows.gltf",
+      "provenance": {
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+      },
+      "geometry": {
+        "aabb_m": [1.2, 1.0, 1.1],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "furniture",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "floor"
+      },
+      "style_tags": ["kaykit", "low_poly", "cozy", "seating"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["sit", "inspect"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {"energy": 8, "fun": 4}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 0.5,
+        "seat_facing_axis": "+Z",
+        "anchor_side": "right_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "standing_lamp",
+      "display_name": "落地灯",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/lamp_standing/lamp_standing.gltf",
+      "provenance": {
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+      },
+      "geometry": {
+        "aabb_m": [0.68, 1.72, 0.68],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "lighting",
+        "physics": "static",
+        "semantic": ["observable", "interactable", "stateful"],
+        "placement": "floor"
+      },
+      "style_tags": ["kaykit", "low_poly", "cozy", "lighting"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["turn_on", "turn_off", "inspect"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 0.35,
+        "anchor_side": "left_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "conversation_rug",
+      "display_name": "客厅地毯",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/rug_rectangle_a/rug_rectangle_A.gltf",
+      "provenance": {
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+      },
+      "geometry": {
+        "aabb_m": [4.4, 0.06, 3.0],
+        "front_axis": "+Z",
+        "up_axis": "+Y",
+        "fit_mode": "axis"
+      },
+      "roles": {
+        "visual": "decor",
+        "physics": "none",
+        "semantic": ["observable"],
+        "placement": "floor_decor"
+      },
+      "style_tags": ["kaykit", "low_poly", "cozy", "textile"],
+      "interaction_profile": "",
+      "capabilities": {
+        "affordances": [],
+        "has_states": false,
+        "needs_proximity": false,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_center",
+        "min_clearance_m": 0.0
       },
       "status": "accepted"
     }

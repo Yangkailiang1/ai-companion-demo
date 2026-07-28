@@ -8,11 +8,14 @@
 
 extends Node3D
 
+@export_file("*.json") var manifest_path := \
+	"res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json"
+
 
 ## [S4.1] 加载 JSON manifest/registry 并调用 ParametricSceneBuilder 构建房间，
 ## 然后定位相机。
 func _ready() -> void:
-	var manifest: Dictionary = _load_json("res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json")
+	var manifest: Dictionary = _load_json(manifest_path)
 	var registry: Dictionary = _load_json("res://data/scene_generation/registries/living_room_shadow_registry.json")
 
 	if manifest.is_empty() or registry.is_empty():

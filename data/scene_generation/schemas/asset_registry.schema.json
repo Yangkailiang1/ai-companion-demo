@@ -96,6 +96,7 @@
         },
         "front_axis": { "type": "string", "enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] },
         "up_axis": { "type": "string", "enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] },
+        "fit_mode": { "type": "string", "enum": ["uniform", "axis"] },
         "triangle_count": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false

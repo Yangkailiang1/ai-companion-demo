@@ -128,6 +128,7 @@
         "semantic_id": { "type": "string" },
         "asset_id": { "type": "string" },
         "display_name": { "type": "string" },
+        "description": { "type": "string" },
         "position": {
           "type": "array",
           "items": { "type": "number" },
@@ -150,7 +151,14 @@
           "type": "array",
           "items": { "type": "string" }
         },
-        "initial_state": { "type": "string" }
+        "needs_proximity": { "type": "boolean" },
+        "effects": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "initial_state": { "type": "string" },
+        "properties": { "type": "object" },
+        "consumable": { "type": "boolean" }
       },
       "required": ["semantic_id", "asset_id", "display_name", "position", "interaction_point"],
       "additionalProperties": false

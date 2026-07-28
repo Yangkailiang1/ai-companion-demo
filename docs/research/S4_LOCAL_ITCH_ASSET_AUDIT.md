@@ -36,9 +36,16 @@ Resource、Restaurant 共七个包均通过以下安全门：
 | `kaykit_couch_pillows` | 3.0000 × 1.2241 × 1.6000 | front `+Z`, up `+Y` | 808 |
 | `kaykit_lamp_standing` | 1.0000 × 2.5200 × 1.0000 | front `+Z`, up `+Y` | 320 |
 
-这三件资产目前仅具备 `observable + static` 候选能力。加入碰撞、座位锚点、
-灯光状态或角色交互后，必须再走 S3/T2 的交互物体验收，不得因为视觉模型存在而
-自动宣称为可交互对象。
+2026-07-28 后续验收已将 `kaykit_armchair_pillows`、`kaykit_lamp_standing`
+正式纳入客厅 Registry，并额外提取 `rug_rectangle_A`。扶手椅与落地灯具备碰撞、
+approach 锚点及 SemanticWorld 绑定；地毯明确为 `visual + observable`，不生成
+阻挡导航的碰撞。三者与原 12 个槽位共同组成 15/15 模型库驱动的参数化客厅。
+
+地毯源文件 SHA-256：
+
+- GLTF：`892417306a01eac711c6af97b148fc152d375940ec3660964b36e10ea2a8cfda`
+- BIN：`10eb71fc2b20b056b6186526d451ee0a560c425495402d7818f4413795aba506`
+- 贴图：`de62db37a80d1801c3d9eb674890ae04b04469e0c149481a51fa250562c628dc`
 
 ## 网络来源实测
 

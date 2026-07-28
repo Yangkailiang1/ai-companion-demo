@@ -2,7 +2,7 @@
 # wall dimensions, visual/collision center alignment at placement origin.
 # Run: Godot --headless --path . --script scripts/debug/parametric_living_room_structure_check.gd
 #
-# Verifies: S4.1
+# Verifies: S4.1, S4.2
 # Responsibility: 验证 Structure 子树包含 Floor + 声明的墙体、
 # 墙体尺寸来自 Manifest、每个 placement 的 visual 和 collision 中心对齐到
 # placement origin、rigid 已冻结。
@@ -51,6 +51,7 @@ func _run_check() -> void:
 		errors += 1
 	else:
 		errors += _check_floor_and_walls(structure, manifest)
+		errors += _check_navigation(structure)
 
 	var placements_node := generated_room.get_node_or_null("Placements")
 	if placements_node == null:
@@ -115,11 +116,48 @@ func _check_floor_and_walls(structure: Node3D, manifest: Dictionary) -> int:
 					printerr("FAIL: wall '%s' height mismatch — expected %.2f, got %.2f" % [wall_id, height_m, mesh_size.y])
 					errs += 1
 
+	# The declared window center must lie inside a physical hole, not a solid wall box.
+	for opening in manifest.get("room", {}).get("openings", []):
+		var wall_name := "Wall_" + String(opening.get("wall_id", "")).capitalize()
+		var wall := structure.get_node_or_null(wall_name) as Node3D
+		if wall == null:
+			continue
+		var center: Vector3 = _vec3(opening.get("position", [0.0, 0.0, 0.0]))
+		for shape_node in wall.find_children("WallCollision_*", "CollisionShape3D", false, false):
+			var shape := (shape_node as CollisionShape3D).shape as BoxShape3D
+			if shape == null:
+				continue
+			var local := center - (shape_node as CollisionShape3D).position
+			var half := shape.size * 0.5
+			if abs(local.x) < half.x and abs(local.y) < half.y and abs(local.z) < half.z:
+				printerr("FAIL: opening '%s' center is covered by wall collision" % opening.get("opening_id", ""))
+				errs += 1
+
 	if not missing_walls.is_empty():
 		printerr("FAIL: missing walls: %s" % [",".join(missing_walls)])
 		errs += 1
 
 	return errs
+
+
+func _vec3(value: Variant) -> Vector3:
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return Vector3.ZERO
+
+
+## [S4.2] 验证生成场景包含有有效多边形的运行时 NavigationRegion3D。
+func _check_navigation(structure: Node3D) -> int:
+	var region := structure.get_node_or_null("NavigationRegion3D") as NavigationRegion3D
+	if region == null or region.navigation_mesh == null:
+		printerr("FAIL: generated NavigationRegion3D missing")
+		return 1
+	var polygon_count := region.navigation_mesh.get_polygon_count()
+	if polygon_count < 100:
+		printerr("FAIL: generated NavigationMesh too sparse (%d polygons)" % polygon_count)
+		return 1
+	print("  NavigationMesh polygons: %d" % polygon_count)
+	return 0
 
 
 ## [S4.1] 对于每个 placement，验证其内部 Visual 子树的 AABB 中心位于

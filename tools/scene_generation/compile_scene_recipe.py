@@ -51,6 +51,12 @@ def main() -> None:
         default=None,
         help="Optional path to write the generated_scene_manifest JSON.",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Optional deterministic seed override; does not edit the recipe file.",
+    )
     args = parser.parse_args()
 
     # Load recipe
@@ -59,6 +65,8 @@ def main() -> None:
         sys.exit(1)
     with open(args.recipe, "r", encoding="utf-8") as f:
         recipe = json.load(f)
+    if args.seed is not None:
+        recipe["seed"] = args.seed
 
     # Load registry
     if not os.path.isfile(args.registry):

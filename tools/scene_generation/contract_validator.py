@@ -153,6 +153,19 @@ def validate_recipe(recipe: dict, asset_map: dict) -> None:
 
     if not isinstance(recipe["room"], dict):
         _fail("recipe.room must be an object.")
+    openings = recipe["room"].get("openings", [])
+    if not isinstance(openings, list):
+        _fail("recipe.room.openings must be an array.")
+    occupied_walls: set[str] = set()
+    for index, opening in enumerate(openings):
+        if not isinstance(opening, dict):
+            _fail(f"recipe.room.openings[{index}] must be an object.")
+        wall_id = opening.get("wall_id", "")
+        if wall_id in occupied_walls:
+            _fail(
+                f"recipe schema v1 supports at most one opening per wall; duplicate '{wall_id}'."
+            )
+        occupied_walls.add(wall_id)
 
     # -----------------------------------------------------------------------
     # Object slots

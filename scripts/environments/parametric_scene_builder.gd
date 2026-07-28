@@ -13,11 +13,13 @@ const FLOOR_MATERIAL_COLOR := Color(0.35, 0.28, 0.22, 1.0)   # dark wood
 const WALL_MATERIAL_COLOR := Color(0.92, 0.88, 0.82, 1.0)    # warm plaster
 
 var _factory: ParametricAssetFactory
+var _navigation_factory: ParametricNavigationFactory
 
 
 ## [S4.1] 初始化并设置工厂。
 func _init() -> void:
 	_factory = ParametricAssetFactory.new()
+	_navigation_factory = ParametricNavigationFactory.new()
 
 
 ## [S4.1] 从已解析的 manifest/registry 字典构建完整房间。
@@ -49,14 +51,30 @@ func build_room(room_parent: Node3D, manifest: Dictionary, registry: Dictionary)
 
 	_create_floor(structure, Vector2(width, depth))
 	_create_walls_from_manifest(structure, room, bounds_min, bounds_max)
+	structure.add_child(_navigation_factory.create_region(manifest, registry))
 
 	# Place all objects.
 	var placements: Array = manifest.get("placements", [])
 	for placement in placements:
-		_factory.create_placement(placements_node, placement)
+		var placement_node := _factory.create_placement(placements_node, placement)
+		_register_semantic_placement(placement_node, placement)
 
 	# Build report.
 	return _build_report(placements_node, placements)
+
+
+## [S4.2] 将生成物体及其交互 Body 绑定到 SemanticWorld。
+func _register_semantic_placement(container: Node3D, placement: Dictionary) -> void:
+	var interaction_node: Node3D = container
+	var body := container.get_node_or_null("PhysicsBody") as Node3D
+	if body != null:
+		interaction_node = body
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return
+	var semantic_world := tree.root.get_node_or_null("SemanticWorld")
+	if semantic_world != null and semantic_world.has_method("upsert_generated_object"):
+		semantic_world.upsert_generated_object(placement, interaction_node)
 
 
 ## [S4.1] 创建厚度 0.1m 的木色地板 StaticBody（含碰撞）。
@@ -91,6 +109,7 @@ func _create_floor(parent: Node3D, size: Vector2) -> void:
 ## 副作用：创建 StaticBody3D 带合围盒碰撞，并将 wall_count 写入 structure 元数据。
 func _create_walls_from_manifest(parent: Node3D, room: Dictionary, bounds_min: Vector3, bounds_max: Vector3) -> void:
 	var walls: Array = room.get("walls", [])
+	var openings: Array = room.get("openings", [])
 	if walls.is_empty():
 		return
 	var wall_count := 0
@@ -103,45 +122,139 @@ func _create_walls_from_manifest(parent: Node3D, room: Dictionary, bounds_min: V
 		wall_body.name = "Wall_" + wall_id.capitalize()
 		parent.add_child(wall_body)
 
-		var wall_mesh := MeshInstance3D.new()
-		wall_mesh.name = "WallMesh_" + wall_id
-		var box := BoxMesh.new()
-
-		match wall_id:
-			"back":
-				box.size = Vector3(bounds_max.x - bounds_min.x + thickness, wall_height, thickness)
-				wall_mesh.position = Vector3(0.0, wall_height * 0.5, bounds_min.z - thickness * 0.5)
-			"front":
-				box.size = Vector3(bounds_max.x - bounds_min.x + thickness, wall_height, thickness)
-				wall_mesh.position = Vector3(0.0, wall_height * 0.5, bounds_max.z + thickness * 0.5)
-			"left":
-				box.size = Vector3(thickness, wall_height, bounds_max.z - bounds_min.z)
-				wall_mesh.position = Vector3(bounds_min.x - thickness * 0.5, wall_height * 0.5, 0.0)
-			"right":
-				box.size = Vector3(thickness, wall_height, bounds_max.z - bounds_min.z)
-				wall_mesh.position = Vector3(bounds_max.x + thickness * 0.5, wall_height * 0.5, 0.0)
-			_:
-				continue
-
 		var material := StandardMaterial3D.new()
 		material.albedo_color = WALL_MATERIAL_COLOR
 		material.roughness = 0.95
-		wall_mesh.mesh = box
-		wall_mesh.set_surface_override_material(0, material)
-		wall_body.add_child(wall_mesh)
-
-		var wall_collision := CollisionShape3D.new()
-		wall_collision.name = "WallCollision_" + wall_id
-		var collision_box := BoxShape3D.new()
-		collision_box.size = box.size
-		wall_collision.shape = collision_box
-		wall_collision.position = wall_mesh.position
-		wall_body.add_child(wall_collision)
+		var wall_openings := openings.filter(
+			func(opening: Dictionary) -> bool:
+				return String(opening.get("wall_id", "")) == wall_id
+		)
+		if wall_openings.is_empty():
+			_add_full_wall(
+				wall_body, wall_id, thickness, wall_height,
+				bounds_min, bounds_max, material,
+			)
+		else:
+			_add_wall_with_openings(
+				wall_body, wall_id, thickness, wall_height,
+				bounds_min, bounds_max, wall_openings, material,
+			)
 		wall_count += 1
 
 	# Record actual wall count for test verification.
 	parent.set_meta("wall_count", wall_count)
 	print("  walls built: %d" % wall_count)
+
+
+## [S4.2] 创建没有门窗开口的完整墙段。
+func _add_full_wall(
+	body: StaticBody3D,
+	wall_id: String,
+	thickness: float,
+	height: float,
+	bounds_min: Vector3,
+	bounds_max: Vector3,
+	material: Material,
+) -> void:
+	match wall_id:
+		"back":
+			_add_wall_segment(body, wall_id, 0, Vector3(
+				bounds_max.x - bounds_min.x + thickness, height, thickness,
+			), Vector3(0.0, height * 0.5, bounds_min.z - thickness * 0.5), material)
+		"front":
+			_add_wall_segment(body, wall_id, 0, Vector3(
+				bounds_max.x - bounds_min.x + thickness, height, thickness,
+			), Vector3(0.0, height * 0.5, bounds_max.z + thickness * 0.5), material)
+		"left":
+			_add_wall_segment(body, wall_id, 0, Vector3(
+				thickness, height, bounds_max.z - bounds_min.z,
+			), Vector3(bounds_min.x - thickness * 0.5, height * 0.5, 0.0), material)
+		"right":
+			_add_wall_segment(body, wall_id, 0, Vector3(
+				thickness, height, bounds_max.z - bounds_min.z,
+			), Vector3(bounds_max.x + thickness * 0.5, height * 0.5, 0.0), material)
+
+
+## [S4.2] 将墙按 schema v1 的单个声明开口切成左右/上下四段。
+func _add_wall_with_openings(
+	body: StaticBody3D,
+	wall_id: String,
+	thickness: float,
+	height: float,
+	bounds_min: Vector3,
+	bounds_max: Vector3,
+	openings: Array,
+	material: Material,
+) -> void:
+	var opening: Dictionary = openings[0]
+	var opening_position: Vector3 = _vec3(opening.get("position", [0.0, 1.0, 0.0]))
+	var opening_size: Array = opening.get("size", [1.0, 1.0])
+	var horizontal_center := opening_position.x if wall_id in ["back", "front"] else opening_position.z
+	var horizontal_min := bounds_min.x if wall_id in ["back", "front"] else bounds_min.z
+	var horizontal_max := bounds_max.x if wall_id in ["back", "front"] else bounds_max.z
+	var opening_min := clampf(horizontal_center - float(opening_size[0]) * 0.5, horizontal_min, horizontal_max)
+	var opening_max := clampf(horizontal_center + float(opening_size[0]) * 0.5, horizontal_min, horizontal_max)
+	var vertical_min := clampf(opening_position.y - float(opening_size[1]) * 0.5, 0.0, height)
+	var vertical_max := clampf(opening_position.y + float(opening_size[1]) * 0.5, 0.0, height)
+	var wall_plane := (
+		bounds_min.z - thickness * 0.5 if wall_id == "back"
+		else bounds_max.z + thickness * 0.5 if wall_id == "front"
+		else bounds_min.x - thickness * 0.5 if wall_id == "left"
+		else bounds_max.x + thickness * 0.5
+	)
+	var segments := [
+		[horizontal_min, opening_min, 0.0, height],
+		[opening_max, horizontal_max, 0.0, height],
+		[opening_min, opening_max, 0.0, vertical_min],
+		[opening_min, opening_max, vertical_max, height],
+	]
+	var index := 0
+	for segment in segments:
+		var segment_width: float = segment[1] - segment[0]
+		var segment_height: float = segment[3] - segment[2]
+		if segment_width <= 0.001 or segment_height <= 0.001:
+			continue
+		var horizontal_mid: float = (segment[0] + segment[1]) * 0.5
+		var vertical_mid: float = (segment[2] + segment[3]) * 0.5
+		var size: Vector3
+		var position: Vector3
+		if wall_id in ["back", "front"]:
+			size = Vector3(segment_width, segment_height, thickness)
+			position = Vector3(horizontal_mid, vertical_mid, wall_plane)
+		else:
+			size = Vector3(thickness, segment_height, segment_width)
+			position = Vector3(wall_plane, vertical_mid, horizontal_mid)
+		_add_wall_segment(body, wall_id, index, size, position, material)
+		index += 1
+	body.set_meta("opening_count", openings.size())
+
+
+## [S4.2] 创建单个墙段的视觉和一一对应的盒碰撞。
+func _add_wall_segment(
+	body: StaticBody3D,
+	wall_id: String,
+	index: int,
+	size: Vector3,
+	position: Vector3,
+	material: Material,
+) -> void:
+	var suffix := "" if index == 0 else "_%d" % index
+	var wall_mesh := MeshInstance3D.new()
+	wall_mesh.name = "WallMesh_" + wall_id + suffix
+	var box := BoxMesh.new()
+	box.size = size
+	wall_mesh.mesh = box
+	wall_mesh.position = position
+	wall_mesh.set_surface_override_material(0, material)
+	body.add_child(wall_mesh)
+
+	var wall_collision := CollisionShape3D.new()
+	wall_collision.name = "WallCollision_" + wall_id + suffix
+	var collision_box := BoxShape3D.new()
+	collision_box.size = size
+	wall_collision.shape = collision_box
+	wall_collision.position = position
+	body.add_child(wall_collision)
 
 
 ## [S4.1] 遍历 GeneratedRoom/Placements 生成包含 loaded/fallback/collision/rigid/static/none 计数的报告。
@@ -193,3 +306,9 @@ func _has_loaded_model(node: Node3D) -> bool:
 			if _has_loaded_model(child):
 				return true
 	return false
+
+
+func _vec3(value: Variant) -> Vector3:
+	if value is Array and value.size() >= 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return Vector3.ZERO

@@ -3,8 +3,8 @@
 # Run with: Godot --headless --path . --script scripts/debug/parametric_shadow_recipe_check.gd
 #
 # Verifies: S4.1
-# Responsibility: Compare the shadow recipe's 12 semantic object IDs and
-# positions against data/scene_config.json within 0.001 m.
+# Responsibility: Ensure the parameterized recipe preserves every legacy
+# semantic object ID/position while allowing additional generated ambience.
 
 extends SceneTree
 
@@ -111,7 +111,7 @@ func _run_check() -> void:
 	print("  shadow recipe: %d object_slots loaded" % recipe_lookup.size())
 
 	# -----------------------------------------------------------------------
-	# 3. Verify exact same 12 semantic object IDs
+	# 3. Verify all legacy semantic object IDs remain compatible.
 	# -----------------------------------------------------------------------
 	var config_ids: Array = config_lookup.keys()
 	var recipe_ids: Array = recipe_lookup.keys()
@@ -123,25 +123,15 @@ func _run_check() -> void:
 	print("\n  config IDs (%d): %s" % [config_ids.size(), config_ids])
 	print("  recipe IDs (%d): %s" % [recipe_ids.size(), recipe_ids])
 
-	# Check both directions
 	for sid in config_ids:
 		if not recipe_lookup.has(sid):
 			printerr("FAIL: semantic_id '%s' is in scene_config.json but NOT in recipe" % sid)
 			quit(1)
 			return
 
-	for sid in recipe_ids:
-		if not config_lookup.has(sid):
-			printerr("FAIL: semantic_id '%s' is in recipe but NOT in scene_config.json" % sid)
-			quit(1)
-			return
-
-	if config_ids.size() != recipe_ids.size():
-		printerr("FAIL: ID count mismatch — config=%d, recipe=%d" % [config_ids.size(), recipe_ids.size()])
-		quit(1)
-		return
-
-	print("\n  Semantic ID match: OK (%d objects)" % config_ids.size())
+	print("\n  Legacy semantic compatibility: OK (%d preserved, %d generated additions)" % [
+		config_ids.size(), recipe_ids.size() - config_ids.size(),
+	])
 
 	# -----------------------------------------------------------------------
 	# 4. Verify positions agree within 0.001 m
@@ -210,16 +200,15 @@ func _run_check() -> void:
 	var scene_ids: Array[String] = []
 	_collect_scene_object_ids(scene_instance, scene_ids)
 	scene_ids.sort()
-	if scene_ids != recipe_ids:
-		printerr("FAIL: living_room semantic IDs differ — scene=%s recipe=%s" % [
-			scene_ids, recipe_ids,
-		])
-		scene_instance.free()
-		quit(1)
-		return
+	for scene_id in scene_ids:
+		if not recipe_lookup.has(scene_id):
+			printerr("FAIL: legacy scene ID missing from recipe: %s" % scene_id)
+			scene_instance.free()
+			quit(1)
+			return
 	scene_instance.free()
 
-	print("  living_room.tscn: loadable with matching semantic IDs")
+	print("  living_room.tscn: loadable; all legacy semantic IDs preserved")
 
 	print("\n=== PASS ===\n")
 	quit(0)
