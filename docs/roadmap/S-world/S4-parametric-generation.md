@@ -25,16 +25,18 @@
 
 参数化单房间：尺寸、门窗、墙体、地板、家具槽位。
 
-- `[NEXT contract]` 定义 `scene_recipe.schema.json`、`asset_registry.schema.json`
-  和 `generated_scene_manifest.schema.json`。
+- `[DONE contract]` 已定义 `scene_recipe.schema.json`、`asset_registry.schema.json`
+  和 `generated_scene_manifest.schema.json`，并提供无第三方依赖的严格校验器、
+  确定性编译器和 23 个正/负例测试。
 - `[DONE pipeline baseline]` 建立 `$download-open-3d-assets` 与
   `$build-parametric-asset-library` 两项批处理 Skill，覆盖来源许可、下载哈希、
   ZIP 安全审计、Godot 导入、注册表校验与 Metal 预览。
 - `[DONE asset batch 01]` KayKit Furniture Bits 的扶手椅、沙发和落地灯已完成
   GLTF 依赖提取、哈希核对、真实 AABB/轴向登记及 1280×720 画面验收；
   仍保持为 Registry candidate，尚未替换客厅家具。
-- `[NEXT migration]` 将当前客厅转写为 shadow Recipe，保留现有
-  `living_room.tscn` 作为视觉与行为基准。
+- `[DONE shadow migration]` 当前客厅已转写为 shadow Recipe、Registry 与 seed 42
+  Manifest；12 个 SemanticWorld 对象、交互坐标和剧情锚点均与现有场景一致，
+  `living_room.tscn` 继续作为视觉与行为基准。
 - `[NEXT preview]` 创建独立 ParametricLivingRoomPreview；未通过对比验收前
   不替换主场景。
 

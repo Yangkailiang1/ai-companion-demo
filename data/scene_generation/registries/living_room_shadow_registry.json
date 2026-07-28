@@ -1,0 +1,444 @@
+{
+  "schema_version": 1,
+  "registry_id": "living_room_shadow",
+  "registry_version": "1.0.0",
+  "description": "Baseline shadow registry capturing the 12 semantic objects in the current living room scene. This serves as a contract reference; structural objects and procedurally authored assets have placeholder resource_paths.",
+  "assets": [
+    {
+      "asset_id": "sofa_current",
+      "display_name": "沙发",
+      "resource_path": "res://assets/props/polyhaven/Sofa_01/Sofa_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/Sofa_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [2.0, 0.5, 0.8],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "furniture",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "floor"
+      },
+      "style_tags": ["polyhaven", "contemporary", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["sit", "lie_down"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": { "energy": 15, "fun": 5 }
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 0.8,
+        "seat_facing_axis": "+Z",
+        "anchor_side": "right_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "tv_current",
+      "display_name": "电视机",
+      "resource_path": "res://assets/props/polyhaven/Television_01/Television_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/Television_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [2.5, 1.2, 0.24],
+        "front_axis": "-Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "furniture",
+        "physics": "static",
+        "semantic": ["observable", "interactable", "stateful"],
+        "placement": "floor"
+      },
+      "style_tags": ["polyhaven", "contemporary", "tech"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["turn_on", "turn_off", "watch", "change_channel"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": { "fun": 25 }
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 1.0,
+        "seat_facing_axis": "+Z",
+        "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "book_current",
+      "display_name": "一本书",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [0.3, 0.08, 0.2],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "clutter",
+        "physics": "rigid",
+        "semantic": ["observable", "interactable", "portable"],
+        "placement": "surface"
+      },
+      "style_tags": ["project_authored", "clutter", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["read", "pick_up", "put_down"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": { "fun": 20 }
+      },
+      "placement_profile": {
+        "preferred_zone": "surface_top",
+        "min_clearance_m": 0.3
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "milk_tea_cup",
+      "display_name": "奶茶",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [0.3, 0.3, 0.3],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "clutter",
+        "physics": "rigid",
+        "semantic": ["observable", "interactable", "portable"],
+        "placement": "surface"
+      },
+      "style_tags": ["project_authored", "clutter", "consumable"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["drink", "pick_up", "put_down", "throw"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": true,
+        "effects": { "hunger": 15, "fun": 10 }
+      },
+      "placement_profile": {
+        "preferred_zone": "surface_top",
+        "min_clearance_m": 0.3
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "plant_potted",
+      "display_name": "绿植小绿",
+      "resource_path": "res://assets/props/polyhaven/potted_plant_01/potted_plant_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/potted_plant_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [0.76, 1.1, 0.76],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "organic",
+        "physics": "static",
+        "semantic": ["observable", "interactable", "stateful"],
+        "placement": "floor"
+      },
+      "style_tags": ["polyhaven", "organic", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["water", "prune", "look_at"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "corner",
+        "min_clearance_m": 0.5
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "coffee_table_current",
+      "display_name": "茶几",
+      "resource_path": "res://assets/props/polyhaven/modern_coffee_table_01/modern_coffee_table_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/modern_coffee_table_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [2.1, 0.5, 1.1],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "furniture",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "floor"
+      },
+      "style_tags": ["polyhaven", "contemporary", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["inspect", "place_item"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_center",
+        "min_clearance_m": 1.0
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "bookshelf_current",
+      "display_name": "书架",
+      "resource_path": "res://assets/props/polyhaven/Shelf_01/Shelf_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/Shelf_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [0.72, 2.35, 0.48],
+        "front_axis": "-Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "furniture",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "floor"
+      },
+      "style_tags": ["polyhaven", "contemporary", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["browse", "take_book", "put_book_back"],
+        "has_states": false,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 0.5,
+        "anchor_side": "right_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "room_lights_switch",
+      "display_name": "客厅壁灯开关",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [0.08, 0.22, 0.06],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "clutter",
+        "physics": "static",
+        "semantic": ["observable", "interactable", "stateful"],
+        "placement": "wall"
+      },
+      "style_tags": ["project_authored", "tech"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["turn_on", "turn_off", "dim"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "wall_left",
+        "min_clearance_m": 0.3,
+        "anchor_side": "left_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "wall_art_frame",
+      "display_name": "墙上的画",
+      "resource_path": "res://assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf",
+      "provenance": {
+        "provider": "Poly Haven",
+        "official_page": "https://polyhaven.com/a/hanging_picture_frame_01",
+        "license": "CC0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [0.74, 1.04, 0.08],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "decor",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "wall"
+      },
+      "style_tags": ["polyhaven", "decor", "cozy"],
+      "interaction_profile": "decor",
+      "capabilities": {
+        "affordances": ["inspect", "look_at"],
+        "has_states": false,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "wall_back",
+        "min_clearance_m": 0.0,
+        "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "window_panel",
+      "display_name": "窗户",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [1.92, 1.15, 0.08],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "structure",
+        "physics": "none",
+        "semantic": ["observable", "interactable"],
+        "placement": "wall"
+      },
+      "style_tags": ["project_authored", "structure", "cozy"],
+      "interaction_profile": "decor",
+      "capabilities": {
+        "affordances": ["inspect", "look_at"],
+        "has_states": false,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "wall_back",
+        "min_clearance_m": 0.0,
+        "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "back_wall_shelf_decor",
+      "display_name": "墙面搁板",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [1.35, 0.4, 0.28],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "decor",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "wall"
+      },
+      "style_tags": ["project_authored", "decor", "cozy"],
+      "interaction_profile": "decor",
+      "capabilities": {
+        "affordances": ["inspect", "look_at"],
+        "has_states": false,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "wall_back",
+        "min_clearance_m": 0.0,
+        "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "leaf_art_panel",
+      "display_name": "叶子装饰画",
+      "resource_path": "",
+      "provenance": {
+        "provider": "Project-authored",
+        "license": "Project-authored",
+        "redistribution": "internal"
+      },
+      "geometry": {
+        "aabb_m": [0.92, 0.54, 0.08],
+        "front_axis": "+Z",
+        "up_axis": "+Y"
+      },
+      "roles": {
+        "visual": "decor",
+        "physics": "static",
+        "semantic": ["observable", "interactable"],
+        "placement": "wall"
+      },
+      "style_tags": ["project_authored", "decor", "cozy"],
+      "interaction_profile": "decor",
+      "capabilities": {
+        "affordances": ["inspect", "look_at"],
+        "has_states": false,
+        "needs_proximity": true,
+        "consumable": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "wall_back",
+        "min_clearance_m": 0.0,
+        "anchor_side": "back_wall"
+      },
+      "status": "accepted"
+    }
+  ]
+}

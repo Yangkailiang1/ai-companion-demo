@@ -11,7 +11,7 @@
 | S1 | [S1-art-ui-presentation.md](./S1-art-ui-presentation.md) | `[ACTIVE]` | 场景美术、UI 与视听表现 |
 | S2 | [S2-multi-room-town.md](./S2-multi-room-town.md) | `[NEXT]` | 多房间、街道、小镇与场景流送 |
 | S3 | [S3-interactable-objects.md](./S3-interactable-objects.md) | `[ACTIVE]` | 可交互物体与状态变化 |
-| S4 | [S4-parametric-generation.md](./S4-parametric-generation.md) | `[RESEARCH]` | 参数化建模与自动场景生成 |
+| S4 | [S4-parametric-generation.md](./S4-parametric-generation.md) | `[ACTIVE v0.8.9]` | 参数化建模与自动场景生成 |
 | S5 | [S5-world-simulation.md](./S5-world-simulation.md) | `[LATER]` | 时间、天气、生态和世界模拟 |
 
 ## 分支概述

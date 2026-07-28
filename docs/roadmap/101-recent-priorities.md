@@ -37,7 +37,8 @@
 9. `[ACTIVE pipeline baseline] S4.1` 参数化场景采用 Scene Recipe、Asset Registry、
    Semantic/Interaction Layer 三层合同；开放资产下载与规范化 Skill 已可由
    DeepSeek/Claude Code 分批执行，KayKit 首批三件家具已通过 Godot 实机预览。
-   下一步定义正式 Schema 并生成与现有客厅等价的 shadow Recipe Preview。
+   三个正式 Schema、严格编译器及当前客厅 shadow Recipe/Manifest 已完成；
+   下一步从 Manifest 生成隔离的 ParametricLivingRoomPreview。
 
 ## v0.9（从客厅到住宅）
 

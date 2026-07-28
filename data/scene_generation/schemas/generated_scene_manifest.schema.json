@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-companion-demo/scene_generation/generated_scene_manifest.schema.json",
+  "title": "Generated Scene Manifest",
+  "description": "Deterministic output produced by compiling a scene recipe against a specific registry version and seed. Records every generated object placement, hash for reproducibility verification, and audit trail.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "description": "Version of the manifest schema.",
+      "minimum": 1
+    },
+    "manifest_id": {
+      "type": "string",
+      "description": "Unique manifest identifier, typically '{recipe_id}-{seed}-{short_hash}'.",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "recipe_id": { "type": "string" },
+    "recipe_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "registry_id": { "type": "string" },
+    "registry_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "seed": { "type": "integer" },
+    "generation_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the generation input: recipe content + registry_version + seed.",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "room": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "dimensions_m": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "depth": { "type": "number" },
+            "height": { "type": "number" }
+          },
+          "required": ["width", "depth", "height"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["name", "dimensions_m"],
+      "additionalProperties": false
+    },
+    "placements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/placement_entry" }
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "compiler_version": { "type": "string" },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["compiler_version"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema_version", "manifest_id", "recipe_id", "recipe_version", "registry_id", "registry_version", "seed", "generation_hash", "room", "placements"],
+  "additionalProperties": false,
+  "$defs": {
+    "placement_entry": {
+      "type": "object",
+      "properties": {
+        "semantic_id": { "type": "string" },
+        "asset_id": { "type": "string" },
+        "display_name": { "type": "string" },
+        "position": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "rotation_deg": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "interaction_point": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "affordances": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "initial_state": { "type": "string" }
+      },
+      "required": ["semantic_id", "asset_id", "display_name", "position", "interaction_point"],
+      "additionalProperties": false
+    }
+  }
+}

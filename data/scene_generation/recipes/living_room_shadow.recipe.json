@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "recipe_id": "living_room_shadow",
+  "recipe_version": "1.0.0",
+  "registry_id": "living_room_shadow",
+  "registry_version": "1.0.0",
+  "seed": 42,
+  "description": "Shadow recipe capturing the current living room as a deterministic contract. Positions, waypoints and object slots are taken from data/scene_config.json. This recipe serves as the baseline for parametric generation validation; the actual scene remains living_room.tscn.",
+  "room": {
+    "name": "客厅",
+    "dimensions_m": {
+      "width": 8.0,
+      "depth": 8.0,
+      "height": 3.0
+    },
+    "bounds": {
+      "min": [-3.25, 0.0, -3.15],
+      "max": [3.25, 0.0, 3.15]
+    },
+    "floor": {
+      "thickness_m": 0.1,
+      "material_key": "herringbone_parquet"
+    },
+    "walls": [
+      {
+        "wall_id": "back",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      },
+      {
+        "wall_id": "left",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      },
+      {
+        "wall_id": "right",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      }
+    ],
+    "openings": [
+      {
+        "opening_id": "main_window",
+        "type": "window",
+        "wall_id": "back",
+        "position": [2.12, 1.66, -3.88],
+        "size": [1.92, 1.15]
+      }
+    ]
+  },
+  "object_slots": [
+    {
+      "semantic_id": "sofa",
+      "asset_id": "sofa_current",
+      "display_name": "沙发",
+      "description": "一张柔软的米色布艺沙发，靠垫有点歪",
+      "position": [-1.5, 0.25, 1.8],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-1.5, 0.0, 0.38],
+      "needs_proximity": true,
+      "affordances": ["sit", "lie_down"],
+      "effects": { "energy": 15, "fun": 5 },
+      "initial_state": "空着"
+    },
+    {
+      "semantic_id": "tv",
+      "asset_id": "tv_current",
+      "display_name": "电视机",
+      "description": "一台40寸液晶电视，遥控器在茶几上",
+      "position": [-1.5, 0.85, -3.82],
+      "rotation_deg": [0, 180, 0],
+      "interaction_point": [-1.5, 0.0, -2.8],
+      "needs_proximity": true,
+      "affordances": ["turn_on", "turn_off", "watch", "change_channel"],
+      "effects": { "fun": 25 },
+      "initial_state": "关闭"
+    },
+    {
+      "semantic_id": "book",
+      "asset_id": "book_current",
+      "display_name": "一本书",
+      "description": "一本翻到第42页的悬疑小说，主角刚刚发现了一个重要线索",
+      "position": [0.55, 0.4, 0.7],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [0.55, 0.0, 0.0],
+      "needs_proximity": true,
+      "affordances": ["read", "pick_up", "put_down"],
+      "effects": { "fun": 20 },
+      "initial_state": "在茶几上"
+    },
+    {
+      "semantic_id": "milk_tea",
+      "asset_id": "milk_tea_cup",
+      "display_name": "奶茶",
+      "description": "一杯刚做好的珍珠奶茶，杯子外壁挂着水珠，吸管还没插上",
+      "position": [1.55, 0.52, 0.7],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [1.55, 0.0, 0.0],
+      "needs_proximity": true,
+      "affordances": ["drink", "pick_up", "put_down", "throw"],
+      "effects": { "hunger": 15, "fun": 10 },
+      "initial_state": "满满一杯",
+      "consumable": true
+    },
+    {
+      "semantic_id": "plant",
+      "asset_id": "plant_potted",
+      "display_name": "绿植小绿",
+      "description": "一盆翠绿的室内盆栽，咕咕嘎嘎给它取名叫小绿，看起来需要浇水了",
+      "position": [2.75, 0.3, -2.65],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [2.2, 0.0, -2.0],
+      "needs_proximity": true,
+      "affordances": ["water", "prune", "look_at"],
+      "effects": {},
+      "initial_state": "需要浇水",
+      "properties": {
+        "moisture": 28.0,
+        "health": 82.0,
+        "growth_stage": 1,
+        "healthy_hours": 0
+      }
+    },
+    {
+      "semantic_id": "coffee_table",
+      "asset_id": "coffee_table_current",
+      "display_name": "茶几",
+      "description": "一张结实的木质茶几，可以查看或摆放小物件",
+      "position": [0.65, 0.19, 0.72],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [0.65, 0.0, -0.05],
+      "needs_proximity": true,
+      "affordances": ["inspect", "place_item"],
+      "effects": {},
+      "initial_state": "桌面整洁"
+    },
+    {
+      "semantic_id": "bookshelf",
+      "asset_id": "bookshelf_current",
+      "display_name": "书架",
+      "description": "靠墙的白色书架，摆着不同类型的读物",
+      "position": [3.72, 1.1, -2.05],
+      "rotation_deg": [0, -90, 0],
+      "interaction_point": [3.05, 0.0, -1.75],
+      "needs_proximity": true,
+      "affordances": ["browse", "take_book", "put_book_back"],
+      "effects": {},
+      "initial_state": "书籍排列整齐"
+    },
+    {
+      "semantic_id": "room_lights",
+      "asset_id": "room_lights_switch",
+      "display_name": "客厅壁灯开关",
+      "description": "控制两侧暖色壁灯的开关和亮度",
+      "position": [-3.82, 1.2, -0.65],
+      "rotation_deg": [0, 90, 0],
+      "interaction_point": [-3.15, 0.0, -0.65],
+      "needs_proximity": true,
+      "affordances": ["turn_on", "turn_off", "dim"],
+      "effects": {},
+      "initial_state": "暖光已开启"
+    },
+    {
+      "semantic_id": "wall_art",
+      "asset_id": "wall_art_frame",
+      "display_name": "墙上的画",
+      "description": "一幅装在木质画框里的温暖风景画，画面会让人想起安静的午后",
+      "position": [-3.18, 1.62, -3.78],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-3.18, 0.0, -2.88],
+      "needs_proximity": true,
+      "affordances": ["inspect", "look_at"],
+      "effects": {},
+      "initial_state": "挂在客厅墙上"
+    },
+    {
+      "semantic_id": "window",
+      "asset_id": "window_panel",
+      "display_name": "窗户",
+      "description": "一扇白色窗框的大窗户，温暖的晨光从窗外透进来，窗台上有些灰尘",
+      "position": [2.12, 1.66, -3.88],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [1.7, 0.0, -2.95],
+      "needs_proximity": true,
+      "affordances": ["inspect", "look_at"],
+      "effects": {},
+      "initial_state": "明亮通透"
+    },
+    {
+      "semantic_id": "back_wall_shelf",
+      "asset_id": "back_wall_shelf_decor",
+      "display_name": "墙面搁板",
+      "description": "后墙上的一块木质搁板，上面放着几本小书和一个装饰花瓶",
+      "position": [0.55, 1.32, -3.83],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [0.55, 0.0, -2.9],
+      "needs_proximity": true,
+      "affordances": ["inspect", "look_at"],
+      "effects": {},
+      "initial_state": "摆放整齐"
+    },
+    {
+      "semantic_id": "leaf_art",
+      "asset_id": "leaf_art_panel",
+      "display_name": "叶子装饰画",
+      "description": "一幅挂在墙上的叶子图案装饰画，淡绿色的色调让人感到平静",
+      "position": [-1.58, 1.78, -3.86],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-1.58, 0.0, -2.9],
+      "needs_proximity": true,
+      "affordances": ["inspect", "look_at"],
+      "effects": {},
+      "initial_state": "挂在墙上"
+    }
+  ],
+  "waypoints": {
+    "perimeter_nw": [-3.0, 0.0, -2.7],
+    "perimeter_n": [0.2, 0.0, -2.7],
+    "perimeter_ne": [2.1, 0.0, -1.7],
+    "perimeter_e": [3.0, 0.0, 1.0],
+    "perimeter_se": [2.7, 0.0, 2.8],
+    "perimeter_s": [0.4, 0.0, 3.0],
+    "perimeter_sw": [-3.0, 0.0, 2.8],
+    "perimeter_w": [-3.1, 0.0, 0.0],
+    "room_center": [-0.2, 0.0, -0.6],
+    "window_side": [2.0, 0.0, 1.8],
+    "sofa_front": [-1.4, 0.0, 0.3],
+    "sofa_seat_left": [-1.9, 0.0, 0.38],
+    "sofa_seat_right": [-0.78, 0.0, 0.38],
+    "tv_front": [-1.4, 0.0, -2.3],
+    "stage_left": [-1.4, 0.0, -0.8],
+    "stage_right": [0.8, 0.0, -0.8]
+  },
+  "routes": {
+    "room_perimeter": [
+      "perimeter_nw", "perimeter_n", "perimeter_ne", "perimeter_e",
+      "perimeter_se", "perimeter_s", "perimeter_sw", "perimeter_w"
+    ]
+  },
+  "immutable_anchors": [
+    {
+      "anchor_id": "anchor_room_dimensions",
+      "anchor_type": "room_dimension",
+      "target": "room",
+      "locked_fields": ["dimensions_m.width", "dimensions_m.depth", "dimensions_m.height"],
+      "reason": "Room dimensions are a fundamental constraint; changing these requires a new recipe."
+    },
+    {
+      "anchor_id": "anchor_floor",
+      "anchor_type": "room_dimension",
+      "target": "room",
+      "locked_fields": ["floor.thickness_m", "floor.material_key"],
+      "reason": "Floor material and thickness define the scene foundation."
+    },
+    {
+      "anchor_id": "anchor_walls",
+      "anchor_type": "room_dimension",
+      "target": "room",
+      "locked_fields": ["walls"],
+      "reason": "Wall count, position and material are structural invariants."
+    },
+    {
+      "anchor_id": "anchor_main_window",
+      "anchor_type": "opening",
+      "target": "main_window",
+      "locked_fields": ["position", "size"],
+      "reason": "Window position affects lighting composition and is story-critical as a backdrop feature."
+    },
+    {
+      "anchor_id": "anchor_plant",
+      "anchor_type": "object_slot",
+      "target": "plant",
+      "locked_fields": ["semantic_id"],
+      "reason": "Plant '小绿' is a named, story-carrying object with persistent state."
+    },
+    {
+      "anchor_id": "anchor_tv",
+      "anchor_type": "object_slot",
+      "target": "tv",
+      "locked_fields": ["semantic_id"],
+      "reason": "TV is a core interaction target; semantic ID must persist across seeds."
+    },
+    {
+      "anchor_id": "anchor_sofa",
+      "anchor_type": "object_slot",
+      "target": "sofa",
+      "locked_fields": ["semantic_id"],
+      "reason": "Sofa is the primary seating and rest object; semantic ID must persist."
+    },
+    {
+      "anchor_id": "anchor_room_center",
+      "anchor_type": "waypoint",
+      "target": "room_center",
+      "locked_fields": ["position"],
+      "reason": "Room center is the primary wander target and coordinate reference."
+    }
+  ],
+  "variable_fields": [
+    {
+      "field_path": "object_slots[sofa].position",
+      "description": "Sofa may shift laterally along right wall within clearance constraints."
+    },
+    {
+      "field_path": "object_slots[coffee_table].position",
+      "description": "Coffee table relative position can vary as long as it stays between sofa and TV within floor_center zone."
+    },
+    {
+      "field_path": "object_slots[book].position",
+      "description": "Book surface position varies with coffee table position."
+    },
+    {
+      "field_path": "object_slots[milk_tea].position",
+      "description": "Milk tea surface position varies with coffee table position."
+    },
+    {
+      "field_path": "object_slots[bookshelf].position",
+      "description": "Bookshelf may shift along right wall within clearance constraints."
+    },
+    {
+      "field_path": "object_slots[room_lights].position",
+      "description": "Wall switch height may adjust within standard reach range."
+    },
+    {
+      "field_path": "object_slots[wall_art].position",
+      "description": "Wall art position on back wall may vary within back wall bounds."
+    },
+    {
+      "field_path": "object_slots[back_wall_shelf].position",
+      "description": "Back wall shelf position may vary within back wall bounds."
+    },
+    {
+      "field_path": "object_slots[leaf_art].position",
+      "description": "Leaf art position on back wall may vary within back wall bounds."
+    },
+    {
+      "field_path": "seed",
+      "description": "Generation seed; changing this produces a different layout within variable field constraints."
+    }
+  ]
+}

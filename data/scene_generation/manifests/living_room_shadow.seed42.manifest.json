@@ -1,0 +1,332 @@
+{
+  "schema_version": 1,
+  "manifest_id": "living_room_shadow-42-7981ed2f08ff",
+  "recipe_id": "living_room_shadow",
+  "recipe_version": "1.0.0",
+  "registry_id": "living_room_shadow",
+  "registry_version": "1.0.0",
+  "seed": 42,
+  "generation_hash": "7981ed2f08ff4c80594dd7af029e57599fecd25820a0c377711eb7d61adb62bd",
+  "room": {
+    "name": "客厅",
+    "dimensions_m": {
+      "width": 8.0,
+      "depth": 8.0,
+      "height": 3.0
+    }
+  },
+  "placements": [
+    {
+      "semantic_id": "sofa",
+      "asset_id": "sofa_current",
+      "display_name": "沙发",
+      "position": [
+        -1.5,
+        0.25,
+        1.8
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        -1.5,
+        0.0,
+        0.38
+      ],
+      "affordances": [
+        "sit",
+        "lie_down"
+      ],
+      "initial_state": "空着"
+    },
+    {
+      "semantic_id": "tv",
+      "asset_id": "tv_current",
+      "display_name": "电视机",
+      "position": [
+        -1.5,
+        0.85,
+        -3.82
+      ],
+      "rotation_deg": [
+        0,
+        180,
+        0
+      ],
+      "interaction_point": [
+        -1.5,
+        0.0,
+        -2.8
+      ],
+      "affordances": [
+        "turn_on",
+        "turn_off",
+        "watch",
+        "change_channel"
+      ],
+      "initial_state": "关闭"
+    },
+    {
+      "semantic_id": "book",
+      "asset_id": "book_current",
+      "display_name": "一本书",
+      "position": [
+        0.55,
+        0.4,
+        0.7
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        0.55,
+        0.0,
+        0.0
+      ],
+      "affordances": [
+        "read",
+        "pick_up",
+        "put_down"
+      ],
+      "initial_state": "在茶几上"
+    },
+    {
+      "semantic_id": "milk_tea",
+      "asset_id": "milk_tea_cup",
+      "display_name": "奶茶",
+      "position": [
+        1.55,
+        0.52,
+        0.7
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        1.55,
+        0.0,
+        0.0
+      ],
+      "affordances": [
+        "drink",
+        "pick_up",
+        "put_down",
+        "throw"
+      ],
+      "initial_state": "满满一杯"
+    },
+    {
+      "semantic_id": "plant",
+      "asset_id": "plant_potted",
+      "display_name": "绿植小绿",
+      "position": [
+        2.75,
+        0.3,
+        -2.65
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        2.2,
+        0.0,
+        -2.0
+      ],
+      "affordances": [
+        "water",
+        "prune",
+        "look_at"
+      ],
+      "initial_state": "需要浇水"
+    },
+    {
+      "semantic_id": "coffee_table",
+      "asset_id": "coffee_table_current",
+      "display_name": "茶几",
+      "position": [
+        0.65,
+        0.19,
+        0.72
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        0.65,
+        0.0,
+        -0.05
+      ],
+      "affordances": [
+        "inspect",
+        "place_item"
+      ],
+      "initial_state": "桌面整洁"
+    },
+    {
+      "semantic_id": "bookshelf",
+      "asset_id": "bookshelf_current",
+      "display_name": "书架",
+      "position": [
+        3.72,
+        1.1,
+        -2.05
+      ],
+      "rotation_deg": [
+        0,
+        -90,
+        0
+      ],
+      "interaction_point": [
+        3.05,
+        0.0,
+        -1.75
+      ],
+      "affordances": [
+        "browse",
+        "take_book",
+        "put_book_back"
+      ],
+      "initial_state": "书籍排列整齐"
+    },
+    {
+      "semantic_id": "room_lights",
+      "asset_id": "room_lights_switch",
+      "display_name": "客厅壁灯开关",
+      "position": [
+        -3.82,
+        1.2,
+        -0.65
+      ],
+      "rotation_deg": [
+        0,
+        90,
+        0
+      ],
+      "interaction_point": [
+        -3.15,
+        0.0,
+        -0.65
+      ],
+      "affordances": [
+        "turn_on",
+        "turn_off",
+        "dim"
+      ],
+      "initial_state": "暖光已开启"
+    },
+    {
+      "semantic_id": "wall_art",
+      "asset_id": "wall_art_frame",
+      "display_name": "墙上的画",
+      "position": [
+        -3.18,
+        1.62,
+        -3.78
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        -3.18,
+        0.0,
+        -2.88
+      ],
+      "affordances": [
+        "inspect",
+        "look_at"
+      ],
+      "initial_state": "挂在客厅墙上"
+    },
+    {
+      "semantic_id": "window",
+      "asset_id": "window_panel",
+      "display_name": "窗户",
+      "position": [
+        2.12,
+        1.66,
+        -3.88
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        1.7,
+        0.0,
+        -2.95
+      ],
+      "affordances": [
+        "inspect",
+        "look_at"
+      ],
+      "initial_state": "明亮通透"
+    },
+    {
+      "semantic_id": "back_wall_shelf",
+      "asset_id": "back_wall_shelf_decor",
+      "display_name": "墙面搁板",
+      "position": [
+        0.55,
+        1.32,
+        -3.83
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        0.55,
+        0.0,
+        -2.9
+      ],
+      "affordances": [
+        "inspect",
+        "look_at"
+      ],
+      "initial_state": "摆放整齐"
+    },
+    {
+      "semantic_id": "leaf_art",
+      "asset_id": "leaf_art_panel",
+      "display_name": "叶子装饰画",
+      "position": [
+        -1.58,
+        1.78,
+        -3.86
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "interaction_point": [
+        -1.58,
+        0.0,
+        -2.9
+      ],
+      "affordances": [
+        "inspect",
+        "look_at"
+      ],
+      "initial_state": "挂在墙上"
+    }
+  ],
+  "audit": {
+    "compiler_version": "1.0.0",
+    "warnings": []
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-companion-demo/scene_generation/asset_registry.schema.json",
+  "title": "Asset Registry",
+  "description": "Defines validated assets available for parametric scene generation. Visual, physics and semantic capabilities are independent orthogonal dimensions.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "description": "Schema version for the registry file itself.",
+      "minimum": 1
+    },
+    "registry_id": {
+      "type": "string",
+      "description": "Stable identifier for this registry instance.",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "registry_version": {
+      "type": "string",
+      "description": "Semantic version of the registry contents.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset_entry" },
+      "minItems": 1
+    }
+  },
+  "required": ["schema_version", "registry_id", "registry_version", "assets"],
+  "additionalProperties": false,
+  "$defs": {
+    "asset_entry": {
+      "type": "object",
+      "properties": {
+        "asset_id": {
+          "type": "string",
+          "description": "Stable snake_case identifier for this asset.",
+          "pattern": "^[a-z][a-z0-9_]*(?:_[a-z0-9_]+)*$"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for UI and logs."
+        },
+        "resource_path": {
+          "type": "string",
+          "description": "Project-relative path to the primary import. Empty for project-authored procedural assets.",
+          "pattern": "^(?:res://.*)?$"
+        },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "geometry": { "$ref": "#/$defs/geometry" },
+        "roles": { "$ref": "#/$defs/roles" },
+        "style_tags": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }
+        },
+        "interaction_profile": {
+          "type": "string",
+          "description": "Reference to interaction profile: interactable, decor, structure, lighting, or empty for visual-only.",
+          "enum": ["", "interactable", "decor", "structure", "lighting"]
+        },
+        "capabilities": { "$ref": "#/$defs/capabilities" },
+        "placement_profile": { "$ref": "#/$defs/placement_profile" },
+        "status": {
+          "type": "string",
+          "description": "Asset lifecycle stage.",
+          "enum": ["candidate", "validated", "accepted", "deprecated"]
+        }
+      },
+      "required": ["asset_id", "display_name", "provenance", "roles", "style_tags", "interaction_profile", "capabilities", "placement_profile", "status"],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "provider": { "type": "string" },
+        "official_page": { "type": "string" },
+        "license": { "type": "string" },
+        "redistribution": { "type": "string" },
+        "source_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "required": ["provider", "license", "redistribution"],
+      "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "aabb_m": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Axis-aligned bounding box [x, y, z] in meters."
+        },
+        "front_axis": { "type": "string", "enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] },
+        "up_axis": { "type": "string", "enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] },
+        "triangle_count": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "roles": {
+      "type": "object",
+      "properties": {
+        "visual": {
+          "type": "string",
+          "description": "Visual role: structure, furniture, decor, clutter, lighting, organic.",
+          "enum": ["structure", "furniture", "decor", "clutter", "lighting", "organic"]
+        },
+        "physics": {
+          "type": "string",
+          "description": "Physics role: none, static, rigid, trigger.",
+          "enum": ["none", "static", "rigid", "trigger"]
+        },
+        "semantic": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["observable", "interactable", "stateful", "portable", "navigable"]
+          },
+          "minItems": 1
+        },
+        "placement": {
+          "type": "string",
+          "description": "Placement constraint: floor, wall, surface, ceiling, modular_grid.",
+          "enum": ["floor", "wall", "surface", "ceiling", "modular_grid"]
+        }
+      },
+      "required": ["visual", "physics", "semantic", "placement"],
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "description": "Semantic capabilities independent of visual/physics roles.",
+      "properties": {
+        "affordances": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "has_states": {
+          "type": "boolean",
+          "description": "Whether this asset has state that persists across save cycles."
+        },
+        "needs_proximity": {
+          "type": "boolean",
+          "description": "Whether interaction requires the agent to navigate near the object."
+        },
+        "consumable": {
+          "type": "boolean"
+        },
+        "effects": {
+          "type": "object",
+          "description": "Map of need name to effect delta when interacted with.",
+          "additionalProperties": { "type": "number" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "placement_profile": {
+      "type": "object",
+      "description": "Placement constraints for automated layout.",
+      "properties": {
+        "preferred_zone": {
+          "type": "string",
+          "description": "Preferred placement zone: floor_center, wall_back, wall_left, wall_right, near_window, corner.",
+          "enum": ["floor_center", "floor_near_wall", "wall_back", "wall_left", "wall_right", "near_window", "corner", "surface_top"]
+        },
+        "min_clearance_m": {
+          "type": "number",
+          "description": "Minimum clearance in front/around the object in meters."
+        },
+        "seat_facing_axis": {
+          "type": "string",
+          "description": "Preferred facing direction for seated objects like sofa/tv.",
+          "enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"]
+        },
+        "anchor_side": {
+          "type": "string",
+          "description": "Which wall or feature the object anchors to.",
+          "enum": ["back_wall", "left_wall", "right_wall", "front", "none"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

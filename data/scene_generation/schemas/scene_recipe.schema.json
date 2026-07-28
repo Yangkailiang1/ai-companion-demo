@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-companion-demo/scene_generation/scene_recipe.schema.json",
+  "title": "Scene Recipe",
+  "description": "Deterministic scene generation recipe that, combined with a registry version and seed, produces a reproducible generated_scene_manifest.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "description": "Version of the recipe schema itself.",
+      "minimum": 1
+    },
+    "recipe_id": {
+      "type": "string",
+      "description": "Stable identifier for this recipe.",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "recipe_version": {
+      "type": "string",
+      "description": "Semantic version of the recipe.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "registry_id": {
+      "type": "string",
+      "description": "The registry_id this recipe targets."
+    },
+    "registry_version": {
+      "type": "string",
+      "description": "Minimum registry version required.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "seed": {
+      "type": "integer",
+      "description": "Deterministic seed for layout generation."
+    },
+    "description": {
+      "type": "string"
+    },
+    "room": { "$ref": "#/$defs/room_definition" },
+    "object_slots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/object_slot" },
+      "minItems": 1
+    },
+    "waypoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "number" },
+        "minItems": 3,
+        "maxItems": 3,
+        "description": "Waypoint name to [x, y, z] position in meters."
+      }
+    },
+    "routes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Named route as ordered list of waypoint names."
+      }
+    },
+    "immutable_anchors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/immutable_anchor" },
+      "description": "Story-critical objects and positions that must not vary across seeds."
+    },
+    "variable_fields": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/variable_field" },
+      "description": "Fields that a future seed may change; must not overlap with immutable_anchors."
+    }
+  },
+  "required": ["schema_version", "recipe_id", "recipe_version", "registry_id", "registry_version", "seed", "room", "object_slots", "waypoints", "immutable_anchors", "variable_fields"],
+  "additionalProperties": false,
+  "$defs": {
+    "room_definition": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "dimensions_m": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number", "minimum": 0 },
+            "depth": { "type": "number", "minimum": 0 },
+            "height": { "type": "number", "minimum": 0 }
+          },
+          "required": ["width", "depth", "height"],
+          "additionalProperties": false
+        },
+        "bounds": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "max": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": ["min", "max"],
+          "additionalProperties": false
+        },
+        "floor": {
+          "type": "object",
+          "properties": {
+            "thickness_m": { "type": "number" },
+            "material_key": { "type": "string" }
+          },
+          "required": ["thickness_m", "material_key"],
+          "additionalProperties": false
+        },
+        "walls": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/wall_definition" }
+        },
+        "openings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/opening_definition" },
+          "description": "Windows, doors and other wall openings."
+        }
+      },
+      "required": ["name", "dimensions_m", "floor", "walls"],
+      "additionalProperties": false
+    },
+    "wall_definition": {
+      "type": "object",
+      "properties": {
+        "wall_id": {
+          "type": "string",
+          "enum": ["back", "left", "right", "front"]
+        },
+        "thickness_m": { "type": "number", "minimum": 0 },
+        "height_m": { "type": "number", "minimum": 0 },
+        "material_key": { "type": "string" }
+      },
+      "required": ["wall_id", "thickness_m", "height_m", "material_key"],
+      "additionalProperties": false
+    },
+    "opening_definition": {
+      "type": "object",
+      "properties": {
+        "opening_id": { "type": "string" },
+        "type": { "type": "string", "enum": ["window", "door"] },
+        "wall_id": { "type": "string", "enum": ["back", "left", "right", "front"] },
+        "position": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "size": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Width and height in meters."
+        }
+      },
+      "required": ["opening_id", "type", "wall_id", "position", "size"],
+      "additionalProperties": false
+    },
+    "object_slot": {
+      "type": "object",
+      "properties": {
+        "semantic_id": {
+          "type": "string",
+          "description": "Stable semantic object ID matching SemanticWorld.",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "asset_id": {
+          "type": "string",
+          "description": "Reference to an asset in the registry.",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "display_name": { "type": "string" },
+        "description": { "type": "string" },
+        "position": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Object center [x, y, z] in meters."
+        },
+        "rotation_deg": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Rotation [x, y, z] in degrees. Defaults to [0, 0, 0]."
+        },
+        "interaction_point": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Agent standing position for interaction [x, y, z] in meters."
+        },
+        "needs_proximity": { "type": "boolean" },
+        "affordances": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "effects": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "initial_state": { "type": "string" },
+        "properties": {
+          "type": "object"
+        },
+        "consumable": { "type": "boolean" }
+      },
+      "required": ["semantic_id", "asset_id", "display_name", "position", "interaction_point", "needs_proximity", "affordances"],
+      "additionalProperties": false
+    },
+    "immutable_anchor": {
+      "type": "object",
+      "properties": {
+        "anchor_id": { "type": "string" },
+        "anchor_type": {
+          "type": "string",
+          "enum": ["object_slot", "waypoint", "room_dimension", "opening"]
+        },
+        "target": {
+          "type": "string",
+          "description": "The semantic_id, waypoint name, or opening_id being anchored."
+        },
+        "locked_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields within the target that must not change across seeds.",
+          "minItems": 1
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why this anchor is immutable (e.g. story-critical, navigation essential)."
+        }
+      },
+      "required": ["anchor_id", "anchor_type", "target", "locked_fields", "reason"],
+      "additionalProperties": false
+    },
+    "variable_field": {
+      "type": "object",
+      "properties": {
+        "field_path": {
+          "type": "string",
+          "description": "JSONPath-like path within the recipe, e.g. 'object_slots[sofa].position'."
+        },
+        "description": { "type": "string" },
+        "constraints": {
+          "type": "object",
+          "description": "Constraints for valid values of this variable field."
+        }
+      },
+      "required": ["field_path", "description"],
+      "additionalProperties": false
+    }
+  }
+}
