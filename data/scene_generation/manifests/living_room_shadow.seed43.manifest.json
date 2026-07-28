@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "manifest_id": "living_room_shadow-43-018d8f1b0e27",
+  "manifest_id": "living_room_shadow-43-0ce0c8a2e586",
   "recipe_id": "living_room_shadow",
   "recipe_version": "1.0.0",
   "registry_id": "living_room_shadow",
-  "registry_version": "1.1.0",
+  "registry_version": "1.3.0",
   "seed": 43,
-  "generation_hash": "018d8f1b0e27ea5b9d8b9752406c113be2c2e091ce4d8715b637c82dd2d40d79",
+  "generation_hash": "0ce0c8a2e586ea532b84552ac07e663d1b167611d8a830dde0cc929b73d78cb4",
   "room": {
     "name": "客厅",
     "dimensions_m": {

@@ -30,7 +30,8 @@
 未来，角色会知道杯子放在哪里、谁正在看电视、盆栽是否缺水，以及自己此刻更想
 读书、休息，还是去找朋友聊两句。
 
-当前原型先从一间温馨客厅开始。
+当前原型已经从温馨客厅扩展出第一套参数化住宅：客厅、厨房和卧室共享同一套
+地点图、语义物体、角色出生与导航合同。
 
 ## 两种体验模式
 
@@ -60,6 +61,7 @@
 - 动作、骨骼和表情通过角色 Adapter 解耦，可为不同模型配置映射。
 - 书本与奶茶具有真实 `RigidBody3D`，支持拿起、放下和投掷。
 - 地面、墙体、主要家具和角色已经接入 Godot Physics 3D。
+- 客厅、厨房和卧室可由版本化 Recipe/Manifest 确定性重建，AI 只感知当前房间。
 - 支持 OpenAI 兼容聊天模型，以及可选的 ECNU TTS 分句异步语音。
 - 没有 API Key 或本地测试角色资产时，项目仍可降级启动。
 
@@ -72,6 +74,19 @@
     <td width="50%">
       <img src="docs/images/character-interaction.png" alt="物理交互家具与物体">
       <p align="center"><b>具身世界：</b>家具、灯光和小物体具有语义与物理状态</p>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/parametric-home-kitchen.png" alt="参数化生成的厨房">
+      <p align="center"><b>参数化厨房：</b>CC0 模型库驱动的冰箱、水槽、烤箱和餐桌</p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/parametric-home-bedroom.png" alt="参数化生成的卧室">
+      <p align="center"><b>参数化卧室：</b>可交互双人床、阅读角和独立语义可见域</p>
     </td>
   </tr>
 </table>

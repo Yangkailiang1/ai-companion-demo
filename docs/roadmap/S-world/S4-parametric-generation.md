@@ -71,14 +71,23 @@
   茶几，新增字段不会扰动其他字段的随机序列。
 - `[DONE baseline constraints]` 编译时 fail-closed 检查房间边界、落地家具 AABB
   重叠、桌面物体父级和交互点安全边界；连续 32 个 seed（42–73）通过。
-- `[NEXT]` 增加门口净空、家具朝向/视线评分、多开口切割和失败后的确定性重采样，
-  再把相同生成合同扩展到卧室与厨房 Recipe。
+- `[DONE room-type extension baseline]` 相同 Registry/编译合同已扩展到厨房与卧室；
+  厨房 8 个槽位、卧室 7 个槽位均通过边界、家具重叠与桌面跟随约束；卧室已用
+  KayKit CC0 双人床替换临时沙发占位。
+- `[NEXT]` 增加门口净空、家具朝向/视线评分、多开口切割和失败后的确定性重采样。
 
-### S4.3 `[PLANNED]` 模块化住宅生成
+### S4.3 `[ACTIVE baseline]` 模块化住宅生成
 
 模块化住宅生成：房间连接图、楼层和功能分区。
 
-首个目标为客厅、卧室、厨房三房间住宅，输出可编辑 Recipe 和生成 Manifest。
+- `[DONE data baseline]` 客厅、厨房、卧室均由可编辑 Recipe 和确定性 Manifest
+  描述，并通过版本化 `world_locations.json` 组成有向房间连接图。
+- `[DONE runtime baseline]` 同一个参数化房间运行时按地点元数据加载不同 Manifest，
+  应用独立根节点、语义可见域、入口和 Cast 出生点。
+- `[DONE visual baseline]` 厨房和卧室使用适配玩偶屋相机的三面墙表现，真实模型
+  覆盖率分别为 8/8 与 7/7、fallback 为 0，并通过 Metal 1280×720 截图验收。
+- `[NEXT]` 把连接图映射为可见门/走廊模块，加入门口净空约束、房间级流送、楼层
+  坐标和整套住宅预览；完成三房间截图与跨房导航动态验收后再标记完成。
 
 ### S4.4 `[LATER]` 街区生成
 

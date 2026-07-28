@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "default_location_id": "living_room",
+  "locations": {
+    "living_room": {
+      "display_name": "温馨客厅",
+      "scene_path": "res://scenes/environments/parametric_living_room_runtime.tscn",
+      "root_name": "LivingRoom",
+      "manifest_path": "res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json",
+      "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
+      "scene_description": "一间有沙发、电视、茶几和绿植的温馨客厅。",
+      "cast_spawns": {
+        "Agent": {"position": [-1.15, 0.0, 0.4], "rotation_deg": [0.0, 0.0, 0.0]},
+        "JueAgent": {"position": [2.9, 0.0, 1.0], "rotation_deg": [0.0, -15.0, 0.0]}
+      },
+      "entries": {
+        "default": {"position": [0.0, 0.0, -2.2]},
+        "from_kitchen": {"position": [-1.2, 0.0, -2.2]},
+        "from_bedroom": {"position": [1.2, 0.0, -2.2]}
+      },
+      "exits": {
+        "to_kitchen": {"target_location_id": "kitchen", "target_entry_id": "from_living"},
+        "to_bedroom": {"target_location_id": "bedroom", "target_entry_id": "from_living"}
+      }
+    },
+    "kitchen": {
+      "display_name": "暖色厨房",
+      "scene_path": "res://scenes/environments/parametric_living_room_runtime.tscn",
+      "root_name": "Kitchen",
+      "manifest_path": "res://data/scene_generation/manifests/home_kitchen.seed101.manifest.json",
+      "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
+      "scene_description": "一间有冰箱、水槽、烤箱和餐桌的暖色厨房。",
+      "cast_spawns": {
+        "Agent": {"position": [-0.65, 0.0, 1.8], "rotation_deg": [0.0, 180.0, 0.0]},
+        "JueAgent": {"position": [0.65, 0.0, 1.8], "rotation_deg": [0.0, 180.0, 0.0]}
+      },
+      "entries": {
+        "default": {"position": [0.0, 0.0, 2.15]},
+        "from_living": {"position": [0.0, 0.0, 2.15]}
+      },
+      "exits": {
+        "to_living": {"target_location_id": "living_room", "target_entry_id": "from_kitchen"}
+      }
+    },
+    "bedroom": {
+      "display_name": "阅读卧室",
+      "scene_path": "res://scenes/environments/parametric_living_room_runtime.tscn",
+      "root_name": "Bedroom",
+      "manifest_path": "res://data/scene_generation/manifests/home_bedroom.seed202.manifest.json",
+      "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
+      "scene_description": "一间有软榻、阅读椅、矮桌和床边灯的安静卧室。",
+      "cast_spawns": {
+        "Agent": {"position": [-0.65, 0.0, 2.65], "rotation_deg": [0.0, 180.0, 0.0]},
+        "JueAgent": {"position": [0.65, 0.0, 2.65], "rotation_deg": [0.0, 180.0, 0.0]}
+      },
+      "entries": {
+        "default": {"position": [0.0, 0.0, 2.9]},
+        "from_living": {"position": [0.0, 0.0, 2.9]}
+      },
+      "exits": {
+        "to_living": {"target_location_id": "living_room", "target_entry_id": "from_bedroom"}
+      }
+    }
+  }
+}

@@ -71,7 +71,7 @@ func _pa(type: AffordanceTypes.Primitive, params: Dictionary = {}) -> Affordance
 
 
 func _validate_blueprints():
-	var available_ids = SemanticWorld.objects.keys()
+	var available_ids = SemanticWorld.get_active_object_ids()
 	for goal in goal_blueprints:
 		for action in goal_blueprints[goal]:
 			var target = action.params.get("target", action.params.get("object", ""))

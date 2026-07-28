@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "asset_id": "chair_A",
+  "provider": "KayKit",
+  "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+  "download_url": "https://kaylousberg.itch.io/restaurant-bits",
+  "license": "CC0-1.0",
+  "redistribution": "allowed",
+  "accessed_at": "2026-07-28",
+  "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b",
+  "gltf_sha256": "0d0abdc382abedb3e4bc2e0260af663c16ff2dab0d441f09d675e0709a7a7310"
+}

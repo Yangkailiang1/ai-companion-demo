@@ -85,6 +85,8 @@ func is_walkable_position(position: Vector3) -> bool:
 
 
 func _load_config() -> void:
+	if _load_active_manifest():
+		return
 	var file := FileAccess.open(CONFIG_PATH, FileAccess.READ)
 	if file == null:
 		_install_defaults()
@@ -115,6 +117,50 @@ func _load_config() -> void:
 			wander_names.append(String(waypoint_name))
 	if waypoints.is_empty():
 		_install_defaults()
+
+
+## [S2.2][T2.3] 参数化地点优先从当前 WorldLocation Manifest 读取边界与路点。
+## 这样导演、自由活动和恢复逻辑不会在厨房/卧室继续使用旧客厅坐标。
+func _load_active_manifest() -> bool:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.current_scene == null:
+		return false
+	var world_root := tree.current_scene.get_node_or_null("WorldRoot")
+	if world_root == null or str(world_root.get("current_mode")) != "parametric":
+		return false
+	var location = world_root.call("get_active_location")
+	if location == null:
+		return false
+	var manifest_path := str(location.get("manifest_path"))
+	var file := FileAccess.open(manifest_path, FileAccess.READ)
+	if file == null:
+		return false
+	var manifest = JSON.parse_string(file.get_as_text())
+	if not manifest is Dictionary:
+		return false
+	_install_manifest_navigation(manifest)
+	return not waypoints.is_empty()
+
+
+## [S2.2] 将 Manifest 的房间边界、路点和路线转换为运行时导航查询结构。
+func _install_manifest_navigation(manifest: Dictionary) -> void:
+	var room: Dictionary = manifest.get("room", {})
+	var bounds: Dictionary = room.get("bounds", {})
+	bounds_min = _to_vec3(bounds.get("min", DEFAULT_MIN))
+	bounds_max = _to_vec3(bounds.get("max", DEFAULT_MAX))
+	for waypoint_name in manifest.get("waypoints", {}):
+		var point := _to_vec3(manifest["waypoints"][waypoint_name])
+		if is_safe_position(point):
+			waypoints[String(waypoint_name)] = point
+	for route_name in manifest.get("routes", {}):
+		routes[String(route_name)] = manifest["routes"][route_name]
+	if routes.has("room_perimeter"):
+		for waypoint_name in routes["room_perimeter"]:
+			if has_waypoint(String(waypoint_name)):
+				wander_names.append(String(waypoint_name))
+	if wander_names.is_empty():
+		for waypoint_name in waypoints:
+			wander_names.append(String(waypoint_name))
 
 
 func _install_defaults() -> void:

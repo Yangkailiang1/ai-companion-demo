@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "registry_id": "living_room_shadow",
-  "registry_version": "1.1.0",
+  "registry_version": "1.3.0",
   "description": "Accepted public asset library for the manifest-driven living room, including interactive objects and ambient furniture.",
   "assets": [
     {
@@ -529,6 +529,108 @@
         "min_clearance_m": 0.35,
         "anchor_side": "left_wall"
       },
+      "status": "accepted"
+    },
+    {
+      "asset_id": "kitchen_fridge",
+      "display_name": "厨房冰箱",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/fridge_A_decorated/fridge_A_decorated.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
+      },
+      "geometry": {"aabb_m": [0.9, 1.9, 0.75], "front_axis": "+Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable", "stateful"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "kitchen"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["open", "take_food", "store_food", "inspect"], "has_states": true, "needs_proximity": true, "consumable": false, "effects": {}},
+      "placement_profile": {"preferred_zone": "floor_near_wall", "min_clearance_m": 0.6, "anchor_side": "back_wall"},
+      "status": "accepted"
+    },
+    {
+      "asset_id": "kitchen_sink_counter",
+      "display_name": "水槽料理台",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/kitchencounter_sink/kitchencounter_sink.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
+      },
+      "geometry": {"aabb_m": [1.2, 0.9, 0.65], "front_axis": "+Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable", "stateful"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "kitchen"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["wash", "fill_water", "inspect"], "has_states": true, "needs_proximity": true, "consumable": false, "effects": {}},
+      "placement_profile": {"preferred_zone": "floor_near_wall", "min_clearance_m": 0.7, "anchor_side": "back_wall"},
+      "status": "accepted"
+    },
+    {
+      "asset_id": "kitchen_oven",
+      "display_name": "烤箱",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/oven/oven.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
+      },
+      "geometry": {"aabb_m": [0.8, 0.9, 0.7], "front_axis": "+Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable", "stateful"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "kitchen"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["turn_on", "turn_off", "cook", "inspect"], "has_states": true, "needs_proximity": true, "consumable": false, "effects": {}},
+      "placement_profile": {"preferred_zone": "floor_near_wall", "min_clearance_m": 0.7, "anchor_side": "back_wall"},
+      "status": "accepted"
+    },
+    {
+      "asset_id": "kitchen_table",
+      "display_name": "厨房餐桌",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/kitchentable_A/kitchentable_A.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
+      },
+      "geometry": {"aabb_m": [1.6, 0.8, 1.2], "front_axis": "+Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "kitchen", "dining"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["place_item", "eat", "inspect"], "has_states": false, "needs_proximity": true, "consumable": false, "effects": {}},
+      "placement_profile": {"preferred_zone": "floor_center", "min_clearance_m": 0.8},
+      "status": "accepted"
+    },
+    {
+      "asset_id": "kitchen_chair",
+      "display_name": "餐椅",
+      "resource_path": "res://assets/props/kaykit/restaurant_bits/chair_A/chair_A.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/restaurant-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
+      },
+      "geometry": {"aabb_m": [0.7, 1.0, 0.75], "front_axis": "+Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "kitchen", "seating"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["sit", "inspect"], "has_states": true, "needs_proximity": true, "consumable": false, "effects": {"energy": 4}},
+      "placement_profile": {"preferred_zone": "floor_center", "min_clearance_m": 0.4, "seat_facing_axis": "+Z"},
+      "status": "accepted"
+    },
+    {
+      "asset_id": "bedroom_bed",
+      "display_name": "双人软床",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/bed_double_A/bed_double_A.gltf",
+      "provenance": {
+        "provider": "KayKit", "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0", "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+      },
+      "geometry": {"aabb_m": [2.3, 0.8, 2.0], "front_axis": "-Z", "up_axis": "+Y", "fit_mode": "axis"},
+      "roles": {"visual": "furniture", "physics": "static", "semantic": ["observable", "interactable"], "placement": "floor"},
+      "style_tags": ["kaykit", "low_poly", "bedroom", "cozy"],
+      "interaction_profile": "interactable",
+      "capabilities": {"affordances": ["sit", "lie_down", "sleep", "inspect"], "has_states": true, "needs_proximity": true, "consumable": false, "effects": {"energy": 25}},
+      "placement_profile": {"preferred_zone": "floor_near_wall", "min_clearance_m": 0.8, "anchor_side": "left_wall"},
       "status": "accepted"
     },
     {

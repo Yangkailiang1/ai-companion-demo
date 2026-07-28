@@ -8,6 +8,10 @@ const OUTPUTS := {
 		"/private/tmp/parametric_living_room_preview.png",
 	"res://data/scene_generation/manifests/living_room_shadow.seed43.manifest.json":
 		"/private/tmp/parametric_living_room_seed43_preview.png",
+	"res://data/scene_generation/manifests/home_kitchen.seed101.manifest.json":
+		"/private/tmp/parametric_home_kitchen_preview.png",
+	"res://data/scene_generation/manifests/home_bedroom.seed202.manifest.json":
+		"/private/tmp/parametric_home_bedroom_preview.png",
 }
 
 

@@ -80,7 +80,7 @@ func register_runtime_adapter(agent_id: String, adapter: Dictionary) -> bool:
 		_last_error = "不能覆盖项目内置角色: %s" % clean_id
 		return false
 	_characters[clean_id] = adapter.duplicate(true)
-	_runtime_agent_ids[clean_id] = true
+	_runtime_agent_ids[clean_id] = int(_runtime_agent_ids.get(clean_id, 0)) + 1
 	runtime_adapter_registered.emit(clean_id)
 	return true
 
@@ -88,6 +88,10 @@ func register_runtime_adapter(agent_id: String, adapter: Dictionary) -> bool:
 ## [C6.2] 移除由场景动态注册的角色；内置角色不受影响。
 func unregister_runtime_adapter(agent_id: String) -> void:
 	if not _runtime_agent_ids.has(agent_id):
+		return
+	var remaining := int(_runtime_agent_ids[agent_id]) - 1
+	if remaining > 0:
+		_runtime_agent_ids[agent_id] = remaining
 		return
 	_runtime_agent_ids.erase(agent_id)
 	_characters.erase(agent_id)

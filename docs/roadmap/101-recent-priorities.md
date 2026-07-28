@@ -40,13 +40,15 @@
    三个正式 Schema、严格编译器及当前客厅 shadow Recipe/Manifest 已完成；
    15/15 模型槽位、碰撞、导航、语义和有状态物体已由 Manifest 生成，并可通过
    `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。共享 Cast/Spawner、
-   参数化完整剧情和关键路点连通性合同已完成；下一步建立厨房、卧室 Recipe 与
-   地点连接图。
+   参数化完整剧情和关键路点连通性合同已完成；厨房、卧室 Recipe/Manifest 与
+   三房间地点连接图已进入运行时基线，下一步补门/走廊触发器、动态截图验收和
+   `location_id` 存档迁移。
 
 ## v0.9（从客厅到住宅）
 
-1. `[DONE baseline] S2.1` WorldLocation 装载与 legacy/parametric 热切换；
-   下一步 `S2.2` 住宅多房间、地点连接图和跨场景导航。
+1. `[ACTIVE baseline] S2.1–S2.2` WorldLocation 装载、legacy/parametric 热切换、
+   客厅/厨房/卧室地点图、当前房间语义隔离和共享 Cast 出生策略已落地；下一步
+   完成门/走廊交互、三房间动态验收与跨场景存档。
 2. `P2 + P3` 玩家控制器与场景交互。
 3. `D2` 镜头、并行 Beat、语音同步和日程恢复。
 

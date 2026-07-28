@@ -6,6 +6,7 @@ extends Node
 
 # 场景物体字典: {object_id: ObjectData}
 var objects: Dictionary = {}
+var active_location_id := "living_room"
 
 # 场景定义
 var scene_info: Dictionary = {
@@ -136,13 +137,34 @@ func upsert_generated_object(data: Dictionary, godot_node: Node3D) -> void:
 	obj.consumable = bool(data.get("consumable", false))
 	obj.effects = data.get("effects", {}).duplicate(true)
 	var generated_properties: Dictionary = data.get("properties", {}).duplicate(true)
+	generated_properties["location_id"] = active_location_id
 	obj.properties.merge(generated_properties, true)
 	obj.godot_node = godot_node
 
 
+## [S2.2] 切换 AI 当前可见地点，并更新自然语言场景描述。
+func set_active_location(location_id: String, description: String = "") -> void:
+	active_location_id = location_id
+	if not description.is_empty():
+		scene_info = {
+			"name": location_id,
+			"description": description,
+		}
+
+
 # 获取物体
 func get_object(obj_id: String) -> ObjectData:
-	return objects.get(obj_id)
+	var obj: ObjectData = objects.get(obj_id)
+	return obj if obj != null and _is_object_in_active_location(obj) else null
+
+
+## [S2.2] 返回当前地点可见对象 ID，供规划器禁止跨房间幻觉目标。
+func get_active_object_ids() -> Array[String]:
+	var result: Array[String] = []
+	for obj_id in objects:
+		if _is_object_in_active_location(objects[obj_id]):
+			result.append(String(obj_id))
+	return result
 
 
 # 更新物体状态
@@ -188,7 +210,7 @@ func import_save_state(data: Dictionary) -> void:
 
 # 查看某个 affordance 动词是否可用
 func can_interact(obj_id: String, verb: String) -> bool:
-	var obj = objects.get(obj_id)
+	var obj = get_object(obj_id)
 	if not obj: return false
 	return verb in obj.affordances
 
@@ -197,12 +219,14 @@ func list_objects(filter_type: String = "") -> Array:
 	var result=  []
 	for obj_id in objects:
 		var obj = objects[obj_id]
+		if not _is_object_in_active_location(obj):
+			continue
 		result.append(obj.to_dict())
 	return result
 
 # 获取交互效果
 func get_interaction_effects(obj_id: String, verb: String) -> Dictionary:
-	var obj = objects.get(obj_id)
+	var obj = get_object(obj_id)
 	if not obj: return {}
 	return obj.effects
 
@@ -224,6 +248,8 @@ func generate_semantic_snapshot(agent_id: String = "main_agent") -> String:
 	var obj_descs=  []
 	for obj_id in objects:
 		var obj = objects[obj_id]
+		if not _is_object_in_active_location(obj):
+			continue
 		obj_descs.append(obj.to_nl())
 	lines.append("可见物体：" + "、".join(obj_descs))
 
@@ -238,6 +264,12 @@ func _dict_to_vec3(dict_or_array) -> Vector3:
 	if dict_or_array is Dictionary:
 		return Vector3(dict_or_array.get("x", 0.0) as float, dict_or_array.get("y", 0.0) as float, dict_or_array.get("z", 0.0) as float)
 	return Vector3.ZERO
+
+
+## [S2.2] 未标记的旧对象只属于兼容客厅；生成对象按 location_id 隔离。
+func _is_object_in_active_location(obj: ObjectData) -> bool:
+	var location_id := String(obj.properties.get("location_id", "living_room"))
+	return location_id == active_location_id
 
 
 func _load_json(path: String) -> Variant:

@@ -32,12 +32,26 @@
   坐标错误恢复到生成布局；跨地点位置持久化需由 X1 v2 正式迁移。
 - 生成 NavMesh 已增加显式上传和关键剧情路点连通性测试，家具链封路会阻止验收。
 
-### S2.2 `[NEXT]` 完整住宅
+### S2.2 `[ACTIVE baseline]` 完整住宅
 
 增加厨房、卧室、走廊，形成第一套住宅。
 
-首个增量先定义 `WorldLocation` 元数据、入口/出口与地点连接图，再生成厨房和卧室
-Recipe；跨地点后恢复角色位置与物体状态属于 X1 配套验收。
+- `[DONE graph/runtime baseline]` `data/world_locations.json` 已声明客厅、厨房、卧室
+  的资源、入口、出口、共享 Cast 出生点和场景描述；`WorldLocationCatalog` 对出口
+  目标与入口做 fail-closed 查询，`WorldLocationLoader.travel_to/travel_via` 可在不
+  破坏当前地点的前提下切换房间。
+- `[DONE generated room baseline]` 厨房与卧室已有独立 Recipe/Manifest；厨房使用
+  KayKit Restaurant Bits 的冰箱、水槽、烤箱、餐桌和餐椅，卧室复用已验收的
+  CC0 家具并新增真实双人床。两份布局均通过边界、重叠和桌面跟随约束编译。
+- `[DONE semantic scope baseline]` `SemanticWorld` 为生成物体记录 `location_id`，
+  LLM 的物体列表与自然语言快照只暴露当前房间，避免厨房角色继续规划客厅沙发。
+- `[DONE cast handoff baseline]` 每次旅行重新挂载共享 Cast 并应用地点出生点；
+  运行时角色适配器采用引用计数，旧地点宽限释放不会误删新地点的角色绑定。
+- `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过三房间模型
+  覆盖率、语义隔离、Cast、导航和非法旅行原子性；客厅剧情、体验模式与关键路点
+  回归通过。厨房和卧室采用三面墙玩偶屋结构，并通过 1280×720 Metal 截图验收。
+- `[NEXT]` 增加可见走廊/门交互和玩家触发器；跨地点角色位置、所在地点及物体状态
+  持久化属于 X1 v2 配套验收。
 
 ### S2.3 `[NEXT]` 独立地点接入
 
@@ -53,8 +67,8 @@ Recipe；跨地点后恢复角色位置与物体状态属于 X1 配套验收。
 
 ## 建议执行顺序
 
-共享 Cast 基线已经完成；下一步先完成住宅内部和地点连接图，再建设街道，否则
-跨场景导航、存档和角色日程会反复返工。
+住宅三房间的生成与地点图基线已经建立；下一步补门/走廊触发器、动态验收与 X1
+位置迁移，再建设街道，否则角色日程与离屏模拟会反复返工。
 
 ## 相关节点
 

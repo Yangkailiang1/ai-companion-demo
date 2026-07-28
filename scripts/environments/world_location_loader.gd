@@ -8,6 +8,7 @@ class_name WorldLocationLoader
 extends Node3D
 
 signal location_loaded(mode: String, location: Node3D)
+signal world_location_loaded(location_id: String, location: Node3D)
 
 const LEGACY_ROOM_PATH := "res://scenes/living_room.tscn"
 const PARAMETRIC_ROOM_PATH := \
@@ -16,13 +17,17 @@ const PARAMETRIC_ROOM_PATH := \
 @export_enum("legacy", "parametric") var default_world_mode := "legacy"
 
 var current_mode := ""
+var current_location_id := ""
 var _active_location: Node3D
 var _retire_serial := 0
+var _catalog := WorldLocationCatalog.new()
 
 
 ## [S2.1][S4.1] 在 WorldRoot 入树时解析环境覆盖并装载首个地点。
 ## `AI_GAMES_WORLD_MODE=parametric` 可启用生成客厅，非法值安全回退 legacy。
 func _enter_tree() -> void:
+	if not _catalog.load_catalog():
+		push_error("WorldLocationLoader: location catalog unavailable")
 	var requested_mode := OS.get_environment("AI_GAMES_WORLD_MODE").strip_edges()
 	if requested_mode.is_empty():
 		requested_mode = default_world_mode
@@ -33,14 +38,10 @@ func _enter_tree() -> void:
 ## 副作用：释放旧地点、实例化新地点并发出 location_loaded。
 func switch_location(requested_mode: String) -> String:
 	var resolved_mode := _normalize_mode(requested_mode)
-	var scene_path := (
-		PARAMETRIC_ROOM_PATH if resolved_mode == "parametric"
-		else LEGACY_ROOM_PATH
-	)
+	if resolved_mode == "parametric":
+		return "parametric" if travel_to(_catalog.default_location_id) else ""
+	var scene_path := LEGACY_ROOM_PATH
 	var packed := load(scene_path) as PackedScene
-	if packed == null and resolved_mode != "legacy":
-		resolved_mode = "legacy"
-		packed = load(LEGACY_ROOM_PATH) as PackedScene
 	if packed == null:
 		push_error("WorldLocationLoader: no loadable room scene")
 		return ""
@@ -49,8 +50,53 @@ func switch_location(requested_mode: String) -> String:
 	_active_location.name = "LivingRoom"
 	add_child(_active_location)
 	current_mode = resolved_mode
+	current_location_id = "living_room"
+	_activate_legacy_semantics()
 	location_loaded.emit(current_mode, _active_location)
+	world_location_loaded.emit(current_location_id, _active_location)
 	return current_mode
+
+
+## [S2.2] 原子装载目录中的参数化地点；非法目标不破坏当前场景。
+func travel_to(location_id: String, entry_id: String = "default") -> bool:
+	var location := _catalog.get_location(location_id)
+	if location.is_empty():
+		return false
+	var packed := load(String(location.get("scene_path", PARAMETRIC_ROOM_PATH))) as PackedScene
+	if packed == null:
+		return false
+	var next_location := packed.instantiate() as Node3D
+	if next_location == null:
+		return false
+	location["location_id"] = location_id
+	location["cast_spawns"] = _resolve_spawns(location, entry_id)
+	if next_location.has_method("configure_location"):
+		next_location.configure_location(location)
+	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))
+	_clear_active_location()
+	_active_location = next_location
+	current_mode = "parametric"
+	current_location_id = location_id
+	add_child(_active_location)
+	location_loaded.emit(current_mode, _active_location)
+	world_location_loaded.emit(current_location_id, _active_location)
+	return true
+
+
+## [S2.2] 沿当前地点的具名出口旅行；出口图无效时保持原地点。
+func travel_via(exit_id: String) -> bool:
+	if not _catalog.can_travel(current_location_id, exit_id):
+		return false
+	var edge := _catalog.get_exit(current_location_id, exit_id)
+	return travel_to(
+		String(edge.get("target_location_id", "")),
+		String(edge.get("target_entry_id", "default")),
+	)
+
+
+## [S2.2] 对外暴露只读地点目录查询，供 UI/导演/测试列出出口。
+func get_location_catalog() -> WorldLocationCatalog:
+	return _catalog
 
 
 ## [S2.1] 返回当前地点节点；纯读取。
@@ -61,6 +107,25 @@ func get_active_location() -> Node3D:
 ## [S2.1] 将未知模式收敛到公开兼容的 legacy 模式；纯函数。
 func _normalize_mode(requested_mode: String) -> String:
 	return requested_mode if requested_mode in ["legacy", "parametric"] else "legacy"
+
+
+## [S2.2] 将入口位置覆盖到玩家同行角色，其他角色保留房间声明出生点。
+func _resolve_spawns(location: Dictionary, entry_id: String) -> Dictionary:
+	var spawns: Dictionary = location.get("cast_spawns", {}).duplicate(true)
+	var entries = location.get("entries", {})
+	if entries is Dictionary and entries.has(entry_id):
+		var entry: Dictionary = entries[entry_id]
+		var actor_spawn: Dictionary = spawns.get("Agent", {}).duplicate(true)
+		actor_spawn["position"] = entry.get("position", actor_spawn.get("position", []))
+		spawns["Agent"] = actor_spawn
+	return spawns
+
+
+## [S2.2] 兼容旧客厅时恢复语义可见域。
+func _activate_legacy_semantics() -> void:
+	var semantic_world := get_node_or_null("/root/SemanticWorld")
+	if semantic_world != null and semantic_world.has_method("set_active_location"):
+		semantic_world.set_active_location("living_room")
 
 
 ## [S2.1] 隐藏旧地点并给予异步角色协程两帧收尾，再安全释放。
