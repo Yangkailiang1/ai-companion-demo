@@ -1,0 +1,4 @@
+interface:
+  display_name: "Godot 可交互物体接入"
+  short_description: "将 3D 模型安全接入语义、碰撞、锚点、存档与验收流程"
+  default_prompt: "Use $godot-import-interactable-object to add a licensed 3D prop as a fully validated interactable Godot object."

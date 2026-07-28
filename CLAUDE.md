@@ -197,7 +197,7 @@ Provider / LLM / Embedding
 | 文件 | 当前规模（审查时） | 混合职责 | 建议拆分 |
 |---|---:|---|---|
 | `cognitive_cycle.gd` | 482 行 / 15 函数（首轮已拆） | Provider、解析、周期编排 | 下一轮提取 `llm_client`、`decision_parser`；已提取 `prompt_builder`、`performance_resolver`、`local_fallback_decider` |
-| `autonomous_behavior_system.gd` | 531 行 / 33 函数 | 调度、评分、恢复、微行为、社交输出 | `utility_scorer`、`activity_runtime`、`interruption_coordinator` |
+| `autonomous_behavior_system.gd` | 500 行（H10 已提取活动结算） | 调度、评分、恢复、微行为、社交输出 | 下一轮提取 `utility_scorer`、`interruption_coordinator`；已提取 `autonomous_activity_outcome` |
 | `agent_psyche_system.gd` | 452 行 / 34 函数 | 心境、人格、日程、ToM、反思 | `psyche_state_store`、`daily_planner`、`social_belief_model` |
 | `motion_intent_router.gd` | 341 行 / 24 函数 | 目录、特征、分类、检索、回退 | `motion_catalog`、`feature_provider`、`motion_ranker` |
 | `chat_input.gd` | 333 行 / 22 函数 | 输入、聊天展示、主题、焦点动画 | `chat_controller`、`chat_presenter`、`warm_ui_theme` |

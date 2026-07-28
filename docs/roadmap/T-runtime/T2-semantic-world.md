@@ -4,7 +4,7 @@
 > 节点编号：T2
 > 状态：`[ACTIVE]`
 > 依赖：T1（认知协议）
-> 最后更新：2026-07-24 | 基线程：v0.7
+> 最后更新：2026-07-28 | 基线程：v0.8.8
 
 ## 职责
 
@@ -20,10 +20,20 @@
   物体组件自身提供 approach/look/grab/place/sit 锚点，
   调用方无需硬编码场景路径。参见
   [交互锚点与占用预订协议](../../INTERACTION_ANCHORS_AND_RESERVATION.md)。
+- `[DONE H10 golden object]` `data/interactable_objects/*.json` 建立可审查的
+  SceneObject 接入 Spec；首个 `wall_art` 验证场景节点、语义描述、真实锚点和
+  存档状态的一致性。
+- `[DONE H10-B5]` 第二批三件静态装饰物 `window`、`back_wall_shelf`、`leaf_art`
+  已接入统一 Spec、SemanticWorld 描述符绑定、scene_config 交互点和 headless
+  验证 `decor_interactable_batch_check.gd`。
 
-### T2.2 `[NEXT]` 场景注册与空间查询
+### T2.2 `[ACTIVE golden object]` 场景注册与空间查询
 
 将物体位置从硬编码坐标升级为场景注册和运行时空间查询。
+
+- `[DONE baseline]` InteractableObject 进入场景后会把 Godot 节点绑定到 descriptor。
+- `[NEXT]` 由场景锚点自动回写/校验 descriptor 空间数据，逐步消除 scene_config
+  和 `.tscn` 的重复坐标。
 
 ### T2.3 `[LATER]` 跨场景位置图
 

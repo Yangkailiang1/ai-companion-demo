@@ -1,11 +1,15 @@
-# action_executor.gd — Primitive Action 执行器
-# 设计文档 §五.1: 11 个 Primitive Actions 的逐帧执行
+# Roadmap: C4.4, C4.5, T1.2
+# Responsibility: 顺序执行白名单 Primitive Action，并在首个失败处终止队列；
+#   不做认知决策，也不直接实现物体状态机。
+# Collaborators: ActionExecutionResult, ActionObjectInteractor, AgentBase
+# Tests: scripts/debug/action_failure_contract_check.gd
 class_name ActionExecutor
-
 extends Node
 
-# 当前正在执行的 Action 队列
-var action_queue=  []
+const ResultClass = preload("res://scripts/core/action_execution_result.gd")
+const ObjectInteractorClass = preload("res://scripts/core/action_object_interactor.gd")
+
+var action_queue: Array = []
 var current_action_index: int = 0
 var current_action: AffordanceTypes.PrimitiveAction = null
 
@@ -15,10 +19,13 @@ var agent_node: Node3D = null
 # 执行状态
 var is_executing: bool = false
 var _cancelled: bool = false
+var _object_interactor = ObjectInteractorClass.new()
 signal queue_completed(agent_id: String)
+signal queue_failed(agent_id: String, reason: String, context: Dictionary)
 signal action_completed(action: AffordanceTypes.PrimitiveAction)
 
 
+## [C4.5][T1.2] 初始化一条动作队列；空队列按成功完成处理。
 func start_queue(agent: Node3D, actions: Array) -> void:
 	agent_node = agent
 	action_queue = actions
@@ -28,25 +35,29 @@ func start_queue(agent: Node3D, actions: Array) -> void:
 	_execute_next()
 
 
+## [C4.5] 取消队列和移动；取消不发出成功事件。
 func cancel() -> void:
 	_cancelled = true
 	is_executing = false
+	action_queue.clear()
 	if is_instance_valid(agent_node) and agent_node.has_method("cancel_movement"):
 		agent_node.cancel_movement("action_cancelled")
 
 
+## [C4.5] 执行下一项；队列耗尽时仅发出成功完成事件。
 func _execute_next() -> void:
 	if _cancelled:
 		return
 	if current_action_index >= action_queue.size():
 		is_executing = false
-		queue_completed.emit(agent_node.name)
+		queue_completed.emit(_agent_id())
 		return
 
 	current_action = action_queue[current_action_index]
 	_execute_action(current_action)
 
 
+## [C4.4][C4.5] 分派白名单 Primitive；未知类型稳定失败。
 func _execute_action(action: AffordanceTypes.PrimitiveAction) -> void:
 	match action.type:
 		AffordanceTypes.Primitive.NAVIGATE:
@@ -72,28 +83,25 @@ func _execute_action(action: AffordanceTypes.PrimitiveAction) -> void:
 		AffordanceTypes.Primitive.SIT:
 			_sit(action.params)
 		_:
-			# 未知动作 → 跳过
-			_on_action_finished()
+			_fail_queue("unknown_primitive", {})
 
 
-# === 各 Primitive 的实现 ===
-
+## [C4.2][C4.5] 导航到语义物体交互点；未知目标立即失败。
 func _navigate(params: Dictionary) -> void:
 	var target_id: String = params.get("target", "")
 	if target_id.is_empty():
-		_on_action_finished()
+		_fail_queue("target_missing", {"target": target_id})
 		return
 
 	var obj = SemanticWorld.get_object(target_id)
 	if not obj:
-		push_warning("ActionExecutor: navigate to unknown object '%s'" % target_id)
-		_on_action_finished()
+		_fail_queue("target_not_found", {"target": target_id})
 		return
 
-	await _travel_to(obj.interaction_point)
-	_finish_if_active()
+	_finish_result(await _travel_to(obj.interaction_point), {"target": target_id})
 
 
+## [C4.1][C4.5] 导航到已校验 waypoint/坐标；不安全坐标失败。
 func _navigate_position(params: Dictionary) -> void:
 	var navigation := RoomNavigation.new()
 	var target := Vector3.ZERO
@@ -103,71 +111,78 @@ func _navigate_position(params: Dictionary) -> void:
 	else:
 		target = _to_vec3(params.get("position", Vector3.ZERO))
 	if not navigation.is_safe_position(target):
-		push_warning("ActionExecutor: rejected unsafe navigation target %s" % target)
-		_finish_if_active()
+		_fail_queue("unsafe_target", {"target_position": target})
 		return
-	await _travel_to(target)
-	_finish_if_active()
+	_finish_result(await _travel_to(target), {"target_position": target})
 
 
+## [C4.1][C4.5] 顺序执行巡逻路径；首个失败段停止整条队列。
 func _patrol(params: Dictionary) -> void:
 	var navigation := RoomNavigation.new()
 	var route_name := String(params.get("route", "room_perimeter"))
 	var laps := clampi(int(params.get("laps", 1)), 1, 3)
 	var route := navigation.get_route(route_name, laps)
 	if route.size() < 2:
-		push_warning("ActionExecutor: patrol route '%s' is missing or too short" % route_name)
-		_finish_if_active()
+		_fail_queue("route_missing", {"route": route_name})
 		return
 	if agent_node.has_method("begin_locomotion_sequence"):
 		agent_node.begin_locomotion_sequence()
 	for target in route:
 		if _cancelled:
 			return
-		var success := await _travel_to(target)
-		if not success:
-			break
+		var result := await _travel_to(target)
+		if not ResultClass.is_success(result):
+			if is_instance_valid(agent_node) and agent_node.has_method("end_locomotion_sequence"):
+				agent_node.end_locomotion_sequence()
+			_finish_result(result, {"route": route_name, "target_position": target})
+			return
 	if is_instance_valid(agent_node) and agent_node.has_method("end_locomotion_sequence"):
 		agent_node.end_locomotion_sequence()
-	_finish_if_active()
+	_on_action_finished()
 
 
+## [C4.1][C4.5] 导航到确定性漫游点并传播到达失败。
 func _wander(params: Dictionary) -> void:
 	var navigation := RoomNavigation.new()
 	var point_index := int(params.get("point_index", -1))
 	var from_position := agent_node.global_position if is_instance_valid(agent_node) else Vector3.ZERO
-	await _travel_to(navigation.get_wander_point_away(from_position, 1.0, point_index))
-	_finish_if_active()
+	var target := navigation.get_wander_point_away(from_position, 1.0, point_index)
+	_finish_result(await _travel_to(target), {"target_position": target})
 
 
-func _travel_to(target: Vector3) -> bool:
+## [C4.1][C4.5] 等待 AgentBase movement_finished，并返回稳定原因。
+func _travel_to(target: Vector3) -> Dictionary:
 	if _cancelled or not is_instance_valid(agent_node):
-		return false
+		return ResultClass.failure("cancelled")
 	if not agent_node.has_method("move_to_position"):
-		return false
+		return ResultClass.failure("movement_capability_missing")
 	agent_node.move_to_position(target)
+	if agent_node.has_signal("movement_finished"):
+		var movement_result: Array = await agent_node.movement_finished
+		if _cancelled:
+			return ResultClass.failure("cancelled")
+		var success := bool(movement_result[0]) if movement_result.size() > 0 else false
+		var reason := String(movement_result[1]) if movement_result.size() > 1 else "unreachable"
+		return ResultClass.success({"target_position": target}) if success else ResultClass.failure(
+			reason, {"target_position": target}
+		)
 	while not _cancelled and is_instance_valid(agent_node) and agent_node.is_moving:
 		await get_tree().process_frame
 	if _cancelled or not is_instance_valid(agent_node):
-		return false
-	return agent_node.global_position.distance_to(target) <= 0.75
+		return ResultClass.failure("cancelled")
+	if agent_node.global_position.distance_to(target) <= 0.75:
+		return ResultClass.success({"target_position": target})
+	return ResultClass.failure("unreachable", {"target_position": target})
 
 
+## [C4.4][C4.5] 执行通用物体交互；只有成功结果可继续队列。
 func _interact(params: Dictionary) -> void:
 	var obj_id: String = params.get("object", "")
 	var verb: String = params.get("verb", "")
-
-	var obj = SemanticWorld.get_object(obj_id)
-	if obj:
-		if is_instance_valid(obj.godot_node) and obj.godot_node.has_method("perform_interaction"):
-			obj.godot_node.perform_interaction(verb, _agent_id())
-		_apply_object_effects(obj)
-
-		# 如果是消耗品 → 更新状态
-		if obj.consumable and verb in ["drink", "eat"]:
-			SemanticWorld.update_object_state(obj_id, "已喝完" if verb == "drink" else "已吃完")
-
-	# 动画演示时间
+	var result := _object_interactor.perform(obj_id, verb, _agent_id())
+	if not ResultClass.is_success(result):
+		_finish_result(result)
+		return
 	await get_tree().create_timer(1.0).timeout
 	_on_action_finished()
 
@@ -197,39 +212,41 @@ func _look_at(params: Dictionary) -> void:
 	_on_action_finished()
 
 
+## [C4.4][C4.5] 执行拿取；失败时不播放等待或继续后续动作。
 func _pick_up(params: Dictionary) -> void:
-	_perform_object_verb(String(params.get("object", "")), "pick_up")
+	var result := _object_interactor.perform(String(params.get("object", "")), "pick_up", _agent_id())
+	if not ResultClass.is_success(result):
+		_finish_result(result)
+		return
 	await get_tree().create_timer(0.5).timeout
 	_on_action_finished()
 
 
+## [C4.4][C4.5] 执行放下并传播持有者/预订失败。
 func _put_down(params: Dictionary) -> void:
-	_perform_object_verb(String(params.get("object", "")), "put_down")
+	var result := _object_interactor.perform(String(params.get("object", "")), "put_down", _agent_id())
+	if not ResultClass.is_success(result):
+		_finish_result(result)
+		return
 	await get_tree().create_timer(0.5).timeout
 	_on_action_finished()
 
 
+## [C4.4][C4.5] 执行座位交互成功后才播放 sit 表现。
 func _sit(params: Dictionary) -> void:
-	MessageBus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
 	var object_id := String(params.get("object", ""))
-	var object = SemanticWorld.get_object(object_id)
-	if object:
-		_apply_object_effects(object)
+	var result := _object_interactor.perform(object_id, "sit", _agent_id())
+	if not ResultClass.is_success(result):
+		_finish_result(result)
+		return
+	MessageBus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
 
 
-## [C4.4] 让 PICK_UP/PUT_DOWN 原语调用真实物体处理器，而不是只等待动画时间。
-func _perform_object_verb(object_id: String, verb: String) -> void:
-	var object = SemanticWorld.get_object(object_id)
-	if object == null or not is_instance_valid(object.godot_node):
-		return
-	if object.godot_node.has_method("perform_interaction"):
-		object.godot_node.perform_interaction(verb, _agent_id())
-
-
 # === 内部 ===
 
+## [C4.5][T1.2] 标记当前 primitive 成功并调度下一项。
 func _on_action_finished() -> void:
 	if _cancelled:
 		return
@@ -238,9 +255,32 @@ func _on_action_finished() -> void:
 	call_deferred("_execute_next")
 
 
-func _finish_if_active() -> void:
-	if not _cancelled:
+## [C4.5][T1.2] 合并调用方上下文后，将结果路由到成功或失败出口。
+func _finish_result(result: Dictionary, extra_context: Dictionary = {}) -> void:
+	if _cancelled:
+		return
+	if ResultClass.is_success(result):
 		_on_action_finished()
+		return
+	var context: Dictionary = result.get("context", {}).duplicate(true)
+	context.merge(extra_context, true)
+	_fail_queue(String(result.get("reason", "action_failed")), context)
+
+
+## [C4.5][T1.2] 首次失败停止剩余队列，并且只发出一次失败事件。
+func _fail_queue(reason: String, context: Dictionary) -> void:
+	if _cancelled:
+		return
+	is_executing = false
+	_cancelled = true
+	action_queue.clear()
+	context = context.duplicate(true)
+	context["action_index"] = current_action_index
+	if current_action != null:
+		context["primitive"] = int(current_action.type)
+	if is_instance_valid(agent_node) and agent_node.has_method("cancel_movement"):
+		agent_node.cancel_movement("action_failed")
+	queue_failed.emit(_agent_id(), reason, context)
 
 
 func _to_vec3(value: Variant) -> Vector3:
@@ -257,19 +297,3 @@ func _agent_id() -> String:
 	if is_instance_valid(agent_node) and agent_node.get("agent_name") != null:
 		return String(agent_node.get("agent_name"))
 	return ""
-
-
-func _apply_object_effects(object) -> void:
-	for effect_key in object.effects:
-		var need_type = _str_to_need_type(effect_key)
-		if need_type != null:
-			WorldSimulator.apply_effect(need_type, object.effects[effect_key] as float, _agent_id())
-
-
-func _str_to_need_type(str: String):
-	match str:
-		"hunger": return AffordanceTypes.NeedType.HUNGER
-		"energy": return AffordanceTypes.NeedType.ENERGY
-		"social": return AffordanceTypes.NeedType.SOCIAL
-		"fun": return AffordanceTypes.NeedType.FUN
-	return null

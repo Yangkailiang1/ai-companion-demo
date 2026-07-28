@@ -4,7 +4,7 @@
 > 节点编号：C4
 > 状态：`[ACTIVE]`
 > 依赖：T2（SceneObjectDescriptor、语义世界空间查询）、S3（可交互物体）
-> 最后更新：2026-07-27 | 基线程：v0.8.7
+> 最后更新：2026-07-28 | 基线程：v0.8.8
 
 ## 当前状态
 
@@ -65,8 +65,11 @@
   pick_up 失败时不改变父节点、碰撞层、位置和占用状态。
 - `[DONE H10-B2 baseline]` 动态堵塞触发有限次安全 waypoint 绕行，到达临时点后恢复
   原目标；候选点避开当前角色占用位置。仍失败时返回 `stuck`。
-- `[NEXT]` ActionExecutor 消费导航/交互失败结果，停止队列并释放活动资源，禁止继续
-  执行后续动作伪装成功。
+- `[DONE H10-B3]` ActionExecutor 已消费导航与物体交互的稳定失败结果，在首个失败
+  处停止队列；失败不会执行后续动作、应用需求/消耗效果或发出 success completion。
+  AgentActionRuntime 分离成功/失败生命周期，自主活动失败会释放资源、写入失败记忆
+  并发出 interruption，禁止伪装成功。
+- `[NEXT]` 将 `occupied/stuck/target_moved` 连接到有限次数重新规划，而不是只结束活动。
 
 ### C4.6 `[LATER]` 多角色接触
 

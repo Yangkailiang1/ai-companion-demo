@@ -1,4 +1,4 @@
-[gd_scene load_steps=92 format=3 uid="uid://livingroom01"]
+[gd_scene load_steps=96 format=3 uid="uid://livingroom01"]
 
 [ext_resource type="Script" path="res://scripts/objects/interactable_object.gd" id="1_interact"]
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="2_agent"]
@@ -80,6 +80,18 @@ size = Vector3(0.72, 2.35, 0.48)
 
 [sub_resource type="BoxShape3D" id="shape_wall_switch"]
 size = Vector3(0.08, 0.22, 0.06)
+
+[sub_resource type="BoxShape3D" id="shape_picture_frame"]
+size = Vector3(0.74, 1.04, 0.08)
+
+[sub_resource type="BoxShape3D" id="shape_window_proxy"]
+size = Vector3(1.92, 1.15, 0.08)
+
+[sub_resource type="BoxShape3D" id="shape_shelf_proxy"]
+size = Vector3(1.35, 0.40, 0.28)
+
+[sub_resource type="BoxShape3D" id="shape_leaf_art_proxy"]
+size = Vector3(0.92, 0.54, 0.08)
 
 [sub_resource type="StandardMaterial3D" id="mat_jue_placeholder_body"]
 albedo_color = Color(0.46, 0.35, 0.62, 1)
@@ -357,16 +369,82 @@ transform = Transform3D(0.86, 0, 0, 0, 0.9, 0, 0, 0, 1, 2.12, 1.66, -3.88)
 mesh = SubResource("mesh_window_glow")
 surface_material_override/0 = SubResource("mat_window_glow")
 
-[node name="WallArt" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.75, 1.65, -3.88)
-mesh = SubResource("mesh_wall_art")
-surface_material_override/0 = SubResource("mat_wall_art")
-visible = false
+[node name="WallArt" type="StaticBody3D" parent="." node_paths=PackedStringArray("interaction_point")]
+position = Vector3(-3.18, 1.62, -3.78)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_interact")
+object_id = "wall_art"
+object_name = "墙上的画"
+interaction_point = NodePath("AnchorApproach")
 
 [node name="PictureFrameModel" parent="WallArt" instance=ExtResource("15_picture_model")]
-position = Vector3(0, 0, 0.075)
-rotation = Vector3(1.570796, 0, 0)
-scale = Vector3(0.82, 0.82, 0.82)
+position = Vector3(0, 0, 0.02)
+rotation = Vector3(0, 3.141593, 0)
+scale = Vector3(1.2, 1.2, 1.2)
+
+[node name="PictureFrameCollision" type="CollisionShape3D" parent="WallArt"]
+shape = SubResource("shape_picture_frame")
+
+[node name="AnchorApproach" type="Marker3D" parent="WallArt"]
+position = Vector3(0, -1.62, 0.9)
+
+[node name="AnchorLook" type="Marker3D" parent="WallArt"]
+position = Vector3(0, 0, 0.18)
+
+[node name="WindowProxy" type="StaticBody3D" parent="." node_paths=PackedStringArray("interaction_point")]
+position = Vector3(2.12, 1.66, -3.88)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_interact")
+object_id = "window"
+object_name = "窗户"
+interaction_point = NodePath("AnchorApproach")
+
+[node name="WindowProxyCollision" type="CollisionShape3D" parent="WindowProxy"]
+shape = SubResource("shape_window_proxy")
+
+[node name="AnchorApproach" type="Marker3D" parent="WindowProxy"]
+position = Vector3(-0.42, -1.66, 0.93)
+
+[node name="AnchorLook" type="Marker3D" parent="WindowProxy"]
+position = Vector3(0, 0, 0.28)
+
+[node name="BackWallShelfProxy" type="StaticBody3D" parent="." node_paths=PackedStringArray("interaction_point")]
+position = Vector3(0.55, 1.32, -3.83)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_interact")
+object_id = "back_wall_shelf"
+object_name = "墙面搁板"
+interaction_point = NodePath("AnchorApproach")
+
+[node name="BackWallShelfProxyCollision" type="CollisionShape3D" parent="BackWallShelfProxy"]
+shape = SubResource("shape_shelf_proxy")
+
+[node name="AnchorApproach" type="Marker3D" parent="BackWallShelfProxy"]
+position = Vector3(0, -1.32, 0.93)
+
+[node name="AnchorLook" type="Marker3D" parent="BackWallShelfProxy"]
+position = Vector3(0, 0, 0.23)
+
+[node name="LeafArtProxy" type="StaticBody3D" parent="." node_paths=PackedStringArray("interaction_point")]
+position = Vector3(-1.58, 1.78, -3.86)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_interact")
+object_id = "leaf_art"
+object_name = "叶子装饰画"
+interaction_point = NodePath("AnchorApproach")
+
+[node name="LeafArtProxyCollision" type="CollisionShape3D" parent="LeafArtProxy"]
+shape = SubResource("shape_leaf_art_proxy")
+
+[node name="AnchorApproach" type="Marker3D" parent="LeafArtProxy"]
+position = Vector3(0, -1.78, 0.96)
+
+[node name="AnchorLook" type="Marker3D" parent="LeafArtProxy"]
+position = Vector3(0, 0, 0.26)
 
 [node name="WarmArtPanel" type="MeshInstance3D" parent="."]
 position = Vector3(-2.35, 1.62, -3.86)

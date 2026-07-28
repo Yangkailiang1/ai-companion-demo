@@ -18,6 +18,7 @@ signal agent_trigger_cycle(agent_id: String, source: AffordanceTypes.TriggerSour
 # 信号：Agent 完成动作
 signal agent_action_completed(agent_id: String, action: Dictionary)
 signal action_queue_completed(agent_id: String)
+signal action_queue_failed(agent_id: String, reason: String, context: Dictionary)
 signal agent_activity_started(agent_id: String, activity_id: String, context: Dictionary)
 signal agent_activity_completed(agent_id: String, activity_id: String, context: Dictionary)
 signal agent_activity_interrupted(agent_id: String, activity_id: String, reason: String)

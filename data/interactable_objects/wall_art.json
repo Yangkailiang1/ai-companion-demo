@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "roadmap": ["S3.6", "T2.1", "T2.2", "C4.3"],
+  "asset": {
+    "resource_path": "res://assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf",
+    "source_url": "https://polyhaven.com/a/hanging_picture_frame_01",
+    "license": "CC0",
+    "expected_aabb_m": [0.594, 0.841, 0.015749]
+  },
+  "object": {
+    "id": "wall_art",
+    "name": "墙上的画",
+    "type": "decor",
+    "affordances": ["inspect", "look_at"],
+    "initial_state": "挂在客厅墙上"
+  },
+  "scene": {
+    "scene_path": "res://scenes/living_room.tscn",
+    "node_path": "WallArt",
+    "body_type": "StaticBody3D",
+    "collision": {
+      "shape": "BoxShape3D",
+      "size_m": [0.74, 1.04, 0.08]
+    },
+    "anchors": {
+      "approach": [-3.18, 0.0, -2.88],
+      "look": [-3.18, 1.62, -3.6]
+    }
+  },
+  "validation": {
+    "headless_test": "res://scripts/debug/interactable_asset_pipeline_check.gd",
+    "visual_test": "res://scripts/debug/main_screenshot_check.gd"
+  }
+}

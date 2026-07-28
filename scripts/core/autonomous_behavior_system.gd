@@ -1,5 +1,5 @@
 extends Node
-
+const ActivityOutcomeClass = preload("res://scripts/core/autonomous_activity_outcome.gd")
 const CONFIG_PATH := "res://data/autonomous_life_config.json"
 const PLAYER_GRACE_SECONDS := 10.0
 const DEFAULT_EVALUATION_INTERVAL := 6.0
@@ -29,6 +29,7 @@ var _diagnostics: Dictionary = {
 	"selected": {},
 }
 var _scheduler_enabled := true
+var _activity_outcome = ActivityOutcomeClass.new()
 
 
 func _ready() -> void:
@@ -37,6 +38,7 @@ func _ready() -> void:
 	MessageBus.world_state_changed.connect(_on_world_state_changed)
 	MessageBus.player_message_received.connect(_on_player_message)
 	MessageBus.action_queue_completed.connect(_on_action_queue_completed)
+	MessageBus.action_queue_failed.connect(_on_action_queue_failed)
 	call_deferred("_scheduler_loop")
 
 
@@ -135,31 +137,12 @@ func _on_player_message(_text: String, _is_command: bool) -> void:
 
 
 func _on_action_queue_completed(agent_id: String) -> void:
-	if not _active_activities.has(agent_id):
-		if _suspended_activities.has(agent_id):
-			_schedule_resume_after_player(agent_id)
-		return
-	var activity: Dictionary = _active_activities[agent_id]
-	var definition: Dictionary = activity.get("definition", {})
-	var completion_memory := String(definition.get("completion_memory", "完成了一项日常活动。"))
-	MemorySystem.add_episode_for_agent(agent_id, completion_memory, 5.0)
-	var completion_line := String(definition.get("completion_line", ""))
-	if not completion_line.is_empty():
-		_emit_visible_social_line(agent_id, completion_line, String(definition.get("emotion", "neutral")))
-	if String(activity.get("activity_id", "")) == "plant_care":
-		_emit_companion_observation(agent_id)
-	MessageBus.agent_activity_completed.emit(agent_id, String(activity.get("activity_id", "")), {
-		"duration_seconds": float(Time.get_ticks_msec() - int(activity.get("started_at_msec", Time.get_ticks_msec()))) / 1000.0,
-	})
-	_release_activity(agent_id)
-	_agent_available_after_msec[agent_id] = Time.get_ticks_msec() + int(POST_ACTIVITY_QUIET_SECONDS * 1000.0)
-	_diagnostics["status"] = "activity_completed"
-	_diagnostics["completed"] = {
-		"agent_id": agent_id,
-		"activity_id": activity.get("activity_id", ""),
-	}
-	if _scheduler_enabled:
-		call_deferred("evaluate_now")
+	_activity_outcome.complete(self, agent_id)
+
+
+## [C4.5][C9.3] 接收 ActionExecutor 首次失败，只结算失败并释放活动资源。
+func _on_action_queue_failed(agent_id: String, reason: String, context: Dictionary) -> void:
+	_activity_outcome.fail(self, agent_id, reason, context)
 
 
 func resume_suspended_now(agent_id: String) -> bool:
@@ -476,21 +459,6 @@ func _perform_micro_behavior(agent: Node, agent_id: String, behavior: String) ->
 		"source": "autonomous_micro_behavior",
 		"behavior": behavior,
 	})
-
-
-func _emit_companion_observation(actor_id: String) -> void:
-	for node in get_tree().get_nodes_in_group("agents"):
-		var listener_id := String(node.get("agent_name"))
-		if listener_id == actor_id or String(node.get("current_activity")) != "idle":
-			continue
-		MemorySystem.add_episode_for_agent(
-			listener_id,
-			"%s主动去照顾缺水的小绿。" % CodifiedProfile.get_agent_display_name(actor_id),
-			4.0
-		)
-		MemorySystem.update_relationship_for_agent(listener_id, actor_id, "respect", 0.02)
-		_emit_visible_social_line(listener_id, "小绿精神多了，辛苦啦。", "happy")
-		break
 
 
 func _emit_visible_social_line(agent_id: String, text: String, emotion: String) -> void:

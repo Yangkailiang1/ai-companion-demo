@@ -122,6 +122,66 @@
       "position": [-3.82, 1.2, -0.65],
       "interaction_point": [-3.15, 0.0, -0.65],
       "needs_proximity": true
+    },
+    {
+      "id": "wall_art",
+      "name": "墙上的画",
+      "description": "一幅装在木质画框里的温暖风景画，画面会让人想起安静的午后",
+      "state": "挂在客厅墙上",
+      "affordances": ["inspect", "look_at"],
+      "properties": {
+        "asset_source": "Poly Haven hanging_picture_frame_01",
+        "license": "CC0",
+        "object_type": "decor"
+      },
+      "position": [-3.18, 1.62, -3.78],
+      "interaction_point": [-3.18, 0.0, -2.88],
+      "needs_proximity": true
+    },
+    {
+      "id": "window",
+      "name": "窗户",
+      "description": "一扇白色窗框的大窗户，温暖的晨光从窗外透进来，窗台上有些灰尘",
+      "state": "明亮通透",
+      "affordances": ["inspect", "look_at"],
+      "properties": {
+        "asset_source": "Project-authored procedural mesh WindowGlow",
+        "license": "Project-authored",
+        "object_type": "decor"
+      },
+      "position": [2.12, 1.66, -3.88],
+      "interaction_point": [1.7, 0.0, -2.95],
+      "needs_proximity": true
+    },
+    {
+      "id": "back_wall_shelf",
+      "name": "墙面搁板",
+      "description": "后墙上的一块木质搁板，上面放着几本小书和一个装饰花瓶",
+      "state": "摆放整齐",
+      "affordances": ["inspect", "look_at"],
+      "properties": {
+        "asset_source": "Project-authored procedural mesh BackWallShelf + ShelfBookA/B + ShelfVase",
+        "license": "Project-authored",
+        "object_type": "decor"
+      },
+      "position": [0.55, 1.32, -3.83],
+      "interaction_point": [0.55, 0.0, -2.9],
+      "needs_proximity": true
+    },
+    {
+      "id": "leaf_art",
+      "name": "叶子装饰画",
+      "description": "一幅挂在墙上的叶子图案装饰画，淡绿色的色调让人感到平静",
+      "state": "挂在墙上",
+      "affordances": ["inspect", "look_at"],
+      "properties": {
+        "asset_source": "Project-authored procedural mesh LeafArtPanel",
+        "license": "Project-authored",
+        "object_type": "decor"
+      },
+      "position": [-1.58, 1.78, -3.86],
+      "interaction_point": [-1.58, 0.0, -2.9],
+      "needs_proximity": true
     }
   ]
 }

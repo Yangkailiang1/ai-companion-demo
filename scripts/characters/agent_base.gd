@@ -8,6 +8,7 @@
 extends CharacterBody3D
 
 const NavigationRecoveryClass = preload("res://scripts/navigation/navigation_recovery.gd")
+const AgentActionRuntimeClass = preload("res://scripts/characters/agent_action_runtime.gd")
 const NavigationAvoidanceClass = preload(
 	"res://scripts/navigation/navigation_avoidance_controller.gd"
 )
@@ -43,7 +44,7 @@ var _navmesh_checked: bool = false
 var _movement_elapsed: float = 0.0
 var _stuck_elapsed: float = 0.0
 var _last_progress_position := Vector3.ZERO
-var _active_executor: ActionExecutor = null
+var _action_runtime: AgentActionRuntime
 var _locomotion_sequence_depth: int = 0
 var _facing_tween: Tween
 var _avoidance_enabled: bool = false
@@ -58,6 +59,11 @@ signal movement_finished(success: bool, reason: String)
 func _ready() -> void:
 	add_to_group("agents")
 	MessageBus.emit_actions.connect(_on_emit_actions)
+	_action_runtime = AgentActionRuntimeClass.new()
+	add_child(_action_runtime)
+	_action_runtime.configure(self)
+	_action_runtime.queue_completed.connect(_on_actions_finished)
+	_action_runtime.queue_failed.connect(_on_actions_failed)
 
 	if not idle_timer:
 		idle_timer = Timer.new()
@@ -99,26 +105,10 @@ func _check_navmesh() -> void:
 ## [C9.3] Receives action primitives from runtime; latest decision wins.
 ## Side effects: cancels previous executor and movement, starts new queue.
 func _on_emit_actions(agent_id: String, actions: Array) -> void:
-	if agent_id != agent_name: return
-
-	if is_instance_valid(_active_executor):
-		_active_executor.cancel()
-		_active_executor.queue_free()
-		_active_executor = null
-	cancel_movement("superseded")
-
+	if agent_id != agent_name:
+		return
 	current_activity = "executing_actions"
-	var executor = ActionExecutor.new()
-	_active_executor = executor
-	add_child(executor)
-	executor.queue_completed.connect(func(_id):
-		if _active_executor == executor:
-			_active_executor = null
-			_on_actions_finished()
-		if is_instance_valid(executor):
-			executor.queue_free()
-	)
-	executor.start_queue(self, actions)
+	_action_runtime.start(actions)
 
 
 func move_to(target: Vector3) -> void:
@@ -289,6 +279,13 @@ func _on_actions_finished() -> void:
 	current_activity = "idle"
 	idle_timer.start()
 	MessageBus.action_queue_completed.emit(agent_name)
+
+
+## [C4.5][C9.3] 失败队列返回 idle 并向自主系统传播稳定结果，不伪造成功。
+func _on_actions_failed(reason: String, context: Dictionary) -> void:
+	current_activity = "idle"
+	idle_timer.start()
+	MessageBus.action_queue_failed.emit(agent_name, reason, context)
 
 
 func _find_animation_driver() -> Node:
