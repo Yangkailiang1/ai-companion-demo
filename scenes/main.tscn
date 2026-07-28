@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://main001"]
 
-[ext_resource type="PackedScene" uid="uid://livingroom01" path="res://scenes/living_room.tscn" id="1_room"]
+[ext_resource type="Script" path="res://scripts/environments/world_location_loader.gd" id="1_world_loader"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
 [ext_resource type="Script" path="res://scripts/camera/orbit_room_camera.gd" id="3_orbit_camera"]
 
@@ -15,6 +15,7 @@ tonemap_mode = 2
 [node name="Main" type="Node3D"]
 
 [node name="WorldRoot" type="Node3D" parent="."]
+script = ExtResource("1_world_loader")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="WorldRoot"]
 environment = SubResource("Environment_main")
@@ -23,8 +24,6 @@ environment = SubResource("Environment_main")
 transform = Transform3D(1, 0, 0, 0, 0.737277, 0.67559, 0, -0.67559, 0.737277, 0, 6.8, 8.8)
 script = ExtResource("3_orbit_camera")
 fov = 48.0
-
-[node name="LivingRoom" parent="WorldRoot" instance=ExtResource("1_room")]
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 

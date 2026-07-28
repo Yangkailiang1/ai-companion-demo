@@ -45,9 +45,14 @@
   observable 对象登记但不制造无意义碰撞。
 - `[DONE visual acceptance]` seed 42 与 43 均通过 1280×720 Metal 双截图验收；
   落地灯按 Registry 视觉角色自动生成暖色局部光。
-- `living_room.tscn` 暂保留为角色演出与行为回归基准；参数化 Preview 已是可独立
-  运行的完整房间。切换主场景需先把五个角色从旧房间资源中解耦为独立 Spawner，
-  避免以“换房间”为名破坏现有演出测试。
+- `[DONE main integration baseline]` 参数化房间已通过 `WorldLocationLoader` 接入
+  真实 `main.tscn`，保留 CanvasLayer UI、环绕相机和五名角色；可用
+  `AI_GAMES_WORLD_MODE=parametric` 启动，默认仍以 legacy 客厅作为回归基准。
+- `[DONE stateful generated objects baseline]` Registry 中声明 `has_states` 的生成
+  物体会自动获得通用 `GeneratedObjectState`；植物浇水会改变 moisture/health 和
+  可见状态，灯具开关/调光会改变实际光照，不按具体模型路径写分支。
+- 角色当前由 `LegacyCastExtractor` 从旧客厅迁移，是 S2.1 兼容桥而非最终依赖；
+  后续先建立独立 Cast/Spawner 与地点出生点，再将参数化模式升为默认。
 
 ### S4.2 `[ACTIVE v0.8.9]` 约束式家具布置
 
@@ -87,7 +92,7 @@
 
 ## 迁移门槛
 
-参数化 Preview 同时满足以下条件后才能替换当前客厅：
+参数化模式已进入真实主场景的可选验收阶段；升为默认模式前仍须满足：
 
 1. 五个现有角色、自由模式和演出模式测试不回退；
 2. 所有现有语义对象 ID 与剧情锚点保持兼容；
@@ -95,6 +100,9 @@
 4. 1280×720 Metal 截图的构图与视觉质量不低于基准；
 5. 相同 seed 生成 Manifest 哈希一致，不同 seed 只改变声明为可变的内容；
 6. 所有进入公共仓库的资产许可证与来源可追溯。
+
+当前 1–6 已具备单房间基线；剩余默认切换阻塞项是移除旧客厅 Cast 抽取桥、
+补齐地点出生点/状态恢复，并对自由模式与演出模式做长时间回归。
 
 ## 研究参考
 

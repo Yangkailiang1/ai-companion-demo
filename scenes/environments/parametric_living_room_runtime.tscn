@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/environments/parametric_room_runtime.gd" id="1_runtime"]
+
+[node name="LivingRoom" type="Node3D"]
+script = ExtResource("1_runtime")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(1, 0.86, 0.7, 1)
+light_energy = 1.05
+shadow_enabled = true
+
+[node name="WarmFillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 2.4, 0.8)
+light_color = Color(1, 0.72, 0.48, 1)
+light_energy = 0.42
+omni_range = 7.0

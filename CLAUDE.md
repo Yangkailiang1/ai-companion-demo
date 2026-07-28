@@ -263,7 +263,7 @@ refactor(T4.5): extract LLM provider from cognitive cycle
 5. 对应 headless、Python 或资产测试通过。
 6. 更新路线图状态、模块文档和必要的论文映射。
 
-## 当前状态（v0.7 具身生活感迭代）
+## 当前状态（v0.8.9 参数化客厅接入迭代）
 
 | 模块 | 状态 | 文件 |
 |------|------|------|
@@ -283,7 +283,7 @@ refactor(T4.5): extract LLM provider from cognitive cycle
 | InteractableObject | done | `scripts/objects/interactable_object.gd` |
 | ChatInput + HUD | done (v0.6 visual pass) | `scripts/ui/chat_input.gd` |
 | DialogueBubble | done | `scripts/ui/dialogue_bubble.gd` |
-| 3D 场景 | done (企鹅 GLB + Poly Haven 家具/PBR 客厅美化) | `scenes/living_room.tscn` |
+| 3D 场景 | v0.8.9（legacy 客厅 + 15/15 模型库驱动参数化客厅） | `scenes/living_room.tscn`, `scenes/environments/parametric_living_room_runtime.tscn` |
 | **幻想庭院预览** | **new v0.2** | `scenes/environments/endless_garden_preview.tscn` |
 | **晓光忆时摄影棚预览** | **new v0.6 candidate** | `scenes/environments/xiaoguang_yishi_preview.tscn` |
 | **空间自主与导航** | **done v0.3** | `scripts/navigation/`, `docs/SPATIAL_AUTONOMY.md` |
@@ -296,7 +296,7 @@ refactor(T4.5): extract LLM provider from cognitive cycle
 | **Light-T2M / 离线动作库实验桥** | **offline retarget package + smoke clip done; real samples pending GPU** | `motion_lab/`, `docs/LIGHT_T2M_INTEGRATION.md`, `docs/OFFLINE_MOTION_LIBRARY.md` |
 | **Blender 导出管线** | **new v0.2** | `tools/blender/` |
 | **Smoke Test** | **new v0.2** | `scripts/debug/smoke_test_gestures.gd` |
-| 主场景编排 | done (CanvasLayer UI + WorldRoot) | `scenes/main.tscn` |
+| 主场景编排 | v0.8.9（CanvasLayer UI + WorldLocationLoader；legacy/parametric 可切换） | `scenes/main.tscn`, `scripts/environments/world_location_loader.gd` |
 | 数据配置 | done | `data/` |
 | 架构文档 | done | `docs/PROJECT_ARCHITECTURE.md` |
 | 资产需求 | done | `docs/ASSET_REQUIREMENTS.md` |
@@ -435,8 +435,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 > 详细规划树索引 → [docs/roadmap/README.md](./docs/roadmap/README.md)
 > 文档维护规范 → [docs/roadmap/CLAUDE.md](./docs/roadmap/CLAUDE.md)
 
-当前 `v0.7` 以规划树 `C9`"生活感与行为连续性"为主线，优先实现
-Utility AI、微行为、真实浇水交互样板和双角色共同活动。
+当前 `v0.8.9` 已打通 S4 参数化单房间与 S2 WorldLocation 基线；下一步优先把
+Cast/Spawner 从旧客厅资源中解耦，再扩展厨房、卧室和地点连接图。
 
 ## 知识库
 
@@ -464,10 +464,19 @@ Utility AI、微行为、真实浇水交互样板和双角色共同活动。
 ### Godot 运行
 
 1. 用 Godot 4.6.1 打开 `project.godot`
-2. 按 F5 运行，看到企鹅角色 + 灰盒客厅 + 左上角 HUD + 左下聊天面板 + 底部输入栏
+2. 按 F5 运行，看到角色、温馨客厅、左上角 HUD、聊天面板和底部输入栏
 3. 在底部输入框打字并回车或点"发送"
 4. 咕咕嘎嘎会回复并可能执行动作（喝奶茶、看电视等）
 5. 可选：创建 `data/llm_config.json` 启用完整 AI 推理
+
+默认使用稳定的 legacy 客厅。开发者可直接验证模型库驱动的参数化客厅：
+
+```bash
+AI_GAMES_WORLD_MODE=parametric \
+  /Applications/Godot.app/Contents/MacOS/Godot --path .
+```
+
+参数化模式使用相同 `main.tscn`、UI、相机和角色 Runtime，不是独立效果预览。
 
 ### v0.2: Blender 资产管线（已执行）
 

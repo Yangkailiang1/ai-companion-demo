@@ -18,6 +18,7 @@ const _ROLE_COLORS := {
 }
 const _FALLBACK_COLOR := Color(0.55, 0.55, 0.55, 1.0)
 const _INTERACTABLE_SCRIPT := preload("res://scripts/objects/interactable_object.gd")
+const _GENERATED_STATE_SCRIPT := preload("res://scripts/objects/generated_object_state.gd")
 
 var _registry_index: Dictionary = {}
 
@@ -94,6 +95,7 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 		box.size = aabb_vec
 		collision.shape = box
 		physics_node.add_child(collision)
+		_add_state_component(physics_node, semantic_id, visual_role, asset_entry)
 
 	# Write metadata on the placement container.
 	_write_metadata(container, asset_id, semantic_id, asset_entry)
@@ -106,6 +108,22 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 		physics_node.set("interaction_point", anchor)
 
 	return container
+
+
+## [S3.2][S4.1] 为 Registry 声明 has_states 的物理对象附加通用状态组件。
+func _add_state_component(
+	physics_node: CollisionObject3D,
+	semantic_id: String,
+	visual_role: String,
+	asset_entry: Dictionary,
+) -> void:
+	if not bool(asset_entry.get("capabilities", {}).get("has_states", false)):
+		return
+	var component := Node.new()
+	component.name = "GeneratedObjectState"
+	component.set_script(_GENERATED_STATE_SCRIPT)
+	physics_node.add_child(component)
+	component.configure(semantic_id, visual_role)
 
 
 ## [S4.2] 根据视觉角色添加轻量运行时组件；灯具自动获得暖色局部光。

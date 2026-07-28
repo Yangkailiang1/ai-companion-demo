@@ -38,11 +38,14 @@
    Semantic/Interaction Layer 三层合同；开放资产下载与规范化 Skill 已可由
    DeepSeek/Claude Code 分批执行，KayKit 首批三件家具已通过 Godot 实机预览。
    三个正式 Schema、严格编译器及当前客厅 shadow Recipe/Manifest 已完成；
-   下一步从 Manifest 生成隔离的 ParametricLivingRoomPreview。
+   15/15 模型槽位、碰撞、导航、语义和有状态物体已由 Manifest 生成，并可通过
+   `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。下一步把 Cast/Spawner
+   从旧客厅彻底解耦，并建立厨房、卧室的地点连接图。
 
 ## v0.9（从客厅到住宅）
 
-1. `S2` 住宅多房间和跨场景导航。
+1. `[DONE baseline] S2.1` WorldLocation 装载与 legacy/parametric 热切换；
+   下一步 `S2.2` 住宅多房间、地点连接图和跨场景导航。
 2. `P2 + P3` 玩家控制器与场景交互。
 3. `D2` 镜头、并行 Beat、语音同步和日程恢复。
 
