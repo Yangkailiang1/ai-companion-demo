@@ -1,7 +1,7 @@
 # 最近三个版本的推荐优先级
 
 > 所属文档：AI Living Town 开发规划树
-> 最后更新：2026-07-28 | 当前切片：v0.8.8
+> 最后更新：2026-07-28 | 当前切片：v0.8.9
 
 ## v0.6（稳定客厅生活）
 
@@ -34,6 +34,9 @@
 8. `[DONE H10-B5 baseline] S3.7 + T2` 黄金对象与 Skill 已完成首批批量接入：
    `wall_art`、`window`、`back_wall_shelf`、`leaf_art` 均具备碰撞、锚点、
    SemanticWorld 描述和自动验收；下一步扩展 portable/stateful/container/seat。
+9. `[ACTIVE design baseline] S4.0` 参数化场景采用 Scene Recipe、Asset Registry、
+   Semantic/Interaction Layer 三层合同；下一步先生成与现有客厅等价的 Preview，
+   通过回归和视觉验收后再替换主场景。
 
 ## v0.9（从客厅到住宅）
 
