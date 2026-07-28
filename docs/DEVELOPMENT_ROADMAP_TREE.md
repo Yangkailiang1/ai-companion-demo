@@ -217,6 +217,8 @@ AI Living Town
 
 后续：
 
+- `C2.0 [DONE tooling baseline]` `$prepare-motion-library-assets` 已定义 NPY/BVH/
+  body VMD/FBX/GLB 动作的许可、规范化、重定向、烘焙和验收合同。
 - `C2.1 [NEXT]` 建立 20–30 个核心动作：自然待机、行走、转身、挥手、点头、坐下、拿取、放下、喝、读、指向等。
 - `C2.2 [NEXT]` 完成诀的 Blender 重定向与烘焙动画，替代程序化上臂动作。
 - `C2.3 [NEXT]` 建立统一动作元数据：循环、root motion、占用身体层、目标、接触事件和适用骨架。
@@ -225,6 +227,8 @@ AI Living Town
 
 ### C3. 表情和身体语言 `[ACTIVE]`
 
+- `C3.0 [DONE tooling baseline]` `$prepare-expression-library-assets` 已分离共享表情
+  语义与每角色 Morph/骨骼 channel map，并规定活体网格验证。
 - `C3.1 [NEXT]` 为每个角色建立 BlendShape/骨骼表情适配表和覆盖率报告。
 - `C3.2 [NEXT]` 眨眼、视线、注视目标、头部朝向和说话口型。
 - `C3.3 [NEXT]` TTS 音素/振幅驱动的基础口型同步。
@@ -259,9 +263,11 @@ AI Living Town
 - `C5.5 [LATER]` 社交事件、关系变化和跨天连续剧情。
 - `C5.6 [LATER]` 离屏角色低成本模拟与重新进入场景时的状态恢复。
 
-### C6. 角色导入与人设定制 `[LATER]`
+### C6. 角色导入与人设定制 `[ACTIVE tooling baseline]`
 
 - 支持 GLB/GLTF，后续可选 VRM；FBX/MMD 通过离线转换工具进入标准格式。
+- `$prepare-character-model-assets` 已定义公开/本地隔离、GLB 规范化、
+  骨骼/Morph/动画清单和 Character Manifest 输出；动作与表情交给独立 Skills。
 - 导入向导检查比例、朝向、骨骼、材质、BlendShapes、动画和许可证。
 - 自动生成骨骼候选映射，用户可在 UI 中修正。
 - 人设包包含身份、说话风格、边界、关系初始值、兴趣、日程和语音配置。
@@ -423,11 +429,15 @@ beats:
 - 定义语义版本、弃用周期和插件兼容矩阵。
 - 提供最小 Godot 示例：单 Agent、双 Agent、交互物体、剧情导演。
 
-### O2. 导入工具 `[LATER]`
+### O2. 导入工具 `[ACTIVE tooling baseline]`
 
 - 角色导入向导、骨骼映射、动画覆盖率和表情预览。
 - 场景扫描器自动发现门、地面、障碍和可交互物体。
 - 资产检查报告可在命令行和 Godot 编辑器中运行。
+- `O2.1 [DONE baseline]` 场景、人物、动作、表情四类批处理 Skills 和 DeepSeek
+  交接模板已建立；四条流水线只通过 Registry/Manifest/Adapter 连接。
+- `O2.2 [NEXT]` 为人物/动作/表情 intake 与批处理结果补正式 JSON Schema 和
+  编辑器预览 UI。
 
 ### O3. Mod 与数据包 `[LATER]`
 

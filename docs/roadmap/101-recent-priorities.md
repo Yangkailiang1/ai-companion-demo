@@ -41,8 +41,11 @@
    15/15 模型槽位、碰撞、导航、语义和有状态物体已由 Manifest 生成，并可通过
    `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。共享 Cast/Spawner、
    参数化完整剧情和关键路点连通性合同已完成；厨房、卧室 Recipe/Manifest 与
-   三房间地点连接图已进入运行时基线，下一步补门/走廊触发器、动态截图验收和
+   三房间地点连接图、动态测试与 Metal 截图验收已完成，下一步补门/走廊触发器和
    `location_id` 存档迁移。
+10. `[DONE tooling baseline] O2 + S4 + C2 + C3 + C6` 外部素材已拆成场景、人物、
+    动作、表情四类 Skills 与版本化交接合同；DeepSeek 可独立批量准备候选，
+    Codex 保留许可证、视觉、目录晋级和 Git 验收。
 
 ## v0.9（从客厅到住宅）
 

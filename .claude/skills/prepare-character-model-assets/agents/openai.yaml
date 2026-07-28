@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare Character Models"
+  short_description: "Normalize character models for Godot adapters"
+  default_prompt: "Use $prepare-character-model-assets to audit and normalize this character model batch."

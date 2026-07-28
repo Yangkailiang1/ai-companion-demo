@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare Motion Library"
+  short_description: "Normalize and validate reusable motion clips"
+  default_prompt: "Use $prepare-motion-library-assets to audit and normalize this motion asset batch."

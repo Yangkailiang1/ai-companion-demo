@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare Expression Library"
+  short_description: "Map facial assets to semantic expression channels"
+  default_prompt: "Use $prepare-expression-library-assets to audit and normalize this expression asset batch."

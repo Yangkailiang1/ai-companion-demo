@@ -21,6 +21,9 @@
   所有动作仍为 in-place，世界位移只由 AgentBase/NavigationAgent3D 管理。
 - 当前 HumanML3D 本地目录只有 `Mean.npy/Std.npy` 统计量，没有可重定向的真实动作
   样本；因此不能将程序化 Overlay 描述为已经接入 HumanML3D 动作剪辑。
+- `[DONE batch skill baseline]` `$prepare-motion-library-assets` 已把 NPY、BVH、
+  body VMD、FBX/GLB 动画的许可审计、角色无关规范化、目标骨架重定向、烘焙和
+  视觉验收拆开；DeepSeek 每批最多准备五条同源动作候选。
 
 ## 规划节点
 
@@ -50,6 +53,12 @@
 ### C2.5 `[RESEARCH]` Light-T2M 生成管
 
 Light-T2M 生成候选动作，离线筛选后进入正式动作库；不直接控制碰撞关键行为。
+
+### C2.6 `[DONE tooling contract]` 动作资产批处理合同
+
+共享动作库只保存语义动作元数据和角色无关 Motion Package；每个角色只通过
+版本化 bone map、rest-pose correction 和 `clip_map` 接入烘焙剪辑。动作批处理
+不得修改人物网格、表情映射、场景或 LLM。
 
 ## 后续任务记录
 

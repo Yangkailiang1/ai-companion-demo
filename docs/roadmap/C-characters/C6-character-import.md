@@ -4,7 +4,7 @@
 > 节点编号：C6
 > 状态：`[ACTIVE]`
 > 依赖：T3（插件接口）、O2（导入工具）
-> 最后更新：2026-07-27 | 基线程：v0.8.5
+> 最后更新：2026-07-28 | 基线程：v0.8.9
 
 ## 职责
 
@@ -39,6 +39,18 @@
 - 本地角色可自动进入 ECNU cast、通用 `@显示名` 路由和独立记忆分区
 - 遐蝶、卡提希娅和相里要已经同时进入客厅，并通过多角色剧本闭环验收
 - 尚未完成：PMX 批量转换 UI、自动骨骼候选生成和正式可再分发 Q 角色资产采购
+
+### C6.3 `[DONE batch skill baseline]` 解耦人物资产接入
+
+- `$prepare-character-model-assets` 已定义 GLB/GLTF/FBX/PMX/MMD/VRM/Blend 输入
+  分流、公开/本地隔离、依赖审计、Blender 转换和 Godot 验收流程。
+- 标准输出为 `model.glb + character manifest + provenance + 骨骼/Morph/动画清单
+  + conversion report`；人物流水线只登记嵌入动作和 Morph，不在同一批次处理动作
+  重定向或表情语义。
+- DeepSeek/Claude Code 可按最多三个同格式/同骨架族角色批处理；Codex 负责许可证
+  终审、近景视觉验收、公开目录晋级和 Git。
+- `[NEXT]` 将清单和覆盖率报告固化为正式 JSON Schema，并增加自动骨骼候选生成器
+  与 Godot 导入向导 UI。
 
 ### 人设包
 

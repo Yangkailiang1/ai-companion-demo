@@ -4,7 +4,7 @@
 > 节点编号：C3
 > 状态：`[ACTIVE]`
 > 依赖：C1（表情路由）、C7（语音驱动口型）
-> 最后更新：2026-07-27 | 基线程：v0.8.6
+> 最后更新：2026-07-28 | 基线程：v0.8.9
 
 ## 当前进展
 
@@ -15,6 +15,9 @@
   `悲しい/驚き/なごみ` 或 `困る/びっくり/照れ2/じと目` 等模型原生 Morph，
   并逐角色验证真实权重变化。
 - 无 Morph 模型支持头部骨骼 fallback；尚未完成 TTS 音素级口型同步。
+- `[DONE batch skill baseline]` `$prepare-expression-library-assets` 已定义 GLB/VRM/
+  FBX/PMX Morph、facial VMD 和表情骨骼的提取与验收流程；共享语义表情和每角色
+  `channel_map` 保持分离。
 
 ## 规划节点
 
@@ -37,6 +40,12 @@ TTS 音素/振幅驱动的基础口型同步。
 ### C3.5 `[LATER]` 情绪连续性
 
 表情、姿势和语音语气的统一情绪连续性。
+
+### C3.6 `[DONE tooling contract]` 表情资产批处理合同
+
+DeepSeek 可按最多三个角色或一个同源表情包提取原生 Morph 清单、共享通道覆盖率和
+Adapter 候选；每个声称支持的通道必须在 Godot 活体网格上验证权重变化和 neutral
+reset，近似映射与骨骼 fallback 必须显式标注。
 
 ## 相关节点
 

@@ -2,9 +2,9 @@
 
 > 所属分支：O. 开源与创作者生态
 > 节点编号：O2
-> 状态：`[LATER]`
+> 状态：`[ACTIVE tooling baseline]`
 > 依赖：T3（插件接口）、C6（角色导入协议）
-> 最后更新：2026-07-24 | 基线程：v0.7
+> 最后更新：2026-07-28 | 基线程：v0.8.9
 
 ## 规划方向
 
@@ -19,6 +19,24 @@
 ### 检查报告
 
 - 资产检查报告可在命令行和 Godot 编辑器中运行
+
+### O2.1 `[DONE skill baseline]` 四类资产批处理
+
+- 场景：`$download-open-3d-assets` → `$build-parametric-asset-library` → 可选
+  `$godot-import-interactable-object`。
+- 人物：`$prepare-character-model-assets`。
+- 动作：`$prepare-motion-library-assets`。
+- 表情：`$prepare-expression-library-assets`。
+- 四类资产通过 Registry/Manifest/Adapter 解耦，批处理器不得直接修改认知、
+  剧情、场景物理或 Git 历史。
+- 统一格式矩阵和 DeepSeek 任务模板见
+  [`ASSET_PIPELINE_CONTRACTS.md`](../../ASSET_PIPELINE_CONTRACTS.md) 与
+  [`DEEPSEEK_ASSET_PIPELINE_HANDOFF.md`](../../DEEPSEEK_ASSET_PIPELINE_HANDOFF.md)。
+
+### O2.2 `[NEXT]` 机器可读 intake schemas
+
+为人物包、动作包、表情包及批处理结果建立正式 JSON Schema、CLI 校验器和
+Godot 编辑器预览入口；当前 Skill 合同先作为可执行基线。
 
 ## 相关节点
 

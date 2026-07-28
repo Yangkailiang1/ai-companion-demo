@@ -5,7 +5,8 @@ description: Safely audit and download small batches of redistributable 3D asset
 
 # Download Open 3D Assets
 
-Read `CLAUDE.md`, `docs/ASSET_PROVENANCE.md`, and
+Read `CLAUDE.md`, `docs/ASSET_PROVENANCE.md`,
+`docs/ASSET_PIPELINE_CONTRACTS.md`, and
 `references/provider-policy.md`. Keep network downloads outside `res://` until accepted.
 
 ## Workflow
@@ -31,6 +32,13 @@ Read `CLAUDE.md`, `docs/ASSET_PROVENANCE.md`, and
    `$build-parametric-asset-library`.
 8. Report downloads, bytes, hashes, license evidence, rejected candidates and
    retryable network failures. Never commit archives automatically.
+
+## Scope boundary
+
+This skill owns scene structure, furniture, props, materials, vegetation, roads, and
+modular building parts. Route rigged characters to `$prepare-character-model-assets`,
+body animation to `$prepare-motion-library-assets`, and facial morph/animation packs
+to `$prepare-expression-library-assets`. Never mix those asset classes in one batch.
 
 ## Provider rules
 

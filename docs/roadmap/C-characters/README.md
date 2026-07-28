@@ -13,7 +13,7 @@
 | C3 | [C3-expression-body-language.md](./C3-expression-body-language.md) | `[ACTIVE]` | 表情、口型、视线与细粒度身体语言 |
 | C4 | [C4-character-scene-interaction.md](./C4-character-scene-interaction.md) | `[ACTIVE]` | 导航、碰撞、抓取、IK 与场景交互 |
 | C5 | [C5-memory-personality-schedule.md](./C5-memory-personality-schedule.md) | `[ACTIVE]` | 独立记忆、人格、日程和多角色社交 |
-| C6 | [C6-character-import.md](./C6-character-import.md) | `[LATER]` | 玩家导入角色与人设定制 |
+| C6 | [C6-character-import.md](./C6-character-import.md) | `[ACTIVE tooling baseline]` | 人物模型批处理 Skill、角色导入与人设定制 |
 | C7 | [C7-real-time-voice.md](./C7-real-time-voice.md) | `[ACTIVE]` | 实时语音、音色、口型同步与听觉感知 |
 | C8 | [C8-character-art.md](./C8-character-art.md) | `[ACTIVE]` | 角色建模、材质、服装和 LOD 精细化 |
 | C9 | [C9-life-authenticity.md](./C9-life-authenticity.md) | `[NEXT]` | 生活感、效用决策、微行为与共同活动 |
@@ -33,4 +33,4 @@ C 分支是 AI Living Town 的"灵魂"，定义了每个 AI 角色的外在表�
 - C6（角色导入）+ T3（插件接口）→ 对外开放角色包
 - C5（多角色社交）+ S2（多地点）→ 小镇居民生活
 
-> 最后更新：2026-07-24 | 基线程：v0.7
+> 最后更新：2026-07-28 | 基线程：v0.8.9

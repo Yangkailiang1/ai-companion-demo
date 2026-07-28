@@ -13,6 +13,8 @@
 | [存档与状态物体](./SAVE_AND_OBJECT_STATE.md) | Schema v1、盆栽状态机、语义同步和验收 | v0.6 |
 | [拟人化研究映射](./HUMANLIKE_AGENT_RESEARCH_MAPPING.md) | OCEAN、心境、ToM、混合架构到项目实现 | v0.7 |
 | [LangGraph Agent Runtime](./LANGGRAPH_AGENT_RUNTIME.md) | 共享图、独立 thread、状态协议与 Godot 边界 | v0.7 |
+| [解耦资产流水线合同](./ASSET_PIPELINE_CONTRACTS.md) | 场景、人物、动作、表情格式与 Skill 边界 | v0.8.9 |
+| [DeepSeek 资产交接](./DEEPSEEK_ASSET_PIPELINE_HANDOFF.md) | 四类可复制批处理任务模板与返回格式 | v0.8.9 |
 
 ## 关键概念速查
 

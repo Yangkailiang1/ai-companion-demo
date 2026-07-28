@@ -5,8 +5,9 @@ description: Normalize audited GLB/GLTF/OBJ/FBX asset batches into a Godot param
 
 # Build Parametric Asset Library
 
-Read `CLAUDE.md`, the S4 roadmap, and `references/registry-contract.md`. Accept only
-artifacts accompanied by an approved provenance manifest.
+Read `CLAUDE.md`, the S4 roadmap, `docs/ASSET_PIPELINE_CONTRACTS.md`, and
+`references/registry-contract.md`. Accept only artifacts accompanied by an approved
+provenance manifest.
 
 ## Workflow
 
@@ -38,3 +39,7 @@ artifacts accompanied by an approved provenance manifest.
 
 Do not invent dimensions, axes, affordances or licenses. Stop when dependencies,
 material ownership or intended interaction semantics are ambiguous.
+
+Do not ingest rigged characters, body animations, facial morph packs, cameras, audio,
+or scripts. Those are separate character/motion/expression pipelines and must not
+appear as scene Registry assets.
