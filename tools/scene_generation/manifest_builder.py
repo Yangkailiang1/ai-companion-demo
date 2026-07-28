@@ -124,6 +124,7 @@ def _build_manifest(recipe: dict, gen_hash: str) -> dict:
             }
         )
 
+    recipe_room = recipe["room"]
     return {
         "schema_version": 1,
         "manifest_id": manifest_id,
@@ -134,8 +135,12 @@ def _build_manifest(recipe: dict, gen_hash: str) -> dict:
         "seed": recipe["seed"],
         "generation_hash": gen_hash,
         "room": {
-            "name": recipe["room"]["name"],
-            "dimensions_m": recipe["room"]["dimensions_m"],
+            "name": recipe_room["name"],
+            "dimensions_m": recipe_room["dimensions_m"],
+            "bounds": recipe_room.get("bounds", {}),
+            "floor": recipe_room.get("floor", {}),
+            "walls": recipe_room.get("walls", []),
+            "openings": recipe_room.get("openings", []),
         },
         "placements": placements,
     }

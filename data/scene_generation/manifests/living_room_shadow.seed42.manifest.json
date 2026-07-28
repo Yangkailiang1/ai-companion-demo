@@ -13,7 +13,59 @@
       "width": 8.0,
       "depth": 8.0,
       "height": 3.0
-    }
+    },
+    "bounds": {
+      "min": [
+        -3.25,
+        0.0,
+        -3.15
+      ],
+      "max": [
+        3.25,
+        0.0,
+        3.15
+      ]
+    },
+    "floor": {
+      "thickness_m": 0.1,
+      "material_key": "herringbone_parquet"
+    },
+    "walls": [
+      {
+        "wall_id": "back",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      },
+      {
+        "wall_id": "left",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      },
+      {
+        "wall_id": "right",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "plastered_wall_04"
+      }
+    ],
+    "openings": [
+      {
+        "opening_id": "main_window",
+        "type": "window",
+        "wall_id": "back",
+        "position": [
+          2.12,
+          1.66,
+          -3.88
+        ],
+        "size": [
+          1.92,
+          1.15
+        ]
+      }
+    ]
   },
   "placements": [
     {

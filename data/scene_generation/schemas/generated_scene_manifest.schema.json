@@ -38,6 +38,16 @@
           },
           "required": ["width", "depth", "height"],
           "additionalProperties": false
+        },
+        "bounds": { "$ref": "#/$defs/bbox" },
+        "floor": { "$ref": "#/$defs/floor_spec" },
+        "walls": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/wall_spec" }
+        },
+        "openings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/opening_spec" }
         }
       },
       "required": ["name", "dimensions_m"],
@@ -63,6 +73,55 @@
   "required": ["schema_version", "manifest_id", "recipe_id", "recipe_version", "registry_id", "registry_version", "seed", "generation_hash", "room", "placements"],
   "additionalProperties": false,
   "$defs": {
+    "bbox": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3
+        },
+        "max": {
+          "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3
+        }
+      },
+      "required": ["min", "max"],
+      "additionalProperties": false
+    },
+    "floor_spec": {
+      "type": "object",
+      "properties": {
+        "thickness_m": { "type": "number" },
+        "material_key": { "type": "string" }
+      },
+      "required": ["thickness_m", "material_key"],
+      "additionalProperties": false
+    },
+    "wall_spec": {
+      "type": "object",
+      "properties": {
+        "wall_id": { "type": "string" },
+        "thickness_m": { "type": "number" },
+        "height_m": { "type": "number" },
+        "material_key": { "type": "string" }
+      },
+      "required": ["wall_id", "thickness_m", "height_m", "material_key"],
+      "additionalProperties": false
+    },
+    "opening_spec": {
+      "type": "object",
+      "properties": {
+        "opening_id": { "type": "string" },
+        "type": { "type": "string" },
+        "wall_id": { "type": "string" },
+        "position": {
+          "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3
+        },
+        "size": {
+          "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2
+        }
+      },
+      "required": ["opening_id", "type", "wall_id"],
+      "additionalProperties": false
+    },
     "placement_entry": {
       "type": "object",
       "properties": {

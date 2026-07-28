@@ -37,8 +37,11 @@
 - `[DONE shadow migration]` 当前客厅已转写为 shadow Recipe、Registry 与 seed 42
   Manifest；12 个 SemanticWorld 对象、交互坐标和剧情锚点均与现有场景一致，
   `living_room.tscn` 继续作为视觉与行为基准。
-- `[NEXT preview]` 创建独立 ParametricLivingRoomPreview；未通过对比验收前
-  不替换主场景。
+- `[ACTIVE preview]` 已创建 Manifest 驱动的独立
+  `ParametricLivingRoomPreview`：运行时生成地板、三面墙、12 个稳定语义槽位、
+  11 个碰撞体和交互锚点；6 个 Poly Haven 模型真实实例化，6 个项目自有对象
+  暂用显式 parametric fallback。下一步用 KayKit 模型替换合适的 fallback，
+  加入开口切割、导航和多 seed 布局验收；未通过对比前不替换主场景。
 
 ### S4.2 `[PLANNED]` 约束式家具布置
 

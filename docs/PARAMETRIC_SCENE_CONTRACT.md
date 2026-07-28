@@ -12,7 +12,7 @@ Scene Recipe
     + seed
         ↓ 严格校验与交叉引用
 Generated Scene Manifest
-        ↓ 后续 Godot 实例化器
+        ↓ Godot ParametricSceneBuilder
 隔离 ParametricLivingRoomPreview
         ↓ 碰撞 / 导航 / 语义 / Metal 画面验收
 候选场景版本
@@ -48,8 +48,9 @@ seed 42 的 generation hash：
 
 `7981ed2f08ff4c80594dd7af029e57599fecd25820a0c377711eb7d61adb62bd`
 
-这份 shadow 数据不会替换 `living_room.tscn`。它只是后续参数化 Preview 必须保持
-兼容的机器可读基准。
+这份 shadow 数据不会替换 `living_room.tscn`。当前隔离 Preview 已能从 Manifest
+生成地板、墙体、12 个物体槽位、物理体和交互锚点，并按 Registry 加载 6 个
+Poly Haven 模型；剩余项目自有对象暂时使用明确标记的参数化基本体。
 
 ## 验收命令
 

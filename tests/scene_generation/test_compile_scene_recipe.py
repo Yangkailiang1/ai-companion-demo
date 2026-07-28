@@ -64,6 +64,15 @@ class TestCompileSceneRecipe(ShadowContractFixture, unittest.TestCase):
             )
             self.assertEqual(manifest["audit"]["compiler_version"], "1.0.0")
             self.assertNotIn("generated_at", manifest["audit"])
+            # [S4.1] New assertions: manifest room carries bounds, floor, walls, openings.
+            self.assertIn("bounds", manifest["room"])
+            self.assertIn("floor", manifest["room"])
+            self.assertIn("walls", manifest["room"])
+            self.assertIn("openings", manifest["room"])
+            self.assertEqual(manifest["room"]["bounds"], self.recipe["room"]["bounds"])
+            self.assertEqual(manifest["room"]["floor"], self.recipe["room"]["floor"])
+            self.assertEqual(manifest["room"]["walls"], self.recipe["room"]["walls"])
+            self.assertEqual(manifest["room"]["openings"], self.recipe["room"]["openings"])
         finally:
             os.unlink(handle.name)
 
