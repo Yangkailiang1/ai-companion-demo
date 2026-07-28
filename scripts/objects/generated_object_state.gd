@@ -44,8 +44,13 @@ func _set_state(semantic_world: Node, state: String, light_energy: float) -> Dic
 	semantic_world.update_object_state(object_id, state)
 	var container := get_parent().get_parent() as Node3D
 	if container != null:
-		for child in container.find_children("GeneratedWarmLight", "OmniLight3D", true, false):
-			(child as OmniLight3D).light_energy = light_energy
+		for light_name in ["GeneratedWarmLight", "TVScreenGlow"]:
+			for child in container.find_children(
+				light_name, "OmniLight3D", true, false
+			):
+				var light := child as OmniLight3D
+				light.light_energy = light_energy
+				light.visible = light_energy > 0.01
 	return {"handled": true, "success": true, "state": state}
 
 

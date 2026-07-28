@@ -1,0 +1,85 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="1_agent"]
+[ext_resource type="Script" path="res://scripts/characters/animation_controller.gd" id="2_animation"]
+[ext_resource type="Script" path="res://scripts/ui/dialogue_bubble.gd" id="3_bubble"]
+[ext_resource type="Script" path="res://scripts/characters/character_animation_driver.gd" id="4_driver"]
+[ext_resource type="PackedScene" path="res://assets/characters/penguin/penguin.glb" id="5_penguin"]
+[ext_resource type="Script" path="res://scripts/characters/expression_driver.gd" id="6_expression"]
+[ext_resource type="Script" path="res://scripts/characters/idle_breath.gd" id="7_breath"]
+[ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="8_pose"]
+[ext_resource type="Script" path="res://scripts/characters/penguin_animation_adapter.gd" id="9_penguin_adapter"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_main"]
+radius = 0.36
+height = 1.25
+
+[node name="Agent" type="CharacterBody3D"]
+position = Vector3(-1.15, 0, 0.4)
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_agent")
+agent_name = "main_agent"
+move_speed_mps = 3.0
+
+[node name="AgentCollision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.625, 0)
+shape = SubResource("CapsuleShape_main")
+
+[node name="CarryAnchor" type="Marker3D" parent="."]
+position = Vector3(0, 1.15, 0.38)
+
+[node name="AnimationController" type="Node3D" parent="."]
+script = ExtResource("2_animation")
+visible = false
+
+[node name="PenguinModel" parent="." instance=ExtResource("5_penguin")]
+scale = Vector3(1.35, 1.35, 1.35)
+script = ExtResource("7_breath")
+
+[node name="AgentNameLabel" type="Label3D" parent="."]
+position = Vector3(0, 1.72, 0)
+text = "咕咕嘎嘎"
+font_size = 42
+outline_size = 8
+modulate = Color(0.88, 0.95, 1, 1)
+outline_modulate = Color(0.02, 0.05, 0.1, 0.95)
+billboard = 1
+no_depth_test = true
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+avoidance_enabled = true
+path_desired_distance = 0.3
+target_desired_distance = 0.45
+radius = 0.36
+height = 1.25
+
+[node name="PenguinAnimationAdapter" type="Node" parent="."]
+script = ExtResource("9_penguin_adapter")
+
+[node name="CharacterAnimationDriver" type="Node" parent="."]
+script = ExtResource("4_driver")
+
+[node name="CharacterPoseOverlay" type="Node" parent="."]
+script = ExtResource("8_pose")
+
+[node name="CharacterExpressionDriver" type="Node" parent="."]
+script = ExtResource("6_expression")
+
+[node name="IdleTimer" type="Timer" parent="."]
+
+[node name="DialogueBubble" type="Sprite3D" parent="."]
+position = Vector3(0, 1.95, 0)
+script = ExtResource("3_bubble")
+billboard = 1
+
+[node name="BubbleLabel" type="Label3D" parent="DialogueBubble"]
+pixel_size = 0.003
+font_size = 30
+outline_size = 5
+width = 320.0
+autowrap_mode = 2
+modulate = Color(1, 1, 1, 1)
+outline_modulate = Color(0.03, 0.05, 0.08, 0.95)
+billboard = 1
+no_depth_test = true

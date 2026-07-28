@@ -39,8 +39,9 @@
    DeepSeek/Claude Code 分批执行，KayKit 首批三件家具已通过 Godot 实机预览。
    三个正式 Schema、严格编译器及当前客厅 shadow Recipe/Manifest 已完成；
    15/15 模型槽位、碰撞、导航、语义和有状态物体已由 Manifest 生成，并可通过
-   `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。下一步把 Cast/Spawner
-   从旧客厅彻底解耦，并建立厨房、卧室的地点连接图。
+   `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。共享 Cast/Spawner、
+   参数化完整剧情和关键路点连通性合同已完成；下一步建立厨房、卧室 Recipe 与
+   地点连接图。
 
 ## v0.9（从客厅到住宅）
 

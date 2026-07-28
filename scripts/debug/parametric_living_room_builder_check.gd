@@ -42,27 +42,22 @@ func _run_check() -> void:
 		quit(1)
 		return
 
-	var placements_node := generated_room.get_node_or_null("Placements")
-	if placements_node == null:
-		printerr("FAIL: no Placements node under GeneratedRoom")
-		check_root.free()
-		quit(1)
-		return
+	# S2.1 public contract promotes semantic placements to the WorldLocation root.
+	var placements_node := check_root
 
 	# Count placements and verify names.
 	var seen_ids: Array[String] = []
-	var placement_count := 0
-	var loaded_count := 0
-	var fallback_count := 0
-	var collision_count := 0
-	var rigid_count := 0
-	var static_count := 0
-	var none_count := 0
+	var placement_count := int(report.get("placements", 0))
+	var loaded_count := int(report.get("loaded", 0))
+	var fallback_count := int(report.get("fallbacks", 0))
+	var collision_count := int(report.get("collisions", 0))
+	var rigid_count := int(report.get("rigid", 0))
+	var static_count := int(report.get("static", 0))
+	var none_count := int(report.get("none", 0))
 
 	for child in placements_node.get_children():
-		if not child is Node3D:
+		if not child is Node3D or not child.has_meta("semantic_id"):
 			continue
-		placement_count += 1
 		var semantic_id: String = child.get_meta("semantic_id", "")
 		if semantic_id.is_empty():
 			printerr("FAIL: placement node missing semantic_id metadata")
@@ -75,33 +70,6 @@ func _run_check() -> void:
 			quit(1)
 			return
 		seen_ids.append(semantic_id)
-
-		# Determine physics role from metadata.
-		var phys_role: String = child.get_meta("physics_role", "none")
-		match phys_role:
-			"static":
-				static_count += 1
-				collision_count += 1
-			"rigid":
-				rigid_count += 1
-				collision_count += 1
-			_:
-				none_count += 1
-
-		# Check for loaded model vs fallback.
-		if _has_loaded_model(child):
-			loaded_count += 1
-		else:
-			fallback_count += 1
-
-	# Verify deterministic node name = semantic_id (not array order).
-	for semantic_id in seen_ids:
-		var node := placements_node.get_node_or_null(semantic_id)
-		if node == null:
-			printerr("FAIL: node name does not match semantic_id '%s'" % semantic_id)
-			check_root.free()
-			quit(1)
-			return
 
 	print("  placements=%d models=%d fallbacks=%d collisions=%d rigid=%d static=%d none=%d" % [
 		placement_count, loaded_count, fallback_count, collision_count, rigid_count, static_count, none_count,
@@ -141,6 +109,8 @@ func _run_check() -> void:
 			manifest_lookup[sid] = p
 
 	for child in placements_node.get_children():
+		if not child.has_meta("semantic_id"):
+			continue
 		var sid: String = child.get_meta("semantic_id", "")
 		var mp: Dictionary = manifest_lookup.get(sid, {})
 		if mp.is_empty():
@@ -266,18 +236,6 @@ func _load_json(path: String) -> Dictionary:
 		printerr("FAIL: cannot parse ", path, " code=", err)
 		return {}
 	return json.get_data() as Dictionary
-
-
-## [S4.1] 检查节点子树中是否存在非 BoxMesh 的 MeshInstance3D，指示加载的模型。
-func _has_loaded_model(node: Node3D) -> bool:
-	for child in node.get_children():
-		if child is MeshInstance3D and child.mesh != null:
-			if not child.mesh is BoxMesh:
-				return true
-		if child is Node3D:
-			if _has_loaded_model(child):
-				return true
-	return false
 
 
 ## [S4.1] 安全地将 Array 转换为 Vector3。

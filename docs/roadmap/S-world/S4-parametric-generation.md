@@ -51,8 +51,13 @@
 - `[DONE stateful generated objects baseline]` Registry 中声明 `has_states` 的生成
   物体会自动获得通用 `GeneratedObjectState`；植物浇水会改变 moisture/health 和
   可见状态，灯具开关/调光会改变实际光照，不按具体模型路径写分支。
-- 角色当前由 `LegacyCastExtractor` 从旧客厅迁移，是 S2.1 兼容桥而非最终依赖；
-  后续先建立独立 Cast/Spawner 与地点出生点，再将参数化模式升为默认。
+- `[DONE cast decoupling]` 固定角色与本地 Q 版生成器已成为独立场景，legacy 与
+  parametric 通过同一 `WorldCastAssembler` 挂载；生成地点不再依赖旧客厅资源。
+- `[DONE performance compatibility]` 生成语义物体会按通用 snake_case→公共节点名
+  规则提升到 WorldLocation 根（如 `tv`→`TV`），生成电视具有状态光反馈；参数化
+  模式已通过完整双角色走位、注视、动作、表情、物体交互、对白和记忆演出合同。
+- `[DONE navigation contract]` 运行时 NavMesh 入树后显式上传，测试覆盖两个固定
+  角色到七个关键剧情路点的连通性，避免家具 AABB 形成不可见封路。
 
 ### S4.2 `[ACTIVE v0.8.9]` 约束式家具布置
 
@@ -101,8 +106,8 @@
 5. 相同 seed 生成 Manifest 哈希一致，不同 seed 只改变声明为可变的内容；
 6. 所有进入公共仓库的资产许可证与来源可追溯。
 
-当前 1–6 已具备单房间基线；剩余默认切换阻塞项是移除旧客厅 Cast 抽取桥、
-补齐地点出生点/状态恢复，并对自由模式与演出模式做长时间回归。
+当前 1–6 已具备单房间基线，Cast 抽取桥已经移除。剩余默认切换阻塞项是完成
+带 `location_id` 的存档位置迁移，并对自由模式与演出模式做长时间回归。
 
 ## 研究参考
 

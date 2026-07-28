@@ -23,7 +23,7 @@ func _init() -> void:
 
 
 ## [S4.1] 从已解析的 manifest/registry 字典构建完整房间。
-## 副作用：在 room_parent 下创建 GeneratedRoom/Structure 和 GeneratedRoom/Placements 子树。
+## 副作用：创建 GeneratedRoom/Structure，并把语义物体提升为 WorldLocation 公共子节点。
 ## 返回包含 loaded/fallback/collision 计数的构建报告。
 func build_room(room_parent: Node3D, manifest: Dictionary, registry: Dictionary) -> Dictionary:
 	_factory.index_registry(registry)
@@ -37,7 +37,7 @@ func build_room(room_parent: Node3D, manifest: Dictionary, registry: Dictionary)
 	generated_root.add_child(structure)
 
 	var placements_node := Node3D.new()
-	placements_node.name = "Placements"
+	placements_node.name = "PlacementsStaging"
 	generated_root.add_child(placements_node)
 
 	# Build floor and walls from manifest room data.
@@ -59,8 +59,14 @@ func build_room(room_parent: Node3D, manifest: Dictionary, registry: Dictionary)
 		var placement_node := _factory.create_placement(placements_node, placement)
 		_register_semantic_placement(placement_node, placement)
 
-	# Build report.
-	return _build_report(placements_node, placements)
+	# Build report before promoting semantic objects to stable public NodePaths.
+	var report := ParametricBuildReporter.new().summarize(
+		placements_node, placements.size()
+	)
+	for placement_node in placements_node.get_children():
+		placement_node.reparent(room_parent)
+	placements_node.free()
+	return report
 
 
 ## [S4.2] 将生成物体及其交互 Body 绑定到 SemanticWorld。
@@ -255,57 +261,6 @@ func _add_wall_segment(
 	wall_collision.shape = collision_box
 	wall_collision.position = position
 	body.add_child(wall_collision)
-
-
-## [S4.1] 遍历 GeneratedRoom/Placements 生成包含 loaded/fallback/collision/rigid/static/none 计数的报告。
-func _build_report(placements_node: Node3D, placements: Array) -> Dictionary:
-	var loaded_count := 0
-	var fallback_count := 0
-	var collision_count := 0
-	var rigid_count := 0
-	var static_count := 0
-	var none_count := 0
-
-	for child in placements_node.get_children():
-		if not child is Node3D:
-			continue
-		var phys_role: String = child.get_meta("physics_role", "none")
-		match phys_role:
-			"static":
-				static_count += 1
-				collision_count += 1
-			"rigid":
-				rigid_count += 1
-				collision_count += 1
-			_:
-				none_count += 1
-
-		if _has_loaded_model(child):
-			loaded_count += 1
-		else:
-			fallback_count += 1
-
-	return {
-		"placements": placements.size(),
-		"loaded": loaded_count,
-		"fallbacks": fallback_count,
-		"collisions": collision_count,
-		"rigid": rigid_count,
-		"static": static_count,
-		"none": none_count,
-	}
-
-
-## [S4.1] 检查节点子树中是否存在非 BoxMesh 的 MeshInstance3D，表示加载的外部模型。
-func _has_loaded_model(node: Node3D) -> bool:
-	for child in node.get_children():
-		if child is MeshInstance3D and child.mesh != null:
-			if not child.mesh is BoxMesh:
-				return true
-		if child is Node3D:
-			if _has_loaded_model(child):
-				return true
-	return false
 
 
 func _vec3(value: Variant) -> Vector3:

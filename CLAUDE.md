@@ -435,8 +435,8 @@ MessageBus → WorldSimulator → SemanticWorld → MemorySystem → CodifiedPro
 > 详细规划树索引 → [docs/roadmap/README.md](./docs/roadmap/README.md)
 > 文档维护规范 → [docs/roadmap/CLAUDE.md](./docs/roadmap/CLAUDE.md)
 
-当前 `v0.8.9` 已打通 S4 参数化单房间与 S2 WorldLocation 基线；下一步优先把
-Cast/Spawner 从旧客厅资源中解耦，再扩展厨房、卧室和地点连接图。
+当前 `v0.8.9` 已打通 S4 参数化单房间、S2 WorldLocation 与共享 Cast 基线；
+下一步扩展厨房、卧室和地点连接图，并为 X1 存档增加 `location_id`。
 
 ## 知识库
 

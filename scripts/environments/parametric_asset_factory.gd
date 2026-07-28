@@ -41,7 +41,7 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 	var asset_id: String = placement.get("asset_id", "")
 
 	var container := Node3D.new()
-	container.name = semantic_id
+	container.name = _semantic_id_to_node_name(semantic_id)
 	parent.add_child(container)
 
 	var asset_entry: Dictionary = _registry_index.get(asset_id, {})
@@ -124,6 +124,16 @@ func _add_state_component(
 	component.set_script(_GENERATED_STATE_SCRIPT)
 	physics_node.add_child(component)
 	component.configure(semantic_id, visual_role)
+	var affordances: Array = asset_entry.get("capabilities", {}).get("affordances", [])
+	if "change_channel" in affordances:
+		var glow := OmniLight3D.new()
+		glow.name = "TVScreenGlow"
+		glow.position = Vector3(0.0, 0.35, 0.2)
+		glow.light_color = Color(0.42, 0.72, 1.0)
+		glow.light_energy = 0.0
+		glow.omni_range = 2.4
+		glow.visible = false
+		physics_node.get_parent().add_child(glow)
 
 
 ## [S4.2] 根据视觉角色添加轻量运行时组件；灯具自动获得暖色局部光。
@@ -241,3 +251,15 @@ func _array_to_vector3(arr: Array) -> Vector3:
 	if arr.size() < 3:
 		return Vector3.ZERO
 	return Vector3(float(arr[0]), float(arr[1]), float(arr[2]))
+
+
+## [S2.1][S4.1] 将稳定 snake_case 语义 ID 转为兼容场景公共路径的 PascalCase。
+## 转换不依赖具体资产或房间，因此新模型无需增加代码分支。
+func _semantic_id_to_node_name(semantic_id: String) -> String:
+	var node_name := ""
+	for token in semantic_id.split("_"):
+		if token.length() <= 2:
+			node_name += token.to_upper()
+		else:
+			node_name += token.left(1).to_upper() + token.substr(1)
+	return node_name

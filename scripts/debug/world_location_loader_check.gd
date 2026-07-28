@@ -20,6 +20,11 @@ func _run() -> void:
 	var world_root := scene.get_node("WorldRoot") as WorldLocationLoader
 	_assert(world_root.current_mode == "legacy", "main must default to legacy")
 	_assert(world_root.has_node("LivingRoom/Sofa"), "legacy room path missing")
+	_assert(
+		world_root.get_node("LivingRoom/Agent").scene_file_path
+			== "res://scenes/characters/main_agent.tscn",
+		"legacy room did not mount shared Agent scene",
+	)
 
 	var loaded_mode := world_root.switch_location("parametric")
 	await process_frame
@@ -49,16 +54,52 @@ func _check_parametric_room(room: Node) -> void:
 	_assert(int(report.get("loaded", 0)) == 15, "generated model coverage")
 	_assert(int(report.get("fallbacks", -1)) == 0, "generated fallback present")
 	_assert(room.has_node("GeneratedRoom/Structure/NavigationRegion3D"), "generated nav missing")
+	_assert(room.has_node("TV/PhysicsBody"), "generated public TV path missing")
 	for node_name in ["Agent", "JueAgent", "LocalCharacterSpawner"]:
 		_assert(room.has_node(node_name), "cast node missing: %s" % node_name)
+	var expected_scenes := {
+		"Agent": "res://scenes/characters/main_agent.tscn",
+		"JueAgent": "res://scenes/characters/jue_agent.tscn",
+		"LocalCharacterSpawner": "res://scenes/characters/local_character_spawner.tscn",
+	}
+	for node_name in expected_scenes:
+		var cast_node := room.get_node(node_name)
+		_assert(
+			cast_node.scene_file_path == expected_scenes[node_name],
+			"cast is not independently instanced: %s" % node_name,
+		)
+	_check_generated_collisions(room)
 	_check_generated_state(room)
+
+
+## [S3.3][S4.1] 验证所有生成物理角色都有碰撞，portable 刚体初始冻结。
+func _check_generated_collisions(room: Node) -> void:
+	var collision_count := 0
+	for child in room.get_children():
+		if not child is Node3D:
+			continue
+		var physics_role := String(child.get_meta("physics_role", "none"))
+		if physics_role == "none":
+			continue
+		var body := child.get_node_or_null("PhysicsBody") as CollisionObject3D
+		_assert(body != null, "generated physics body missing: %s" % child.name)
+		if body == null:
+			continue
+		_assert(
+			body.has_node("CollisionShape"),
+			"generated collision shape missing: %s" % child.name,
+		)
+		if body is RigidBody3D:
+			_assert((body as RigidBody3D).freeze, "generated rigid body not frozen")
+		collision_count += 1
+	_assert(collision_count == 14, "generated collision coverage mismatch")
 
 
 ## [S3.2][T2.2] 验证植物浇水与落地灯开关同时更新语义和视觉状态。
 func _check_generated_state(room: Node) -> void:
 	var semantic_world := root.get_node("SemanticWorld")
 	var plant_body := room.get_node(
-		"GeneratedRoom/Placements/plant/PhysicsBody"
+		"Plant/PhysicsBody"
 	)
 	var moisture_before := float(semantic_world.get_object("plant").properties.get("moisture", 0.0))
 	var plant_result: Dictionary = plant_body.perform_interaction("water", "main_agent")
@@ -67,11 +108,11 @@ func _check_generated_state(room: Node) -> void:
 	_assert(moisture_after > moisture_before, "generated plant moisture did not change")
 
 	var lamp_body := room.get_node(
-		"GeneratedRoom/Placements/standing_lamp/PhysicsBody"
+		"StandingLamp/PhysicsBody"
 	)
 	var lamp_result: Dictionary = lamp_body.perform_interaction("turn_off", "main_agent")
 	var lamp_light := room.get_node(
-		"GeneratedRoom/Placements/standing_lamp/GeneratedWarmLight"
+		"StandingLamp/GeneratedWarmLight"
 	) as OmniLight3D
 	_assert(bool(lamp_result.get("success", false)), "generated lamp turn_off failed")
 	_assert(is_zero_approx(lamp_light.light_energy), "generated lamp light stayed on")

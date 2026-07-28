@@ -9,6 +9,10 @@ extends RefCounted
 
 const GRID_STEP := 0.25
 const AGENT_RADIUS := 0.36
+const OBSTACLE_PADDING := 0.0
+const _RUNTIME_REGION_SCRIPT := preload(
+	"res://scripts/environments/parametric_navigation_region.gd"
+)
 
 
 ## [S4.2] 创建避开落地静态家具的 NavigationRegion3D。
@@ -28,6 +32,7 @@ func create_region(manifest: Dictionary, registry: Dictionary) -> NavigationRegi
 
 	var region := NavigationRegion3D.new()
 	region.name = "NavigationRegion3D"
+	region.set_script(_RUNTIME_REGION_SCRIPT)
 	region.navigation_mesh = _build_mesh(bounds_min, bounds_max, obstacles)
 	return region
 
@@ -48,7 +53,7 @@ func _collect_obstacles(manifest: Dictionary, registry: Dictionary) -> Array[Rec
 		# Wall-mounted decor does not block an agent's feet.
 		if position.y - size.y * 0.5 > 0.35:
 			continue
-		var expanded := Vector2(size.x, size.z) + Vector2.ONE * AGENT_RADIUS * 2.0
+		var expanded := Vector2(size.x, size.z) + Vector2.ONE * OBSTACLE_PADDING * 2.0
 		result.append(Rect2(
 			Vector2(position.x, position.z) - expanded * 0.5,
 			expanded,

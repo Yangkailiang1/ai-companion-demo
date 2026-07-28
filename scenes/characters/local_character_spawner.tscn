@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/local_character_spawner.gd" id="1_spawner"]
+
+[node name="LocalCharacterSpawner" type="Node3D"]
+script = ExtResource("1_spawner")
+manifest_paths = Array[String](["res://assets/local_characters/castorice/character_manifest.json", "res://assets/local_characters/cartethyia/character_manifest.json", "res://assets/local_characters/xiangliyao/character_manifest.json"])
