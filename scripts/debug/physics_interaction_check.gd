@@ -1,4 +1,4 @@
-# Roadmap: C4.1, C4.4, S3.3, D2
+# Roadmap: C4.1, C4.4, S3.3
 # Responsibility: 验证角色/家具碰撞、刚体拿取投掷、灯光状态和新增语义物体。
 # Tests: 本文件为 Godot headless 运行时验收。
 
@@ -71,11 +71,19 @@ func _verify_scene_colliders(room: Node) -> void:
 		_assert(shape != null and shape.shape != null and not shape.disabled, "missing collider %s" % path)
 
 
-## [C4.4] 验证书本拿起/放下，以及奶茶受冲量投掷后由物理引擎移动。
+## [C4.4][C4.5] 验证书本拿起/放下，以及奶茶受冲量投掷后由物理引擎移动。
+## 先移动角色至拿取距离内，再执行 pick_up。
 func _verify_rigid_body_interactions(room: Node) -> void:
 	var book := room.get_node("Book")
 	var main := room.get_node("Agent")
 	_assert(book.is_class("RigidBody3D") and bool(book.get("freeze")), "book must start frozen")
+
+	# 走近书本以满足 2.0m 距离合约
+	main.global_position = book.global_position + Vector3(0.5, 0, 0.5)
+	await process_frame
+	_assert(main.global_position.distance_to(book.global_position) <= 2.0,
+		"agent must be within pickup distance")
+
 	var picked: Dictionary = book.perform_interaction("pick_up", "main_agent")
 	_assert(bool(picked.get("success", false)), "book pick_up failed")
 	_assert(book.get_parent() == main.get_node("CarryAnchor"), "book did not attach to main hand")
@@ -88,6 +96,11 @@ func _verify_rigid_body_interactions(room: Node) -> void:
 
 	var cup := room.get_node("MilkTea")
 	var jue := room.get_node("JueAgent")
+
+	# 走近奶茶
+	jue.global_position = cup.global_position + Vector3(0.5, 0, 0.5)
+	await process_frame
+
 	_assert(bool(cup.perform_interaction("pick_up", "jue_agent").get("success", false)), "cup pick_up failed")
 	var release_position: Vector3 = cup.global_position
 	_assert(bool(cup.perform_interaction("throw", "jue_agent").get("success", false)), "cup throw failed")

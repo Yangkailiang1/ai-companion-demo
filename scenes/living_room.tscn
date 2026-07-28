@@ -690,6 +690,7 @@ billboard = 1
 no_depth_test = true
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="Agent"]
+avoidance_enabled = true
 path_desired_distance = 0.3
 target_desired_distance = 0.45
 radius = 0.36
@@ -726,7 +727,7 @@ billboard = 1
 no_depth_test = true
 
 [node name="JueAgent" type="CharacterBody3D" parent="."]
-transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 1.62, 0, 0.1)
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 2.9, 0, 1)
 collision_layer = 2
 collision_mask = 1
 script = ExtResource("2_agent")
@@ -777,6 +778,7 @@ billboard = 1
 no_depth_test = true
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="JueAgent"]
+avoidance_enabled = true
 path_desired_distance = 0.3
 target_desired_distance = 0.45
 radius = 0.36
