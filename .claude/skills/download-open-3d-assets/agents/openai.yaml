@@ -1,0 +1,4 @@
+interface:
+  display_name: "下载开放 3D 资产"
+  short_description: "审计许可并从白名单来源安全下载可再分发 3D 资产"
+  default_prompt: "Use $download-open-3d-assets to download a small licensed 3D asset batch with provenance manifests."

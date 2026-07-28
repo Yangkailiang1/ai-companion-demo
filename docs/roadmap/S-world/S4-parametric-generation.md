@@ -2,7 +2,7 @@
 
 > 所属分支：S. 场景与世界
 > 节点编号：S4
-> 状态：`[ACTIVE DESIGN]`
+> 状态：`[ACTIVE v0.8.9]`
 > 依赖：S2（多房间场景结构）、T2（语义世界）
 > 最后更新：2026-07-28 | 基线程：v0.8.9
 
@@ -21,12 +21,18 @@
 - 免费资产与工具调研见
   [S4 免费参数化室内资产与生成工具调研](../../research/S4_FREE_PROCEDURAL_ASSET_LIBRARIES.md)。
 
-### S4.1 `[NEXT v0.8.9]` 参数化单房间
+### S4.1 `[ACTIVE v0.8.9]` 参数化单房间
 
 参数化单房间：尺寸、门窗、墙体、地板、家具槽位。
 
 - `[NEXT contract]` 定义 `scene_recipe.schema.json`、`asset_registry.schema.json`
   和 `generated_scene_manifest.schema.json`。
+- `[DONE pipeline baseline]` 建立 `$download-open-3d-assets` 与
+  `$build-parametric-asset-library` 两项批处理 Skill，覆盖来源许可、下载哈希、
+  ZIP 安全审计、Godot 导入、注册表校验与 Metal 预览。
+- `[DONE asset batch 01]` KayKit Furniture Bits 的扶手椅、沙发和落地灯已完成
+  GLTF 依赖提取、哈希核对、真实 AABB/轴向登记及 1280×720 画面验收；
+  仍保持为 Registry candidate，尚未替换客厅家具。
 - `[NEXT migration]` 将当前客厅转写为 shadow Recipe，保留现有
   `living_room.tscn` 作为视觉与行为基准。
 - `[NEXT preview]` 创建独立 ParametricLivingRoomPreview；未通过对比验收前
@@ -75,6 +81,8 @@
 ## 研究参考
 
 - 相关论文目录：`/Users/yangkailiang/Documents/ai_games/调研/论文/04_参数化场景与模型生成/`
+- 本地 itch.io 下载包的逐项结论见
+  [S4 本地 itch.io 资产审计](../../research/S4_LOCAL_ITCH_ASSET_AUDIT.md)。
 
 ## 相关节点
 

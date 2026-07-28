@@ -114,6 +114,8 @@ Codex 必须负责：
 - Metal 画面验收、导航/碰撞/交互锚点验收；
 - 决定是否进入公共仓库并提交关键版本。
 
-本轮 Claude Code/DeepSeek 的两次调用均因后端持续无输出而终止，未产生调研文件；
-本文由 Codex 根据上述官方页面完成。恢复批处理前应先用一个三资产元数据任务验证
-DeepSeek 后端可用性。
+2026-07-28 已重新验证 DeepSeek 接入的 Claude Code 可用：它读取项目 Skill 后，
+从本地 KayKit Furniture Bits 精确提取三件 GLTF 资产、依赖贴图和 provenance，
+并生成 Registry candidate。Codex 随后完成源文件哈希比对、真实 AABB/轴向测量、
+Godot 4.6.1 导入及 1280×720 Metal 预览。后续继续保持“DeepSeek 每批最多三件，
+Codex 负责许可、画面和提交验收”的边界。

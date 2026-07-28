@@ -1,0 +1,91 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/environments/parametric_asset_batch_preview.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/props/kaykit/furniture_bits/armchair_pillows/armchair_pillows.gltf" id="2_armchair"]
+[ext_resource type="PackedScene" path="res://assets/props/kaykit/furniture_bits/couch_pillows/couch_pillows.gltf" id="3_couch"]
+[ext_resource type="PackedScene" path="res://assets/props/kaykit/furniture_bits/lamp_standing/lamp_standing.gltf" id="4_lamp"]
+
+[sub_resource type="StandardMaterial3D" id="mat_floor"]
+albedo_color = Color(0.72, 0.67, 0.58, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="mesh_floor"]
+material = SubResource("mat_floor")
+size = Vector3(8, 0.08, 4.5)
+
+[sub_resource type="BoxShape3D" id="shape_floor"]
+size = Vector3(8, 0.08, 4.5)
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.12, 0.15, 0.2, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.78, 0.82, 0.9, 1)
+ambient_light_energy = 0.42
+tonemap_mode = 2
+
+[sub_resource type="LabelSettings" id="label_settings"]
+font_size = 30
+font_color = Color(1, 0.94, 0.78, 1)
+outline_size = 8
+outline_color = Color(0.08, 0.06, 0.04, 0.9)
+
+[node name="ParametricAssetBatchPreview" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(1, 0.86, 0.67, 1)
+light_energy = 0.9
+shadow_enabled = true
+
+[node name="FillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 3.5, 2.5)
+light_color = Color(0.62, 0.75, 1, 1)
+light_energy = 1.5
+omni_range = 8.0
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
+position = Vector3(0, -0.04, 0)
+mesh = SubResource("mesh_floor")
+
+[node name="FloorCollision" type="CollisionShape3D" parent="Floor"]
+position = Vector3(0, -0.04, 0)
+shape = SubResource("shape_floor")
+
+[node name="ArmchairPillows" parent="." instance=ExtResource("2_armchair")]
+position = Vector3(-2.45, 0, 0)
+
+[node name="CouchPillows" parent="." instance=ExtResource("3_couch")]
+position = Vector3(0, 0, 0)
+
+[node name="LampStanding" parent="." instance=ExtResource("4_lamp")]
+position = Vector3(2.45, 0, 0)
+
+[node name="ArmchairLabel" type="Label3D" parent="."]
+position = Vector3(-2.45, 1.65, 0)
+text = "armchair_pillows"
+billboard = 1
+label_settings = SubResource("label_settings")
+
+[node name="CouchLabel" type="Label3D" parent="."]
+position = Vector3(0, 1.65, 0)
+text = "couch_pillows"
+billboard = 1
+label_settings = SubResource("label_settings")
+
+[node name="LampLabel" type="Label3D" parent="."]
+position = Vector3(2.45, 2.9, 0)
+text = "lamp_standing"
+billboard = 1
+label_settings = SubResource("label_settings")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(5.8, 3.8, 7.5)
+current = true
+fov = 42.0

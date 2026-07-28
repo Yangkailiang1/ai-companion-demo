@@ -1,0 +1,83 @@
+[
+  {
+    "schema_version": 1,
+    "asset_id": "kaykit_armchair_pillows",
+    "resource_path": "res://assets/props/kaykit/furniture_bits/armchair_pillows/armchair_pillows.gltf",
+    "provenance": {
+      "provider": "KayKit",
+      "official_page": "https://kaylousberg.itch.io/furniture-bits",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+    },
+    "geometry": {
+      "aabb_m": [1.8000002, 1.2240597, 1.6000000],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 614
+    },
+    "roles": {
+      "visual": "furniture",
+      "physics": "static",
+      "semantic": ["observable"],
+      "placement": "floor"
+    },
+    "style_tags": ["low_poly", "kaykit", "cozy"],
+    "interaction_profile": "",
+    "status": "previewed"
+  },
+  {
+    "schema_version": 1,
+    "asset_id": "kaykit_couch_pillows",
+    "resource_path": "res://assets/props/kaykit/furniture_bits/couch_pillows/couch_pillows.gltf",
+    "provenance": {
+      "provider": "KayKit",
+      "official_page": "https://kaylousberg.itch.io/furniture-bits",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+    },
+    "geometry": {
+      "aabb_m": [3.0000002, 1.2240597, 1.6000000],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 808
+    },
+    "roles": {
+      "visual": "furniture",
+      "physics": "static",
+      "semantic": ["observable"],
+      "placement": "floor"
+    },
+    "style_tags": ["low_poly", "kaykit", "cozy"],
+    "interaction_profile": "",
+    "status": "previewed"
+  },
+  {
+    "schema_version": 1,
+    "asset_id": "kaykit_lamp_standing",
+    "resource_path": "res://assets/props/kaykit/furniture_bits/lamp_standing/lamp_standing.gltf",
+    "provenance": {
+      "provider": "KayKit",
+      "official_page": "https://kaylousberg.itch.io/furniture-bits",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+    },
+    "geometry": {
+      "aabb_m": [1.0, 2.5200001, 1.0],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 320
+    },
+    "roles": {
+      "visual": "lighting",
+      "physics": "static",
+      "semantic": ["observable"],
+      "placement": "floor"
+    },
+    "style_tags": ["low_poly", "kaykit", "cozy"],
+    "interaction_profile": "",
+    "status": "previewed"
+  }
+]
