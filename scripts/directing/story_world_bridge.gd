@@ -57,6 +57,20 @@ func get_registry_cast() -> Array[String]:
 	)
 
 
+## [D2.3][C7.2] Extends a Beat hold to the estimated configured TTS duration.
+func recommended_pause(beat: Dictionary, requested_pause: float) -> float:
+	if not beat.has("say"):
+		return requested_pause
+	var root := _root()
+	var tts := root.get_node_or_null("TTSService") if root != null else null
+	if tts == null or not tts.is_ready():
+		return requested_pause
+	return maxf(
+		requested_pause,
+		float(tts.estimate_speech_duration(String(beat["say"]))),
+	)
+
+
 ## [T4.2] Returns the SceneTree root without retaining scene ownership.
 func _root() -> Window:
 	var tree := Engine.get_main_loop() as SceneTree

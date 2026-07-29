@@ -52,6 +52,18 @@ To keep the UI responsive, `TTSService` implements near-streaming behavior:
 - the first chunk starts playing as soon as its mp3 response arrives;
 - later chunks continue through the same queue.
 
+## Story timing (`v0.8.13`)
+
+When TTS is configured and enabled, `StoryDirector` asks `TTSService` for a
+conservative duration estimate based on non-whitespace character count and
+`tts.speed`. A dialogue Beat holds its camera for at least that estimate. When
+TTS is disabled, the authored `pause_after` remains unchanged.
+
+This is presentation timing rather than sample-accurate lip sync: the documented
+ECNU response contains a complete MP3 and no word timestamps or streaming
+playback events. A future PCM/timestamp endpoint can replace the estimate behind
+the same director contract.
+
 True realtime streaming would require a TTS endpoint that returns playable PCM/opus
 chunks progressively, or a small local service that can request/chunk/cache audio and
 feed Godot incrementally.

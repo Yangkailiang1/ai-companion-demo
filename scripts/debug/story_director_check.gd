@@ -27,6 +27,13 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	await process_frame
+	var world_loader := scene.get_node("WorldRoot")
+	_assert(
+		world_loader.switch_location("legacy") == "legacy",
+		"story fixture could not select deterministic legacy room",
+	)
+	await process_frame
+	await process_frame
 	var director := root.get_node("StoryDirector")
 	var autonomy := root.get_node("AutonomousBehaviorSystem")
 	var memory := root.get_node("MemorySystem")
@@ -231,7 +238,9 @@ func _document(
 func _verify_position(agent: Node3D, waypoint: String, label: String) -> void:
 	var target := RoomNavigation.new().get_waypoint(waypoint)
 	var distance := agent.global_position.distance_to(target)
-	_assert(distance <= 1.0, "%s missed %s by %.2fm" % [label, waypoint, distance])
+	_assert(distance <= 1.0, "%s missed %s by %.2fm position=%s target=%s" % [
+		label, waypoint, distance, agent.global_position, target,
+	])
 
 
 ## [D2] 按项目角色可见前向轴 `+Z` 验证角色水平朝向目标。

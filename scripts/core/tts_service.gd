@@ -1,6 +1,8 @@
-# tts_service.gd — ECNU/OpenAI-compatible text-to-speech playback service.
-# It listens for MessageBus.tts_speech_requested and plays generated speech
-# asynchronously through an AudioStreamPlayer.
+# Roadmap: C7.1, C7.2, D2.3
+# Responsibility: Request and asynchronously play ECNU-compatible speech, expose
+# conservative timing estimates; does not choose dialogue or direct camera shots.
+# Collaborators: MessageBus, StoryWorldBridge, AudioStreamPlayer
+# Tests: scripts/debug/tts_service_check.gd
 
 extends Node
 
@@ -100,6 +102,19 @@ func get_config_summary() -> Dictionary:
 		"format": response_format,
 		"speed": speed,
 	}
+
+
+## [C7.2][D2.3] Estimates a safe camera/dialogue hold from text and voice speed.
+## ECNU returns complete MP3 files without word timestamps, so this is advisory.
+func estimate_speech_duration(text: String, requested_speed: float = -1.0) -> float:
+	var active_speed := speed if requested_speed <= 0.0 else requested_speed
+	active_speed = clampf(active_speed, 0.25, 4.0)
+	var spoken_units := 0
+	for index in range(text.length()):
+		var character := text.substr(index, 1)
+		if not character.strip_edges().is_empty():
+			spoken_units += 1
+	return clampf(0.35 + float(spoken_units) / (4.8 * active_speed), 0.8, 12.0)
 
 
 func _on_tts_speech_requested(text: String, context: Dictionary) -> void:

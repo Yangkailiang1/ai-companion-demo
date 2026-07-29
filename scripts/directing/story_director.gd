@@ -15,6 +15,7 @@ const MOVE_ARRIVAL_TOLERANCE := 1.0
 const PAUSE_MIN := 0.1
 const PAUSE_MAX := 5.0
 const StoryWorldBridgeScript := preload("res://scripts/directing/story_world_bridge.gd")
+const StoryCollisionGuardScript := preload("res://scripts/directing/story_collision_guard.gd")
 
 var _phase: Phase = Phase.IDLE
 var _current_story: Dictionary = {}
@@ -27,6 +28,7 @@ var _run_epoch: int = 0
 var _did_pause_autonomy: bool = false
 var _autonomy_was_enabled: bool = false
 var _world_bridge := StoryWorldBridgeScript.new()
+var _collision_guard := StoryCollisionGuardScript.new()
 
 
 ## [D1] 注册到场景树，设置常驻处理模式，连接剧情请求信号。
@@ -98,7 +100,9 @@ func play_story_document(document: Dictionary) -> int:
 	_did_pause_autonomy = false
 	_phase = Phase.PLAYING
 	if _resolve_cast_nodes():
-		_set_cast_collision_exceptions(true)
+		_collision_guard.enable(
+			_cast_nodes, _cast_ids, get_tree().get_nodes_in_group("agents")
+		)
 		_pause_autonomy()
 		_interrupt_cast()
 		MessageBus.story_started.emit(
@@ -214,7 +218,9 @@ func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
 		return false
 	_emit_beat_performance(actor_id, beat)
 
-	var pause := clampf(float(beat.get("pause_after", 1.5)), PAUSE_MIN, PAUSE_MAX)
+	var pause := _world_bridge.recommended_pause(
+		beat, clampf(float(beat.get("pause_after", 1.5)), PAUSE_MIN, PAUSE_MAX)
+	)
 	await _safe_wait(pause, epoch)
 	return epoch == _run_epoch
 
@@ -348,25 +354,6 @@ func _interrupt_cast() -> void:
 		MessageBus.emit_actions.emit(actor_id, [])
 
 
-## [D2][C4] 演出期间让 cast 穿过所有角色，仍保留墙体和家具碰撞。
-## 非 cast 居民也可能站在导演规划的路径上；临时例外避免多角色场景卡死。
-func _set_cast_collision_exceptions(enabled: bool) -> void:
-	var all_agents := get_tree().get_nodes_in_group("agents")
-	for actor_id in _cast_ids:
-		var actor = _cast_nodes.get(actor_id)
-		if not actor is CollisionObject3D:
-			continue
-		for other in all_agents:
-			if other == actor or not other is CollisionObject3D:
-				continue
-			if enabled:
-				actor.add_collision_exception_with(other)
-				other.add_collision_exception_with(actor)
-			else:
-				actor.remove_collision_exception_with(other)
-				other.remove_collision_exception_with(actor)
-
-
 ## [D2][T4.5] 统一幂等清理：成功时写剧情记忆和清空 last_error；
 ## 失败/取消保留 last_error；恢复自主调度原值；重置 run 状态。
 ## 取消后禁止写剧情记忆。
@@ -377,7 +364,9 @@ func _finish_story(success: bool, reason: String) -> void:
 	else:
 		_last_error = reason
 	MessageBus.story_finished.emit(success, reason)
-	_set_cast_collision_exceptions(false)
+	_collision_guard.restore_safely(
+		_cast_nodes, _cast_ids, get_tree().get_nodes_in_group("agents")
+	)
 	_cast_nodes.clear()
 	_current_story = {}
 	_beat_index = 0

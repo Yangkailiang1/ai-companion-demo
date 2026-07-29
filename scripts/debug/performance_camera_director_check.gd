@@ -41,12 +41,34 @@ func _run() -> void:
 		"world-space name label remained visible during cinematic")
 	_assert(fill.visible, "cinematic face fill did not activate")
 	_assert(
-		String(director_diag.get("last_shot_kind", "")) == "two_subject",
-		"mutual actor beat was not composed as two-subject shot",
+		String(director_diag.get("last_shot_kind", "")) == "dialogue_two_shot",
+		"opening dialogue was not composed as a two-shot",
 	)
+	_assert(int(director_diag.get("occlusion_checks", 0)) >= 1,
+		"shot did not run line-of-sight checks")
+	_assert(bool(director_diag.get("occlusion_free", false)),
+		"director could not find a clear camera candidate")
 	_assert(
 		camera.global_position.distance_to(original_position) > 0.15,
 		"camera did not move toward the directed shot",
+	)
+	bus.story_beat_started.emit(1, {
+		"actor": "jue_agent",
+		"say": "这是说话特写。",
+	})
+	await process_frame
+	_assert(
+		String(director.get_diagnostics().get("last_shot_kind", "")) == "dialogue_close",
+		"solo dialogue did not select close-up grammar",
+	)
+	bus.story_beat_started.emit(2, {
+		"actor": "main_agent",
+		"move_to": {"waypoint": "room_center"},
+	})
+	await process_frame
+	_assert(
+		String(director.get_diagnostics().get("last_shot_kind", "")) == "movement_wide",
+		"movement Beat did not select wide grammar",
 	)
 
 	bus.story_finished.emit(true, "completed")
@@ -78,9 +100,10 @@ func _run() -> void:
 	)
 	bus.story_finished.emit(true, "completed")
 
-	print("PERFORMANCE_CAMERA_DIRECTOR_%s shot=%s" % [
+	print("PERFORMANCE_CAMERA_DIRECTOR_%s shot=%s visibility_checks=%d" % [
 		"FAIL" if failed else "PASS",
 		director_diag.get("last_shot_kind", ""),
+		director_diag.get("occlusion_checks", 0),
 	])
 	scene.free()
 	quit(1 if failed else 0)
