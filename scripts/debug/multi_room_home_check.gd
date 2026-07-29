@@ -22,7 +22,7 @@ func _run() -> void:
 	_assert(loader.switch_location("parametric") == "parametric", "living room load failed")
 	await _settle()
 	_check_room(
-		loader, "living_room", "LivingRoom", 15, "sofa", 2,
+		loader, "living_room", "LivingRoom", 16, "sofa", 2,
 		["Agent", "JueAgent", "LocalCharacterSpawner"],
 	)
 	_assert(loader.travel_via("to_kitchen"), "living -> kitchen edge failed")

@@ -209,6 +209,8 @@ func _apply_pending_agent_states() -> void:
 
 ## [X1.2] 尝试自动加载存档：优先 v2，回退 v1。
 func _try_auto_load() -> void:
+	if OS.get_environment("AI_GAMES_DISABLE_AUTO_LOAD_SAVE") == "1":
+		return
 	if get_tree().current_scene == null:
 		return
 	if FileAccess.file_exists(save_file_path):

@@ -73,6 +73,7 @@ func _run() -> void:
 
 	var line_edit := scene.find_child("LineEdit", true, false) as LineEdit
 	_assert(line_edit != null, "line edit missing")
+	await _verify_compact_chat_history(scene)
 	line_edit.grab_focus()
 	var before_focused_keyboard := camera.global_position
 	var input := InputEventKey.new()
@@ -88,6 +89,25 @@ func _run() -> void:
 	print("CAMERA_ORBIT_PASS moved=%.3f ui_blocked=%.3f pos=%s" % [moved_distance, blocked_movement, camera.global_position])
 	scene.free()
 	quit(0)
+
+
+## [S1.1][P2.3] 对话历史默认折叠，展开后不覆盖输入框或屏幕中心。
+func _verify_compact_chat_history(scene: Node) -> void:
+	var panel := scene.find_child("ChatPanel", true, false) as Panel
+	var toggle := scene.find_child("ChatToggleButton", true, false) as Button
+	var input_area := scene.find_child("InputArea", true, false) as Panel
+	_assert(panel != null and toggle != null and input_area != null, "chat UI missing")
+	_assert(not panel.visible, "chat history must start collapsed")
+	_assert(toggle.size.x <= 200.0, "collapsed chat toggle blocks horizontal view")
+	root.get_node("MessageBus").ui_add_chat_entry.emit("main_agent", "测试消息", false)
+	toggle.pressed.emit()
+	await process_frame
+	_assert(panel.visible, "chat history did not expand")
+	_assert(panel.size.x <= 420.0 and panel.size.y <= 170.0, "chat history blocks too much view")
+	_assert(
+		panel.get_global_rect().end.y < input_area.get_global_rect().position.y,
+		"chat history overlaps input",
+	)
 
 
 func _assert(condition: bool, message: String) -> void:

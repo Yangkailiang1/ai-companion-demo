@@ -9,6 +9,7 @@ class_name WorldTravelPortal
 extends Area3D
 
 signal travel_requested(exit_id: String)
+signal walkthrough_requested(exit_id: String)
 
 const WOOD_COLOR := Color(0.50, 0.32, 0.15, 1.0)
 const WOOD_HOVER_COLOR := Color(0.62, 0.40, 0.20, 1.0)
@@ -50,6 +51,7 @@ func configure(data: Dictionary) -> void:
 	input_ray_pickable = true
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	body_entered.connect(_on_body_entered)
 
 
 ## [S2.2] 构建暖木色门框：两根侧柱和一根横梁。
@@ -151,7 +153,19 @@ func _register_semantic() -> void:
 		"interaction_point": [global_position.x, global_position.y, global_position.z],
 		"needs_proximity": true,
 		"properties": {"location_id": location_id, "exit_id": exit_id},
+		"location_id": location_id,
 	}, self)
+
+
+## [S2.5][X1.2] 常驻房间重新激活或语义世界重置后恢复门的语义绑定。
+func refresh_semantic_registration() -> void:
+	_register_semantic()
+
+
+## [S2.2][P2.3] 玩家身体走进门区时请求连续房间切换；AI 仍使用语义交互。
+func _on_body_entered(body: Node3D) -> void:
+	if body is PlayerFirstPersonController and not _requested:
+		walkthrough_requested.emit(exit_id)
 
 
 ## [S2.2] 左键点击时发出 travel_requested；防止重复激活。
@@ -194,6 +208,13 @@ func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
 			"success": transferred,
 			"reason": "" if transferred else "resident_transfer_rejected",
 		}
+	var loader := get_parent().get_parent()
+	if (
+		loader != null
+		and loader.has_method("get_active_location")
+		and loader.get_active_location() != get_parent()
+	):
+		return {"handled": true, "success": false, "reason": "inactive_location"}
 	_request_travel()
 	return {"handled": true, "success": true}
 
@@ -205,6 +226,16 @@ func deactivate() -> void:
 	input_ray_pickable = false
 	monitoring = false
 	monitorable = false
+
+
+## [S2.5] 已加载房间重新激活时解除一次性点击锁。
+func reactivate() -> void:
+	_requested = false
+	input_ray_pickable = true
+	monitoring = true
+	monitorable = true
+	if _material != null:
+		_material.albedo_color = WOOD_COLOR
 
 
 ## [S2.2] 返回此入口是否已不可用。

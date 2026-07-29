@@ -14,10 +14,11 @@ extends Control
 @onready var status_label: Label = $StatusPanel/StatusLabel
 @onready var camera_hint: Label = $CameraHint
 @onready var input_area: Panel = $InputArea
+@onready var chat_toggle: Button = $ChatToggleButton
 
 var display_names = {"main_agent": "咕咕嘎嘎", "jue_agent": "诀"}
 const PLAYER_NAME := "你"
-const MAX_CHAT_LINES := 18
+const MAX_CHAT_LINES := 10
 const STATE_COLORS := {
 	"ready": "#7f5b36",
 	"pending": "#a06b2f",
@@ -33,6 +34,7 @@ var _input_focus_tween: Tween
 var _input_pulse_tween: Tween
 var _input_base_scale := Vector2.ONE
 var _focus_caret_indicator: ColorRect
+var _chat_expanded := false
 
 
 ## [S1][D1] 初始化温馨聊天 UI、输入焦点和剧情命令提示。
@@ -47,6 +49,7 @@ func _ready():
 	line_edit.gui_input.connect(_on_line_edit_gui_input)
 	input_area.gui_input.connect(_on_input_area_gui_input)
 	send_button.pressed.connect(_on_button_press)
+	chat_toggle.pressed.connect(_toggle_chat_history)
 	MessageBus.ui_add_chat_entry.connect(_on_chat_entry)
 	MessageBus.ui_status_changed.connect(_on_status_changed)
 	MessageBus.experience_mode_changed.connect(_on_experience_mode_changed)
@@ -136,6 +139,12 @@ func _on_chat_entry(speaker: String, text: String, is_player: bool) -> void:
 	_update_chat_panel_presence()
 
 
+## [S1.2][P2.3] 展开/收起历史记录，默认把完整视野留给第一人称场景。
+func _toggle_chat_history() -> void:
+	_chat_expanded = not _chat_expanded
+	_update_chat_panel_presence()
+
+
 func _on_status_changed(message: String, state: String) -> void:
 	if not status_label:
 		return
@@ -152,6 +161,7 @@ func _apply_visual_style() -> void:
 	_style_panel($StatusPanel, Color(0.98, 0.88, 0.7, 0.82), Color(0.73, 0.46, 0.25, 0.52), 14)
 	_style_line_edit()
 	_style_send_button()
+	_style_chat_toggle()
 	for bar in [hud_hunger, hud_energy, hud_fun, hud_social]:
 		_style_progress_bar(bar)
 	if chat_log:
@@ -305,6 +315,20 @@ func _style_send_button() -> void:
 	send_button.add_theme_color_override("font_color", Color(1.0, 0.96, 0.86, 1.0))
 
 
+## [S1.2] 为低遮挡聊天入口应用半透明温暖样式。
+func _style_chat_toggle() -> void:
+	if not chat_toggle:
+		return
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.26, 0.17, 0.10, 0.66)
+	normal.set_corner_radius_all(12)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.55, 0.34, 0.17, 0.84)
+	chat_toggle.add_theme_stylebox_override("normal", normal)
+	chat_toggle.add_theme_stylebox_override("hover", hover)
+	chat_toggle.add_theme_color_override("font_color", Color(1.0, 0.92, 0.76, 1.0))
+
+
 func _style_progress_bar(bar: ProgressBar) -> void:
 	if not bar:
 		return
@@ -342,9 +366,15 @@ func _update_chat_panel_presence() -> void:
 	var chat_panel := $ChatPanel as Panel
 	if not chat_panel:
 		return
-	if _chat_entries.is_empty():
-		chat_panel.visible = false
-	else:
-		chat_panel.visible = true
+	chat_panel.visible = _chat_expanded and not _chat_entries.is_empty()
+	if chat_toggle:
+		chat_toggle.text = (
+			"收起对话  ▾"
+			if chat_panel.visible
+			else "对话记录%s  ▴" % (
+				" (%d)" % _chat_entries.size() if not _chat_entries.is_empty() else ""
+			)
+		)
+	if chat_panel.visible:
 		_style_panel(chat_panel, Color(0.98, 0.88, 0.7, 0.78), Color(0.73, 0.46, 0.25, 0.54), 16)
 		chat_log.modulate = Color(1.0, 1.0, 1.0, 1.0)

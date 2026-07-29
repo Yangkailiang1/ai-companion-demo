@@ -78,6 +78,16 @@ func get_view_mode() -> String:
 	return _view_mode
 
 
+## [P2.1][S2.5] 切换导演视角环绕中心到已拼接房间的世界原点。
+func set_room_origin(origin: Vector3) -> void:
+	target = origin + Vector3(0.15, 0.78, 0.35)
+	if _view_mode == MODE_OBSERVER:
+		if is_inside_tree():
+			_update_camera()
+		else:
+			call_deferred("_update_camera")
+
+
 ## [P2.3] 返回第一人称是否已捕获系统鼠标；纯读取。
 func is_pointer_captured() -> bool:
 	return _pointer_captured
@@ -266,7 +276,8 @@ func _is_pointer_over_ui(pointer_position: Vector2) -> bool:
 	if ui == null:
 		return false
 	for node_name in [
-		"InputArea", "ChatPanel", "HUD", "StatusPanel", "CameraHint", "ViewModeButton"
+		"InputArea", "ChatPanel", "ChatToggleButton", "HUD", "StatusPanel",
+		"CameraHint", "ViewModeButton"
 	]:
 		var node := ui.find_child(node_name, true, false) as Control
 		if node != null and node.visible and node.get_global_rect().has_point(pointer_position):

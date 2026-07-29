@@ -146,11 +146,12 @@ show_percentage = false
 layout_mode = 1
 anchors_preset = 0
 anchor_left = 0.0
+anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16
-offset_top = 428
-offset_right = 560
-offset_bottom = -72
+offset_top = -260
+offset_right = 420
+offset_bottom = -116
 mouse_filter = 2
 
 [node name="ChatLog" type="RichTextLabel" parent="UILayer/UI/ChatPanel"]
@@ -163,6 +164,20 @@ offset_bottom = -10
 bbcode_enabled = true
 scroll_following = true
 theme_override_font_sizes/normal_font_size = 21
+
+[node name="ChatToggleButton" type="Button" parent="UILayer/UI"]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -110.0
+offset_right = 204.0
+offset_bottom = -76.0
+text = "对话记录"
+theme_override_font_sizes/font_size = 16
 
 [node name="CameraHint" type="Label" parent="UILayer/UI"]
 layout_mode = 1

@@ -4,7 +4,7 @@
 
 extends SceneTree
 
-const KITCHEN_PLAYER_ENTRY := Vector3(0.0, 0.9, 2.15)
+const KITCHEN_PLAYER_ENTRY := Vector3(-7.5, 0.9, 3.05)
 const KITCHEN_AGENT_SPAWN := Vector3(-0.65, 0.0, 1.8)
 
 var _failed := false

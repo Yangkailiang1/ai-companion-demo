@@ -19,6 +19,9 @@ const _ROLE_COLORS := {
 const _FALLBACK_COLOR := Color(0.55, 0.55, 0.55, 1.0)
 const _INTERACTABLE_SCRIPT := preload("res://scripts/objects/interactable_object.gd")
 const _GENERATED_STATE_SCRIPT := preload("res://scripts/objects/generated_object_state.gd")
+const _DYNAMIC_PROP_OBSERVER_SCRIPT := preload(
+	"res://scripts/objects/dynamic_prop_observer.gd"
+)
 
 var _registry_index: Dictionary = {}
 
@@ -55,7 +58,10 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 
 	# Position container at manifest world position.
 	var pos: Array = placement.get("position", [0.0, 0.0, 0.0])
-	container.global_position = _array_to_vector3(pos)
+	var placement_parent := parent as Node3D
+	container.global_position = placement_parent.to_global(
+		_array_to_vector3(pos)
+	) if placement_parent != null else _array_to_vector3(pos)
 
 	# Rotation.
 	var rot: Array = placement.get("rotation_deg", [0.0, 0.0, 0.0])
@@ -79,7 +85,17 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 			physics_node = StaticBody3D.new()
 		else:
 			physics_node = RigidBody3D.new()
-			(physics_node as RigidBody3D).freeze = true
+			var rigid := physics_node as RigidBody3D
+			var capabilities: Dictionary = asset_entry.get("capabilities", {})
+			rigid.freeze = not bool(capabilities.get("starts_dynamic", false))
+			rigid.mass = clampf(float(capabilities.get("mass_kg", 1.0)), 0.05, 20.0)
+			rigid.continuous_cd = bool(capabilities.get("continuous_collision", false))
+			if not rigid.freeze:
+				var observer := Node.new()
+				observer.name = "DynamicPropObserver"
+				observer.set_script(_DYNAMIC_PROP_OBSERVER_SCRIPT)
+				rigid.add_child(observer)
+				observer.configure(semantic_id)
 		physics_node.name = "PhysicsBody"
 		physics_node.set_script(_INTERACTABLE_SCRIPT)
 		physics_node.set("object_id", semantic_id)
@@ -103,7 +119,7 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 
 	# Create AnchorApproach at interaction_point.
 	var anchor_parent: Node3D = physics_node if physics_node != null else container
-	var anchor := _create_anchor(anchor_parent, placement)
+	var anchor := _create_anchor(anchor_parent, container, placement)
 	if physics_node != null:
 		physics_node.set("interaction_point", anchor)
 
@@ -214,11 +230,19 @@ func _write_metadata(container: Node3D, asset_id: String, semantic_id: String, a
 
 
 ## [S4.1] 在世界坐标 interaction_point 处创建 AnchorApproach 标记节点。
-func _create_anchor(container: Node3D, placement: Dictionary) -> Marker3D:
+func _create_anchor(
+	container: Node3D,
+	placement_container: Node3D,
+	placement: Dictionary,
+) -> Marker3D:
 	var ip: Array = placement.get("interaction_point", [])
 	if ip.size() < 3:
 		return null
-	var world_ip := _array_to_vector3(ip)
+	var room_parent := placement_container.get_parent() as Node3D
+	var world_ip := (
+		room_parent.to_global(_array_to_vector3(ip))
+		if room_parent != null else _array_to_vector3(ip)
+	)
 	var anchor := Marker3D.new()
 	anchor.name = "AnchorApproach"
 	container.add_child(anchor)

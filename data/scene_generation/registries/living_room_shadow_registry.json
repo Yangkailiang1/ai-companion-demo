@@ -634,6 +634,47 @@
       "status": "accepted"
     },
     {
+      "asset_id": "kickable_pillow",
+      "display_name": "柔软靠枕",
+      "resource_path": "res://assets/props/kaykit/furniture_bits/couch_pillows/couch_pillows.gltf",
+      "provenance": {
+        "provider": "KayKit",
+        "official_page": "https://kaylousberg.itch.io/furniture-bits",
+        "license": "CC0-1.0",
+        "redistribution": "allowed",
+        "source_sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+      },
+      "geometry": {
+        "aabb_m": [0.72, 0.28, 0.52],
+        "front_axis": "+Z",
+        "up_axis": "+Y",
+        "fit_mode": "axis"
+      },
+      "roles": {
+        "visual": "clutter",
+        "physics": "rigid",
+        "semantic": ["observable", "interactable", "portable"],
+        "placement": "floor"
+      },
+      "style_tags": ["kaykit", "low_poly", "cozy", "soft"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["pick_up", "put_down", "throw", "kick"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "starts_dynamic": true,
+        "mass_kg": 0.35,
+        "continuous_collision": true,
+        "effects": {"fun": 3}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_seat",
+        "min_clearance_m": 0.25
+      },
+      "status": "accepted"
+    },
+    {
       "asset_id": "conversation_rug",
       "display_name": "客厅地毯",
       "resource_path": "res://assets/props/kaykit/furniture_bits/rug_rectangle_a/rug_rectangle_A.gltf",

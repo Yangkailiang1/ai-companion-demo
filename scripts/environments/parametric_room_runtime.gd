@@ -14,6 +14,7 @@ const WorldPortalAssemblerScript = preload("res://scripts/environments/world_por
 
 ## [S2.2] 入口旅行请求；由 WorldLocationLoader 连接并处理。
 signal portal_travel_requested(exit_id: String)
+signal portal_walkthrough_requested(exit_id: String)
 
 @export_file("*.json") var manifest_path := \
 	"res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json"
@@ -30,11 +31,14 @@ var cast_members: Array[String] = ["Agent", "JueAgent", "LocalCharacterSpawner"]
 var local_character_manifests: Array[String] = []
 var _location_spawns_restored := false
 var _exits: Dictionary = {}
+var _location_active := true
+var _cast_retire_serial := 0
 
 
 ## [S2.2] 在节点入树前注入地点资源、角色出生策略与出口入口数据。
 func configure_location(location_data: Dictionary) -> void:
 	location_id = String(location_data.get("location_id", location_id))
+	set_meta("location_id", location_id)
 	manifest_path = String(location_data.get("manifest_path", manifest_path))
 	registry_path = String(location_data.get("registry_path", registry_path))
 	location_description = String(location_data.get("scene_description", ""))
@@ -46,6 +50,7 @@ func configure_location(location_data: Dictionary) -> void:
 		location_data.get("local_character_manifests", [])
 	)
 	_exits = location_data.get("exits", {}).duplicate(true)
+	_location_active = bool(location_data.get("runtime_active", true))
 
 
 ## [S2.1][S4.1][C6.2][S2.2] 构建房间，迁移角色，然后创建可见入口。
@@ -55,11 +60,11 @@ func _ready() -> void:
 	if manifest.is_empty() or registry.is_empty():
 		push_error("ParametricRoomRuntime: manifest or registry unavailable")
 		return
-	_activate_semantic_location()
 	build_report = ParametricSceneBuilder.new().build_room(self, manifest, registry)
 	assembled_cast = WorldCastAssembler.new().assemble_into(
 		self, cast_members, local_character_manifests
 	)
+	_set_navigation_enabled(_location_active)
 	call_deferred("_sync_navigation")
 	_activate_portals()
 
@@ -91,6 +96,8 @@ func _sync_navigation() -> void:
 	) as NavigationRegion3D
 	if region == null or region.navigation_mesh == null:
 		return
+	if not _location_active:
+		return
 	NavigationServer3D.region_set_navigation_mesh(region.get_rid(), region.navigation_mesh)
 	var map_rid := region.get_navigation_map()
 	if map_rid != RID():
@@ -117,14 +124,25 @@ func reconcile_cast(policy: Dictionary) -> void:
 		):
 			should_exist = false
 		if existing != null and not should_exist:
-			remove_child(existing)
-			existing.queue_free()
+			_cast_retire_serial += 1
+			existing.name = "RetiringCast_%d" % _cast_retire_serial
+			if existing is Node3D:
+				(existing as Node3D).visible = false
+			_free_cast_after_grace(existing)
 	var added := WorldCastAssembler.new().assemble_into(
 		self, next_members, next_manifests
 	)
 	cast_members.assign(next_members)
 	local_character_manifests.assign(next_manifests)
 	_restore_location_spawns(added)
+
+
+## [C5.3][T4.2] 给角色动画初始化协程两帧收尾，避免跨房时恢复到已释放实例。
+func _free_cast_after_grace(actor: Node) -> void:
+	for _frame in range(2):
+		await get_tree().process_frame
+	if is_instance_valid(actor):
+		actor.queue_free()
 
 
 ## [S2.1][X1] 在存档尚未包含 location_id 时恢复当前地点声明的出生点。
@@ -153,6 +171,7 @@ func _activate_portals() -> void:
 	var portals: Array = WorldPortalAssemblerScript.new().assemble(self, _exits, location_id)
 	for portal in portals:
 		portal.travel_requested.connect(_on_portal_travel_requested)
+		portal.walkthrough_requested.connect(_on_portal_walkthrough_requested)
 		portal_paths.append(String(portal.name))
 
 
@@ -161,12 +180,64 @@ func _on_portal_travel_requested(exit_id: String) -> void:
 	portal_travel_requested.emit(exit_id)
 
 
+## [S2.2][P2.3] 转发玩家身体穿门事件，不触发点击传送。
+func _on_portal_walkthrough_requested(exit_id: String) -> void:
+	portal_walkthrough_requested.emit(exit_id)
+
+
 ## [S2.2] 地点退役前停用所有门廊，避免两帧宽限期内陈旧点击触发旅行。
 func deactivate_portals() -> void:
 	for portal_path in portal_paths:
 		var portal := get_node_or_null(portal_path)
 		if portal != null and portal.has_method("deactivate"):
 			portal.deactivate()
+
+
+## [S2.5] 房间重新成为活动地点时恢复门的点击与身体穿越。
+func reactivate_portals() -> void:
+	for portal_path in portal_paths:
+		var portal := get_node_or_null(portal_path)
+		if portal != null and portal.has_method("reactivate"):
+			portal.reactivate()
+
+
+## [S2.5][C5.3] 几何与碰撞始终常驻，仅当前语义房间参与导航寻路。
+func set_location_active(active: bool) -> void:
+	_location_active = active
+	_set_navigation_enabled(active)
+	if active:
+		refresh_semantic_registration()
+
+
+## [S2.5] 切换生成房间导航区；不存在导航区时安全跳过。
+func _set_navigation_enabled(enabled: bool) -> void:
+	var region := get_node_or_null(
+		"GeneratedRoom/Structure/NavigationRegion3D"
+	) as NavigationRegion3D
+	if region != null:
+		region.enabled = enabled
+
+
+## [S2.5][X1.2] 常驻房间再次激活时重发语义绑定，支持存档模拟重启和节点替换。
+func refresh_semantic_registration() -> void:
+	var semantic_world := get_node_or_null("/root/SemanticWorld")
+	if semantic_world == null:
+		return
+	for child in get_children():
+		if not child.has_meta("semantic_payload"):
+			continue
+		var interaction_node := child as Node3D
+		var body := child.get_node_or_null("PhysicsBody") as Node3D
+		if body != null:
+			interaction_node = body
+		semantic_world.upsert_generated_object(
+			child.get_meta("semantic_payload", {}).duplicate(true),
+			interaction_node,
+		)
+	for portal_path in portal_paths:
+		var portal := get_node_or_null(portal_path)
+		if portal != null and portal.has_method("refresh_semantic_registration"):
+			portal.refresh_semantic_registration()
 
 
 ## [S2.2] 激活当前房间的语义可见域，使 AI 只读取所在地点物体。

@@ -80,7 +80,23 @@ func _register_semantic_placement(container: Node3D, placement: Dictionary) -> v
 		return
 	var semantic_world := tree.root.get_node_or_null("SemanticWorld")
 	if semantic_world != null and semantic_world.has_method("upsert_generated_object"):
-		semantic_world.upsert_generated_object(placement, interaction_node)
+		var semantic_data := placement.duplicate(true)
+		var staging := container.get_parent() as Node3D
+		var generated := staging.get_parent() as Node3D if staging != null else null
+		var location_root := generated.get_parent() as Node3D if generated != null else null
+		if location_root != null:
+			semantic_data["location_id"] = String(
+				location_root.get_meta("location_id", "living_room")
+			)
+			for field in ["position", "interaction_point"]:
+				var local_value: Array = semantic_data.get(field, [])
+				if local_value.size() >= 3:
+					var world_value := location_root.to_global(Vector3(
+						float(local_value[0]), float(local_value[1]), float(local_value[2])
+					))
+					semantic_data[field] = [world_value.x, world_value.y, world_value.z]
+		container.set_meta("semantic_payload", semantic_data.duplicate(true))
+		semantic_world.upsert_generated_object(semantic_data, interaction_node)
 
 
 ## [S4.1] 创建厚度 0.1m 的木色地板 StaticBody（含碰撞）。

@@ -52,6 +52,14 @@
 
 茶几支持查看和放置物品，书架支持浏览、取书和放回；两者均具有实体碰撞体。
 
+### S3.6a `[DONE dynamic-prop baseline]` 轻型软装物理
+
+- 客厅地面靠枕由 Registry/Manifest 声明为 0.35 kg 动态刚体，玩家第一人称身体
+  接触时会施加受限冲量，可真实滑动、翻滚和被角色拿起/放下。
+- `DynamicPropObserver` 在物体稳定落地后检测水平位移，并持续同步
+  SemanticWorld 的当前位置，AI 不会走向旧出生点。
+- 后续扩展毛绒玩具、纸团、球和可破坏/可复位软装，并将刚体状态纳入存档。
+
 ### S3.7 `[ACTIVE H10 pipeline]` 可交互 3D 资产接入流水线
 
 - `[DONE golden object]` Poly Haven CC0 `hanging_picture_frame_01` 已作为

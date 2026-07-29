@@ -13,6 +13,7 @@ signal entry_teleported(yaw_radians: float)
 @export var acceleration_mps2 := 14.0
 @export var standing_height_m := 0.9
 @export var eye_height_m := 0.68
+@export var push_impulse := 1.25
 
 var _control_enabled := false
 var _camera: Camera3D
@@ -70,6 +71,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration_mps2 * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration_mps2 * delta)
 	move_and_slide()
+	_push_light_rigid_bodies()
 
 
 ## [P2.2] 读取物理 WASD 键，返回归一化二维移动意图。
@@ -103,6 +105,22 @@ func _camera_relative_velocity(input_vector: Vector2) -> Vector3:
 func _stop_horizontal_motion() -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
+
+
+## [P2.2][S3.3] 第一人称身体撞到轻型刚体时施加水平冲量，形成踢/推反馈。
+func _push_light_rigid_bodies() -> void:
+	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
+	if horizontal_velocity.length_squared() < 0.04:
+		return
+	for index in get_slide_collision_count():
+		var collision := get_slide_collision(index)
+		var rigid := collision.get_collider() as RigidBody3D
+		if rigid == null or rigid.freeze or rigid.mass > 3.0:
+			continue
+		var direction := horizontal_velocity.normalized()
+		rigid.apply_central_impulse(
+			(direction + Vector3.UP * 0.12) * push_impulse / maxf(rigid.mass, 0.1)
+		)
 
 
 ## [P2.3] 判断聊天文本控件是否占有键盘焦点；纯读取。

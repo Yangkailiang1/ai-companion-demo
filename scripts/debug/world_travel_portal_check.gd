@@ -4,7 +4,7 @@
 
 extends SceneTree
 
-const EXPECTED_KITCHEN_ENTRY := Vector3(0.0, 0.9, 2.15)
+const EXPECTED_KITCHEN_ENTRY := Vector3(-7.5, 0.9, 3.05)
 
 var _failed := false
 var _temporary_paths: Array[String] = []

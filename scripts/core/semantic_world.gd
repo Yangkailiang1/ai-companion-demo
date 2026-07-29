@@ -149,7 +149,9 @@ func upsert_generated_object(data: Dictionary, godot_node: Node3D) -> void:
 	obj.consumable = bool(data.get("consumable", false))
 	obj.effects = data.get("effects", {}).duplicate(true)
 	var generated_properties: Dictionary = data.get("properties", {}).duplicate(true)
-	generated_properties["location_id"] = active_location_id
+	generated_properties["location_id"] = String(
+		data.get("location_id", active_location_id)
+	)
 	obj.properties.merge(generated_properties, true)
 	obj.godot_node = godot_node
 	# [X1.2] 如果有该物体之前的挂起状态，消费并应用到新注册的物体

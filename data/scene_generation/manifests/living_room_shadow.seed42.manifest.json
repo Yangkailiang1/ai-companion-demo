@@ -544,6 +544,21 @@
       "consumable": false
     },
     {
+      "semantic_id": "floor_pillow",
+      "asset_id": "kickable_pillow",
+      "display_name": "掉在地上的靠枕",
+      "position": [2.35, 0.18, 1.75],
+      "rotation_deg": [0, 18, 8],
+      "interaction_point": [2.0, 0.0, 1.1],
+      "description": "一个轻软的靠枕，角色或玩家撞到它时会被推开。",
+      "needs_proximity": true,
+      "affordances": ["pick_up", "put_down", "throw", "kick"],
+      "effects": {"fun": 3},
+      "initial_state": "掉在地毯旁",
+      "properties": {},
+      "consumable": false
+    },
+    {
       "semantic_id": "conversation_rug",
       "asset_id": "conversation_rug",
       "display_name": "客厅地毯",

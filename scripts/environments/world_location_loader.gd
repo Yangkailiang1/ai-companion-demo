@@ -23,6 +23,8 @@ var current_location_id := ""
 var _active_location: Node3D
 var _retire_serial := 0
 var _catalog := WorldLocationCatalog.new()
+var _loaded_locations: Dictionary = {}
+var _last_walkthrough_msec := 0
 
 
 ## [S2.1][S4.1] 在 WorldRoot 入树时解析环境覆盖并装载首个地点。
@@ -55,6 +57,7 @@ func switch_location(requested_mode: String) -> String:
 	if packed == null:
 		push_error("WorldLocationLoader: no loadable room scene")
 		return ""
+	_clear_loaded_locations()
 	_clear_active_location()
 	_active_location = packed.instantiate()
 	_active_location.name = "LivingRoom"
@@ -71,39 +74,104 @@ func switch_location(requested_mode: String) -> String:
 ## [S2.2] 原子装载目录中的参数化地点；非法目标不破坏当前场景。
 ## 在新地点入树前连接 portal_travel_requested 信号以保证不丢失入口事件。
 func travel_to(location_id: String, entry_id: String = "default") -> bool:
-	var location := _catalog.get_location(location_id)
-	if location.is_empty():
+	if not _catalog.has_location(location_id):
 		return false
-	var packed := load(String(location.get("scene_path", PARAMETRIC_ROOM_PATH))) as PackedScene
-	if packed == null:
+	if _loaded_locations.has(location_id):
+		return _activate_streamed_location(location_id, entry_id, true)
+	if not _loaded_locations.is_empty():
 		return false
-	var next_location := packed.instantiate() as Node3D
-	if next_location == null:
-		return false
-	location["location_id"] = location_id
-	location["cast_spawns"] = location.get("cast_spawns", {}).duplicate(true)
+	return _load_streamed_home(location_id, entry_id)
+
+
+## [S2.2][S2.5] 在声明的世界坐标一次装载小型住宅几何；仅活动房间实体化 Cast。
+func _load_streamed_home(initial_location_id: String, entry_id: String) -> bool:
+	_clear_active_location()
 	var residency := get_residency_registry()
 	if residency != null:
-		residency.move_companions(location_id)
+		residency.move_companions(initial_location_id)
+	for location_id in _catalog.locations:
+		var location := _catalog.get_location(String(location_id))
+		var next_location := _instantiate_parametric_location(
+			String(location_id), location, String(location_id) == initial_location_id
+		)
+		if next_location == null:
+			_clear_loaded_locations()
+			return false
+		_loaded_locations[String(location_id)] = next_location
+		add_child(next_location)
+	return _activate_streamed_location(initial_location_id, entry_id, true)
+
+
+## [S2.5] 创建一个带世界原点、语义地点和源地点信号绑定的参数化房间。
+func _instantiate_parametric_location(
+	location_id: String,
+	location: Dictionary,
+	materialize_cast: bool,
+) -> Node3D:
+	var packed := load(String(location.get("scene_path", PARAMETRIC_ROOM_PATH))) as PackedScene
+	if packed == null:
+		return null
+	var next_location := packed.instantiate() as Node3D
+	if next_location == null:
+		return null
+	location["location_id"] = location_id
+	location["runtime_active"] = materialize_cast
+	location["cast_spawns"] = location.get("cast_spawns", {}).duplicate(true)
+	var residency := get_residency_registry()
+	if residency != null and materialize_cast:
 		var policy: Dictionary = residency.get_cast_policy(location_id)
 		location["cast_members"] = policy.cast_members
 		location["local_character_manifests"] = policy.local_character_manifests
 	else:
-		location["cast_members"] = location.get(
-			"cast_members", WorldCastAssembler.CAST_NODE_NAMES
-		).duplicate()
+		location["cast_members"] = []
+		location["local_character_manifests"] = []
 	if next_location.has_method("configure_location"):
 		next_location.configure_location(location)
 	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))
-	# [S2.2] 在入树前连接入口旅行信号
+	next_location.position = _array_to_vector3(
+		location.get("world_origin", []), Vector3.ZERO
+	)
 	if next_location.has_signal("portal_travel_requested"):
-		next_location.portal_travel_requested.connect(_on_room_portal_travel_requested)
-	_clear_active_location()
-	_active_location = next_location
+		next_location.portal_travel_requested.connect(
+			_on_room_portal_travel_requested.bind(location_id)
+		)
+	if next_location.has_signal("portal_walkthrough_requested"):
+		next_location.portal_walkthrough_requested.connect(
+			_on_room_portal_walkthrough_requested.bind(location_id)
+		)
+	return next_location
+
+
+## [S2.5][P2.3] 切换活动语义房间；点击时传送入口，走过对齐门洞时保留世界坐标。
+func _activate_streamed_location(
+	location_id: String,
+	entry_id: String,
+	teleport_player: bool,
+) -> bool:
+	if not _loaded_locations.has(location_id):
+		return false
+	var residency := get_residency_registry()
+	if residency != null:
+		residency.move_companions(location_id)
+	_active_location = _loaded_locations[location_id]
+	if _active_location.has_method("reactivate_portals"):
+		_active_location.reactivate_portals()
 	current_mode = "parametric"
 	current_location_id = location_id
-	add_child(_active_location)
-	_position_player_at_entry(location, entry_id)
+	for loaded_id in _loaded_locations:
+		var room: Node3D = _loaded_locations[loaded_id]
+		if room.has_method("set_location_active"):
+			room.set_location_active(String(loaded_id) == location_id)
+		if not room.has_method("reconcile_cast"):
+			continue
+		var policy := {"cast_members": [], "local_character_manifests": []}
+		if String(loaded_id) == location_id and residency != null:
+			policy = residency.get_cast_policy(location_id)
+		room.reconcile_cast(policy)
+	_activate_semantics_for(location_id)
+	if teleport_player:
+		_position_player_at_entry(_catalog.get_location(location_id), entry_id)
+	_update_camera_room_origin(_active_location.position)
 	location_loaded.emit(current_mode, _active_location)
 	world_location_loaded.emit(current_location_id, _active_location)
 	return true
@@ -189,7 +257,8 @@ func _position_player_at_entry(location: Dictionary, entry_id: String) -> void:
 			entry.get("rotation_deg", []), Vector3(0.0, LEGACY_PLAYER_YAW_DEGREES, 0.0)
 		)
 		_position_player_at_floor(
-			_array_to_vector3(entry.get("position", []), LEGACY_PLAYER_SPAWN),
+			_array_to_vector3(entry.get("position", []), LEGACY_PLAYER_SPAWN)
+				+ _array_to_vector3(location.get("world_origin", []), Vector3.ZERO),
 			rotation.y,
 		)
 
@@ -202,8 +271,49 @@ func _position_player_at_floor(floor_position: Vector3, yaw_degrees: float) -> v
 
 
 ## [S2.2] 接收来自 WorldTravelPortal 的旅行请求，通过 travel_via 执行原子切换。
-func _on_room_portal_travel_requested(exit_id: String) -> void:
+func _on_room_portal_travel_requested(exit_id: String, source_location_id: String) -> void:
+	if source_location_id != current_location_id:
+		return
 	travel_via(exit_id)
+
+
+## [S2.5][P2.3] 身体穿过对齐门洞时切换活动语义房，不传送玩家。
+func _on_room_portal_walkthrough_requested(
+	exit_id: String,
+	source_location_id: String,
+) -> void:
+	if source_location_id != current_location_id:
+		return
+	var now := Time.get_ticks_msec()
+	if now - _last_walkthrough_msec < 500:
+		return
+	if not _catalog.can_travel(source_location_id, exit_id):
+		return
+	_last_walkthrough_msec = now
+	var edge := _catalog.get_exit(source_location_id, exit_id)
+	_activate_streamed_location(
+		String(edge.get("target_location_id", "")),
+		String(edge.get("target_entry_id", "default")),
+		false,
+	)
+
+
+## [S2.5] 更新语义可见域而不依赖房间构建顺序。
+func _activate_semantics_for(location_id: String) -> void:
+	var semantic_world := get_node_or_null("/root/SemanticWorld")
+	if semantic_world == null or not semantic_world.has_method("set_active_location"):
+		return
+	var location := _catalog.get_location(location_id)
+	semantic_world.set_active_location(
+		location_id, String(location.get("scene_description", ""))
+	)
+
+
+## [P2.1][S2.5] 导演镜头围绕当前房间中心，第一人称眼位不受影响。
+func _update_camera_room_origin(origin: Vector3) -> void:
+	var camera := get_node_or_null("Camera3D")
+	if camera != null and camera.has_method("set_room_origin"):
+		camera.set_room_origin(origin)
 
 
 ## [S2.2] 兼容旧客厅时恢复语义可见域。
@@ -226,6 +336,25 @@ func _clear_active_location() -> void:
 	retired.name = "RetiringLocation_%d" % _retire_serial
 	retired.visible = false
 	_free_after_grace_period(retired)
+
+
+## [S2.5] 离开参数化住宅模式时一次释放全部已拼接地点。
+func _clear_loaded_locations() -> void:
+	if _loaded_locations.is_empty():
+		return
+	for location_id in _loaded_locations:
+		var room: Node3D = _loaded_locations[location_id]
+		if is_instance_valid(room):
+			if room.has_method("deactivate_portals"):
+				room.deactivate_portals()
+			if room.has_method("set_location_active"):
+				room.set_location_active(false)
+			_retire_serial += 1
+			room.name = "RetiringStreamed_%d" % _retire_serial
+			room.visible = false
+			room.queue_free()
+	_loaded_locations.clear()
+	_active_location = null
 
 
 ## [S2.1][T4.2] 等待两个 process_frame 后释放退役地点，吸收一帧初始化协程。
