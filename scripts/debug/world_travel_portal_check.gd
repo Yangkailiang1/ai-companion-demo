@@ -34,7 +34,7 @@ func _run() -> void:
 	scene.free()
 	await process_frame
 	if not _failed:
-		print("WORLD_TRAVEL_PORTAL_PASS locations=4 traversals=6")
+		print("WORLD_TRAVEL_PORTAL_PASS locations=5 traversals=6")
 	quit(1 if _failed else 0)
 
 

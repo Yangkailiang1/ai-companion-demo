@@ -12,7 +12,7 @@ func _init() -> void:
 	call_deferred("_run")
 
 
-## [S2.2][S4.3] 验证住宅四地点的完整旅行纵切片。
+## [S2.2][S4.3] 验证住宅五地点的完整旅行纵切片。
 func _run() -> void:
 	var scene := (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	root.add_child(scene)
@@ -22,7 +22,7 @@ func _run() -> void:
 	_assert(loader.switch_location("parametric") == "parametric", "living room load failed")
 	await _settle()
 	_check_room(
-		loader, "living_room", "LivingRoom", 16, "sofa", 2,
+		loader, "living_room", "LivingRoom", 17, "sofa", 2,
 		["Agent", "JueAgent", "LocalCharacterSpawner"],
 	)
 	_assert(loader.travel_via("to_kitchen"), "living -> kitchen edge failed")
@@ -44,7 +44,7 @@ func _run() -> void:
 	_assert(not _visible_semantic_ids().has("kitchen_fridge"), "bedroom sees kitchen fridge")
 	_assert(loader.travel_via("to_study"), "bedroom -> study edge failed")
 	await _settle()
-	_check_room(loader, "study", "Study", 6, "study_bookshelf", 1, ["Agent"])
+	_check_room(loader, "study", "Study", 6, "study_bookshelf", 2, ["Agent"])
 	var study_book := loader.get_active_location().get_node_or_null(
 		"StudyBook/PhysicsBody"
 	) as RigidBody3D
@@ -52,9 +52,29 @@ func _run() -> void:
 		study_book != null and study_book.freeze,
 		"study book is not a ready rigid body",
 	)
-	_assert(loader.travel_via("to_bedroom"), "study -> bedroom edge failed")
+	_assert(loader.travel_via("to_sunroom"), "study -> sunroom edge failed")
 	await _settle()
-	_assert(loader.current_location_id == "bedroom", "study return target wrong")
+	_check_room(
+		loader, "sunroom", "Sunroom", 10, "sunroom_plant_main", 1, ["Agent"],
+	)
+	var watering_can := loader.get_active_location().get_node_or_null(
+		"SunroomWateringCan/PhysicsBody"
+	) as RigidBody3D
+	var sunroom_pillow := loader.get_active_location().get_node_or_null(
+		"SunroomPillow/PhysicsBody"
+	) as RigidBody3D
+	_assert(
+		watering_can != null and watering_can.freeze,
+		"sunroom watering can is not a ready rigid body",
+	)
+	_assert(
+		sunroom_pillow != null and not sunroom_pillow.freeze,
+		"sunroom pillow is not dynamic",
+	)
+	_check_sunroom_state(loader.get_active_location())
+	_assert(loader.travel_via("to_study"), "sunroom -> study edge failed")
+	await _settle()
+	_assert(loader.current_location_id == "study", "sunroom return target wrong")
 	var active_before := loader.get_active_location()
 	_assert(not loader.travel_to("missing_room"), "invalid travel unexpectedly succeeded")
 	_assert(loader.get_active_location() == active_before, "invalid travel replaced active room")
@@ -95,6 +115,48 @@ func _check_room(
 			found_portals += 1
 	_assert(found_portals == portal_count, "portal count %s: expected %d got %d" % [location_id, portal_count, found_portals])
 	_check_navigation(room, location_id)
+
+
+## [S3.2][S4.3] 验证阳台植物与落地灯复用通用有状态交互。
+func _check_sunroom_state(room: Node3D) -> void:
+	var semantic_world := root.get_node("SemanticWorld")
+	var plant_body := room.get_node_or_null(
+		"SunroomPlantMain/PhysicsBody"
+	)
+	var plant = semantic_world.get_object("sunroom_plant_main")
+	_assert(plant_body != null and plant != null, "sunroom plant state missing")
+	if plant_body != null and plant != null:
+		var before := float(plant.properties.get("moisture", 0.0))
+		var result: Dictionary = plant_body.perform_interaction("water", "main_agent")
+		var after := float(
+			semantic_world.get_object("sunroom_plant_main").properties.get("moisture", 0.0)
+		)
+		_assert(bool(result.get("success", false)) and after > before, "sunroom water failed")
+	var lamp_body := room.get_node_or_null("SunroomLights/PhysicsBody")
+	var lamp_light := room.get_node_or_null(
+		"SunroomLights/GeneratedWarmLight"
+	) as OmniLight3D
+	_assert(lamp_body != null and lamp_light != null, "sunroom lamp state missing")
+	if lamp_body != null and lamp_light != null:
+		var result: Dictionary = lamp_body.perform_interaction("turn_off", "main_agent")
+		_assert(bool(result.get("success", false)), "sunroom lamp turn_off failed")
+		_assert(is_zero_approx(lamp_light.light_energy), "sunroom lamp stayed on")
+	var planner := GOAPPlanner.new()
+	room.add_child(planner)
+	var water_plan := planner.plan("water_plant")
+	var rest_plan := planner.plan("rest_on_sofa")
+	_assert(
+		water_plan.size() == 5
+			and String(water_plan[0].params.get("target", "")) == "sunroom_watering_can"
+			and String(water_plan[2].params.get("target", "")) == "sunroom_plant_main",
+		"sunroom watering blueprint did not resolve",
+	)
+	_assert(
+		rest_plan.size() == 3
+			and String(rest_plan[0].params.get("target", "")) == "sunroom_armchair",
+		"sunroom rest blueprint did not resolve",
+	)
+	planner.queue_free()
 
 
 ## [S2.2] 验证角色出生点到房间中心可由生成导航网格连通。

@@ -151,7 +151,8 @@
       },
       "entries": {
         "default": {"position": [0.0, 0.0, 2.45], "rotation_deg": [0.0, 0.0, 0.0]},
-        "from_bedroom": {"position": [-2.65, 0.0, 1.55], "rotation_deg": [0.0, 90.0, 0.0]}
+        "from_bedroom": {"position": [-2.65, 0.0, 1.55], "rotation_deg": [0.0, 90.0, 0.0]},
+        "from_sunroom": {"position": [2.65, 0.0, -0.8], "rotation_deg": [0.0, -90.0, 0.0]}
       },
       "exits": {
         "to_bedroom": {
@@ -164,6 +165,49 @@
             "rotation_deg": [0.0, 90.0, 0.0],
             "size": [1.25, 2.2],
             "label": "卧室"
+          }
+        },
+        "to_sunroom": {
+          "target_location_id": "sunroom",
+          "target_entry_id": "from_study",
+          "portal": {
+            "semantic_id": "door_to_sunroom",
+            "display_name": "通往阳台绿植房",
+            "position": [3.75, 1.1, -0.8],
+            "rotation_deg": [0.0, -90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "阳台"
+          }
+        }
+      }
+    },
+    "sunroom": {
+      "display_name": "阳台绿植房",
+      "scene_path": "res://scenes/environments/parametric_living_room_runtime.tscn",
+      "root_name": "Sunroom",
+      "world_origin": [22.25, 0.0, -0.5],
+      "manifest_path": "res://data/scene_generation/manifests/home_sunroom.seed404.manifest.json",
+      "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
+      "scene_description": "一间可以照料植物、晒太阳和玩耍的明亮阳台绿植房。",
+      "cast_members": ["Agent"],
+      "cast_spawns": {
+        "Agent": {"position": [-1.9, 0.0, 1.7], "rotation_deg": [0.0, 145.0, 0.0]}
+      },
+      "entries": {
+        "default": {"position": [-2.65, 0.0, -0.8], "rotation_deg": [0.0, 90.0, 0.0]},
+        "from_study": {"position": [-2.65, 0.0, -0.8], "rotation_deg": [0.0, 90.0, 0.0]}
+      },
+      "exits": {
+        "to_study": {
+          "target_location_id": "study",
+          "target_entry_id": "from_sunroom",
+          "portal": {
+            "semantic_id": "door_to_study_sunroom",
+            "display_name": "回到书房",
+            "position": [-3.25, 1.1, -0.8],
+            "rotation_deg": [0.0, 90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "书房"
           }
         }
       }

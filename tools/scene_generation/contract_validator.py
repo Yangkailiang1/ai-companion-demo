@@ -52,6 +52,7 @@ KNOWN_SLOT_KEYS = frozenset(
         "description",
         "position",
         "rotation_deg",
+        "scale",
         "interaction_point",
         "needs_proximity",
         "affordances",
@@ -211,6 +212,13 @@ def validate_recipe(recipe: dict, asset_map: dict) -> None:
             val = slot.get(field)
             if not isinstance(val, list) or len(val) != 3 or not all(isinstance(v, (int, float)) for v in val):
                 _fail(f"{prefix}.{field} must be an array of 3 numbers.")
+        scale = slot.get("scale", [1.0, 1.0, 1.0])
+        if (
+            not isinstance(scale, list)
+            or len(scale) != 3
+            or not all(isinstance(value, (int, float)) and value > 0 for value in scale)
+        ):
+            _fail(f"{prefix}.scale must be an array of 3 positive numbers.")
 
     # -----------------------------------------------------------------------
     # Waypoints

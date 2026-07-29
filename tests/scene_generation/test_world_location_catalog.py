@@ -22,7 +22,10 @@ class WorldLocationCatalogTests(unittest.TestCase):
     def test_catalog_has_first_home_rooms(self) -> None:
         self.assertEqual(self.catalog["schema_version"], 1)
         self.assertEqual(self.catalog["default_location_id"], "living_room")
-        self.assertEqual(set(self.locations), {"living_room", "kitchen", "bedroom"})
+        self.assertEqual(
+            set(self.locations),
+            {"living_room", "kitchen", "bedroom", "study", "sunroom"},
+        )
 
     def test_location_resources_exist(self) -> None:
         for location_id, location in self.locations.items():
@@ -31,7 +34,12 @@ class WorldLocationCatalogTests(unittest.TestCase):
                 self.assertTrue(path.is_file(), f"{location_id}.{field}: {path}")
             self.assertIn("default", location["entries"])
             self.assertIn("Agent", location["cast_spawns"])
-            self.assertIn("JueAgent", location["cast_spawns"])
+            self.assertTrue(
+                set(location["cast_members"]).issubset(
+                    {"Agent", "JueAgent", "LocalCharacterSpawner"}
+                ),
+                location_id,
+            )
 
     def test_every_exit_targets_a_declared_entry(self) -> None:
         for source_id, source in self.locations.items():

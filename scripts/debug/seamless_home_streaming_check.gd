@@ -4,7 +4,7 @@
 
 extends SceneTree
 
-const EXPECTED_ROOMS := ["LivingRoom", "Kitchen", "Bedroom", "Study"]
+const EXPECTED_ROOMS := ["LivingRoom", "Kitchen", "Bedroom", "Study", "Sunroom"]
 
 var _failed := false
 
@@ -31,11 +31,11 @@ func _run() -> void:
 	scene.free()
 	await process_frame
 	if not _failed:
-		print("SEAMLESS_HOME_STREAMING_PASS rooms=4 teleport=false floor=true pillow=true")
+		print("SEAMLESS_HOME_STREAMING_PASS rooms=5 teleport=false floor=true pillow=true")
 	quit(1 if _failed else 0)
 
 
-## [S2.5] 四个房间必须同时存在且相邻门框占据同一个世界坐标。
+## [S2.5] 五个房间必须同时存在且相邻门框占据同一个世界坐标。
 func _verify_all_rooms_resident(loader: WorldLocationLoader) -> void:
 	for room_name in EXPECTED_ROOMS:
 		_assert(loader.get_node_or_null(room_name) != null, "missing room " + room_name)
@@ -50,6 +50,18 @@ func _verify_all_rooms_resident(loader: WorldLocationLoader) -> void:
 		_assert(
 			living_door.global_position.distance_to(kitchen_door.global_position) < 0.01,
 			"paired doors are not aligned",
+		)
+	var study := loader.get_node_or_null("Study") as Node3D
+	var sunroom := loader.get_node_or_null("Sunroom") as Node3D
+	if study == null or sunroom == null:
+		return
+	var study_door := study.get_node_or_null("Portal_door_to_sunroom") as Node3D
+	var sunroom_door := sunroom.get_node_or_null("Portal_door_to_study_sunroom") as Node3D
+	_assert(study_door != null and sunroom_door != null, "sunroom paired doors missing")
+	if study_door != null and sunroom_door != null:
+		_assert(
+			study_door.global_position.distance_to(sunroom_door.global_position) < 0.01,
+			"sunroom paired doors are not aligned",
 		)
 
 

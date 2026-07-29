@@ -19,6 +19,8 @@
 - `[DONE portable-tool baseline]` 新增项目自制 CC0 青绿色浇水壶，具备 Registry
   来源、碰撞、可携带刚体、SemanticWorld 描述和拿取/放下 affordance；角色浇水
   时会真实携带该物体，而非隔空修改植物状态。
+- `[DONE multi-room reuse v0.8.14]` 阳台绿植房新增两盆独立 moisture/health 状态
+  植物，并复用同一浇水/修剪反馈、水壶刚体和语义交互，无房间专用状态机。
 - `[NEXT]` 水量状态、壶嘴浇水锚点、水流反馈、固定收纳位置和完整刚体存档。
 
 ### S3.2 `[ACTIVE physics baseline]` 奶茶/食物

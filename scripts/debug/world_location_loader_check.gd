@@ -51,8 +51,8 @@ func _run() -> void:
 ## [S4.1][C6.2] 检查生成房间模型覆盖、导航和三个角色宿主节点。
 func _check_parametric_room(room: Node) -> void:
 	var report: Dictionary = room.get("build_report")
-	_assert(int(report.get("placements", 0)) == 16, "generated placement count")
-	_assert(int(report.get("loaded", 0)) == 16, "generated model coverage")
+	_assert(int(report.get("placements", 0)) == 17, "generated placement count")
+	_assert(int(report.get("loaded", 0)) == 17, "generated model coverage")
 	_assert(int(report.get("fallbacks", -1)) == 0, "generated fallback present")
 	_assert(room.has_node("GeneratedRoom/Structure/NavigationRegion3D"), "generated nav missing")
 	_assert(room.has_node("TV/PhysicsBody"), "generated public TV path missing")
@@ -99,7 +99,7 @@ func _check_generated_collisions(room: Node) -> void:
 				"generated rigid initial state mismatch",
 			)
 		collision_count += 1
-	_assert(collision_count == 15, "generated collision coverage mismatch")
+	_assert(collision_count == 16, "generated collision coverage mismatch")
 
 
 ## [S3.2][T2.2] 验证植物浇水与落地灯开关同时更新语义和视觉状态。

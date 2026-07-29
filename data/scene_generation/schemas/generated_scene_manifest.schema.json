@@ -171,6 +171,12 @@
           "minItems": 3,
           "maxItems": 3
         },
+        "scale": {
+          "type": "array",
+          "items": { "type": "number", "exclusiveMinimum": 0 },
+          "minItems": 3,
+          "maxItems": 3
+        },
         "interaction_point": {
           "type": "array",
           "items": { "type": "number" },

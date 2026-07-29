@@ -1,0 +1,500 @@
+{
+  "schema_version": 1,
+  "manifest_id": "home_sunroom-404-9bce16c4b396",
+  "recipe_id": "home_sunroom",
+  "recipe_version": "1.0.0",
+  "registry_id": "living_room_shadow",
+  "registry_version": "1.3.0",
+  "seed": 404,
+  "generation_hash": "9bce16c4b39685744aa84fb540cec66f65686d4ce2d24ee20b21038e288717df",
+  "room": {
+    "name": "阳台绿植房",
+    "dimensions_m": {
+      "width": 6.5,
+      "depth": 6.4,
+      "height": 3.0
+    },
+    "bounds": {
+      "min": [
+        -2.75,
+        0.0,
+        -2.75
+      ],
+      "max": [
+        2.75,
+        0.0,
+        2.75
+      ]
+    },
+    "floor": {
+      "thickness_m": 0.1,
+      "material_key": "sunroom_wood_floor"
+    },
+    "lighting": {
+      "key_color": [
+        1.0,
+        0.88,
+        0.72
+      ],
+      "key_energy": 0.76,
+      "key_rotation_deg": [
+        -48.0,
+        -28.0,
+        0.0
+      ],
+      "fill_color": [
+        0.68,
+        0.84,
+        1.0
+      ],
+      "fill_energy": 0.3,
+      "fill_position": [
+        -1.8,
+        1.9,
+        0.8
+      ],
+      "fill_range_m": 4.8,
+      "accent_color": [
+        0.58,
+        1.0,
+        0.7
+      ],
+      "accent_energy": 0.24,
+      "accent_position": [
+        1.8,
+        1.6,
+        -1.5
+      ],
+      "accent_range_m": 3.8
+    },
+    "walls": [
+      {
+        "wall_id": "back",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      },
+      {
+        "wall_id": "left",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      },
+      {
+        "wall_id": "right",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      }
+    ],
+    "openings": [
+      {
+        "opening_id": "door_to_study",
+        "type": "door",
+        "wall_id": "left",
+        "position": [
+          -3.25,
+          1.1,
+          -0.8
+        ],
+        "size": [
+          1.25,
+          2.2
+        ]
+      },
+      {
+        "opening_id": "sunroom_window_opening",
+        "type": "window",
+        "wall_id": "back",
+        "position": [
+          1.05,
+          1.6,
+          -3.2
+        ],
+        "size": [
+          2.25,
+          1.35
+        ]
+      }
+    ]
+  },
+  "placements": [
+    {
+      "semantic_id": "sunroom_plant_main",
+      "asset_id": "plant_potted",
+      "display_name": "缺水的龟背竹",
+      "position": [
+        -2.2,
+        0.55,
+        -2.3
+      ],
+      "rotation_deg": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        -1.65,
+        0,
+        -1.65
+      ],
+      "description": "叶片微微下垂、正在等待照料的主植物。",
+      "needs_proximity": true,
+      "affordances": [
+        "water",
+        "prune",
+        "look_at"
+      ],
+      "effects": {},
+      "initial_state": "需要浇水",
+      "properties": {
+        "moisture": 28,
+        "health": 76
+      },
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_plant_small",
+      "asset_id": "plant_potted",
+      "display_name": "窗边绿植",
+      "position": [
+        0.0,
+        0.55,
+        -2.3
+      ],
+      "rotation_deg": [
+        0,
+        -18,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        0.0,
+        0,
+        -1.55
+      ],
+      "description": "靠近自然光、状态不错的小盆栽。",
+      "needs_proximity": true,
+      "affordances": [
+        "water",
+        "prune",
+        "look_at"
+      ],
+      "effects": {},
+      "initial_state": "状态良好",
+      "properties": {
+        "moisture": 68,
+        "health": 92
+      },
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_armchair",
+      "asset_id": "reading_armchair",
+      "display_name": "晒太阳扶手椅",
+      "position": [
+        2.1,
+        0.5,
+        -1.85
+      ],
+      "rotation_deg": [
+        0,
+        -28,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        1.55,
+        0,
+        -1.1
+      ],
+      "description": "适合看书、晒太阳和短暂休息的软椅。",
+      "needs_proximity": true,
+      "affordances": [
+        "sit",
+        "inspect"
+      ],
+      "effects": {
+        "energy": 10,
+        "fun": 4
+      },
+      "initial_state": "空着",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_table",
+      "asset_id": "coffee_table_current",
+      "display_name": "阳台矮桌",
+      "position": [
+        0.4,
+        0.25,
+        0.0
+      ],
+      "rotation_deg": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        0.4,
+        0,
+        0.95
+      ],
+      "description": "可以摆放饮料和园艺用品的矮桌。",
+      "needs_proximity": true,
+      "affordances": [
+        "inspect",
+        "place_item"
+      ],
+      "effects": {},
+      "initial_state": "桌面整洁",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_watering_can",
+      "asset_id": "watering_can_stylized",
+      "display_name": "青绿色浇水壶",
+      "position": [
+        -2.0,
+        0.28,
+        0.0
+      ],
+      "rotation_deg": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        -1.45,
+        0,
+        0.35
+      ],
+      "description": "可以拿到植物旁边使用的轻便浇水壶。",
+      "needs_proximity": true,
+      "affordances": [
+        "pick_up",
+        "put_down",
+        "inspect"
+      ],
+      "effects": {},
+      "initial_state": "装满清水",
+      "properties": {
+        "water_amount": 100
+      },
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_pillow",
+      "asset_id": "kickable_pillow",
+      "display_name": "阳台软靠枕",
+      "position": [
+        2.2,
+        0.22,
+        1.6
+      ],
+      "rotation_deg": [
+        0,
+        18,
+        8
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        1.55,
+        0,
+        1.55
+      ],
+      "description": "落在地板上的柔软靠枕，玩家和角色都能推动或投掷。",
+      "needs_proximity": true,
+      "affordances": [
+        "pick_up",
+        "put_down",
+        "throw",
+        "kick"
+      ],
+      "effects": {
+        "fun": 3
+      },
+      "initial_state": "随意落在地板上",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_lights",
+      "asset_id": "standing_lamp",
+      "display_name": "阳台暖光落地灯",
+      "position": [
+        -2.55,
+        0.86,
+        1.85
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        -1.9,
+        0,
+        1.55
+      ],
+      "description": "可以开关、为绿植房休息角提供局部暖光的落地灯。",
+      "needs_proximity": true,
+      "affordances": [
+        "turn_on",
+        "turn_off",
+        "inspect"
+      ],
+      "effects": {},
+      "initial_state": "暖光已开启",
+      "properties": {
+        "brightness": 1.0
+      },
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_wall_art",
+      "asset_id": "leaf_art_panel",
+      "display_name": "绿植主题挂画",
+      "position": [
+        -1.35,
+        1.55,
+        -3.12
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        -1.35,
+        0,
+        -2.25
+      ],
+      "description": "与窗边植物相呼应的温暖墙面装饰。",
+      "needs_proximity": true,
+      "affordances": [
+        "inspect",
+        "look_at"
+      ],
+      "effects": {},
+      "initial_state": "挂得很平整",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_rug",
+      "asset_id": "conversation_rug",
+      "display_name": "阳台编织地毯",
+      "position": [
+        0.65,
+        0.03,
+        0.3
+      ],
+      "rotation_deg": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        0.68,
+        1.0,
+        0.68
+      ],
+      "interaction_point": [
+        0.65,
+        0,
+        0.8
+      ],
+      "description": "铺在休息角下方的浅色编织地毯。",
+      "needs_proximity": false,
+      "affordances": [],
+      "effects": {},
+      "initial_state": "铺得平整",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "sunroom_tea",
+      "asset_id": "milk_tea_cup",
+      "display_name": "桌上的花果茶",
+      "position": [
+        0.4,
+        0.58,
+        0.0
+      ],
+      "rotation_deg": [
+        0,
+        -12,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "interaction_point": [
+        0.4,
+        0.0,
+        0.95
+      ],
+      "description": "放在阳台矮桌上、可以拿起饮用的花果茶。",
+      "needs_proximity": true,
+      "affordances": [
+        "drink",
+        "pick_up",
+        "put_down",
+        "throw"
+      ],
+      "effects": {
+        "hunger": 8,
+        "fun": 8
+      },
+      "initial_state": "还冒着热气",
+      "properties": {},
+      "consumable": true
+    }
+  ],
+  "audit": {
+    "compiler_version": "1.1.0",
+    "warnings": []
+  }
+}

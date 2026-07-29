@@ -90,13 +90,16 @@ def _validate_surface_parent(recipe: dict, slot: dict, slot_map: dict) -> None:
 
 def _floor_rectangle(slot: dict, asset: dict) -> tuple[float, float, float, float]:
     size = asset["geometry"]["aabb_m"]
+    scale = slot.get("scale", [1.0, 1.0, 1.0])
     rotation_y = math.radians(float(slot.get("rotation_deg", [0, 0, 0])[1]))
-    extent_x = abs(math.cos(rotation_y)) * float(size[0]) + abs(
+    size_x = float(size[0]) * float(scale[0])
+    size_z = float(size[2]) * float(scale[2])
+    extent_x = abs(math.cos(rotation_y)) * size_x + abs(
         math.sin(rotation_y)
-    ) * float(size[2])
-    extent_z = abs(math.sin(rotation_y)) * float(size[0]) + abs(
+    ) * size_z
+    extent_z = abs(math.sin(rotation_y)) * size_x + abs(
         math.cos(rotation_y)
-    ) * float(size[2])
+    ) * size_z
     x = float(slot["position"][0])
     z = float(slot["position"][2])
     return (

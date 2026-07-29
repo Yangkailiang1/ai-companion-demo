@@ -30,6 +30,18 @@ class TestCompileSceneRecipe(ShadowContractFixture, unittest.TestCase):
         changed["seed"] += 1
         self.assertNotEqual(baseline, compile_recipe(changed, self.registry))
 
+    def test_placement_scale_is_compiled(self):
+        self.recipe["object_slots"][0]["scale"] = [0.75, 1.0, 0.75]
+        handle = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+        handle.close()
+        try:
+            compile_recipe(self.recipe, self.registry, output_path=handle.name)
+            with open(handle.name, encoding="utf-8") as manifest_file:
+                manifest = json.load(manifest_file)
+            self.assertEqual(manifest["placements"][0]["scale"], [0.75, 1.0, 0.75])
+        finally:
+            os.unlink(handle.name)
+
     def test_deterministic_manifest_bytes(self):
         paths = []
         try:
@@ -67,10 +79,15 @@ class TestCompileSceneRecipe(ShadowContractFixture, unittest.TestCase):
             # [S4.1] New assertions: manifest room carries bounds, floor, walls, openings.
             self.assertIn("bounds", manifest["room"])
             self.assertIn("floor", manifest["room"])
+            self.assertIn("lighting", manifest["room"])
             self.assertIn("walls", manifest["room"])
             self.assertIn("openings", manifest["room"])
             self.assertEqual(manifest["room"]["bounds"], self.recipe["room"]["bounds"])
             self.assertEqual(manifest["room"]["floor"], self.recipe["room"]["floor"])
+            self.assertEqual(
+                manifest["room"]["lighting"],
+                self.recipe["room"].get("lighting", {}),
+            )
             self.assertEqual(manifest["room"]["walls"], self.recipe["room"]["walls"])
             self.assertEqual(manifest["room"]["openings"], self.recipe["room"]["openings"])
         finally:

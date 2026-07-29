@@ -32,6 +32,9 @@
 将物体位置从硬编码坐标升级为场景注册和运行时空间查询。
 
 - `[DONE baseline]` InteractableObject 进入场景后会把 Godot 节点绑定到 descriptor。
+- `[DONE capability resolution v0.8.14]` `resolve_object_reference` 会优先使用精确
+  ID，缺失时按当前地点 affordance 与语义条件解析功能等价对象；GOAP/Utility
+  可把 `plant/sofa/watering_can` 映射到阳台植物、扶手椅和水壶。
 - `[NEXT]` 由场景锚点自动回写/校验 descriptor 空间数据，逐步消除 scene_config
   和 `.tscn` 的重复坐标。
 

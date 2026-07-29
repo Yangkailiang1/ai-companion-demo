@@ -116,6 +116,7 @@
           "required": ["thickness_m", "material_key"],
           "additionalProperties": false
         },
+        "lighting": { "$ref": "#/$defs/lighting_spec" },
         "walls": {
           "type": "array",
           "items": { "$ref": "#/$defs/wall_definition" }
@@ -128,6 +129,35 @@
       },
       "required": ["name", "dimensions_m", "floor", "walls"],
       "additionalProperties": false
+    },
+    "lighting_spec": {
+      "type": "object",
+      "properties": {
+        "key_color": { "$ref": "#/$defs/color3" },
+        "key_energy": { "type": "number", "minimum": 0, "maximum": 3 },
+        "key_rotation_deg": { "$ref": "#/$defs/vector3" },
+        "fill_color": { "$ref": "#/$defs/color3" },
+        "fill_energy": { "type": "number", "minimum": 0, "maximum": 4 },
+        "fill_position": { "$ref": "#/$defs/vector3" },
+        "fill_range_m": { "type": "number", "minimum": 0.5, "maximum": 12 },
+        "accent_color": { "$ref": "#/$defs/color3" },
+        "accent_energy": { "type": "number", "minimum": 0, "maximum": 4 },
+        "accent_position": { "$ref": "#/$defs/vector3" },
+        "accent_range_m": { "type": "number", "minimum": 0.5, "maximum": 12 }
+      },
+      "additionalProperties": false
+    },
+    "color3": {
+      "type": "array",
+      "items": { "type": "number", "minimum": 0, "maximum": 1 },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "vector3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
     },
     "wall_definition": {
       "type": "object",
@@ -194,6 +224,13 @@
           "minItems": 3,
           "maxItems": 3,
           "description": "Rotation [x, y, z] in degrees. Defaults to [0, 0, 0]."
+        },
+        "scale": {
+          "type": "array",
+          "items": { "type": "number", "exclusiveMinimum": 0 },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Per-placement size multiplier [x, y, z]. Defaults to [1, 1, 1]."
         },
         "interaction_point": {
           "type": "array",

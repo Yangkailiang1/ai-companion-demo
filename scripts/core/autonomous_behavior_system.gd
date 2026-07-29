@@ -106,8 +106,10 @@ func _scheduler_loop() -> void:
 func _on_world_state_changed(change_type: String, data: Dictionary) -> void:
 	if change_type not in ["object_properties_changed", "save_loaded", "time_of_day_changed"]:
 		return
-	if change_type == "object_properties_changed" and String(data.get("object_id", "")) != "plant":
-		return
+	if change_type == "object_properties_changed":
+		var changed_id := String(data.get("object_id", ""))
+		if not SemanticWorld.can_interact(changed_id, "water"):
+			return
 	if _evaluation_pending:
 		return
 	_evaluation_pending = true
@@ -255,6 +257,9 @@ func _score_candidates() -> Array:
 
 
 func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> Dictionary:
+	definition = _resolve_definition_targets(definition)
+	if definition.is_empty():
+		return {}
 	var activity_id := String(definition.get("id", ""))
 	if activity_id.is_empty() or not _resources_available(definition.get("resources", [])):
 		return {}
@@ -296,11 +301,31 @@ func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> D
 	}
 
 
+## [C9.1][T2.2] 将活动焦点和占用资源解析为当前房间的能力等价对象。
+func _resolve_definition_targets(source: Dictionary) -> Dictionary:
+	var definition := source.duplicate(true)
+	var focus := String(definition.get("focus_target", ""))
+	if not focus.is_empty():
+		var resolved_focus: String = SemanticWorld.resolve_object_reference(focus)
+		if resolved_focus.is_empty():
+			return {}
+		definition["focus_target"] = resolved_focus
+	var resources: Array = []
+	for reference in definition.get("resources", []):
+		var resolved: String = SemanticWorld.resolve_object_reference(String(reference))
+		if resolved.is_empty():
+			return {}
+		resources.append(resolved)
+	definition["resources"] = resources
+	return definition
+
+
 func _evaluate_condition(condition: String) -> Dictionary:
 	if condition.is_empty():
 		return {"available": true, "strength": 0.0}
 	if condition == "plant_dry":
-		var plant = SemanticWorld.get_object("plant")
+		var plant_id := SemanticWorld.resolve_object_reference("plant")
+		var plant = SemanticWorld.get_object(plant_id)
 		if not plant or String(plant.state) not in DRY_STATES:
 			return {"available": false, "strength": 0.0}
 		var moisture := float(plant.properties.get("moisture", 35.0))

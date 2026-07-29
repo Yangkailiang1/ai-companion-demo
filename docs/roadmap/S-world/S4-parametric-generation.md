@@ -2,7 +2,7 @@
 
 > 所属分支：S. 场景与世界
 > 节点编号：S4
-> 状态：`[ACTIVE v0.8.9]`
+> 状态：`[ACTIVE v0.8.14]`
 > 依赖：S2（多房间场景结构）、T2（语义世界）
 > 最后更新：2026-07-29 | 基线程：v0.8.9
 
@@ -58,6 +58,9 @@
   模式已通过完整双角色走位、注视、动作、表情、物体交互、对白和记忆演出合同。
 - `[DONE navigation contract]` 运行时 NavMesh 入树后显式上传，测试覆盖两个固定
   角色到七个关键剧情路点的连通性，避免家具 AABB 形成不可见封路。
+- `[DONE placement parameters v0.8.14]` Recipe/Manifest 支持逐实例三轴 `scale`
+  与可编译三点 lighting；模型拟合、碰撞 AABB 和布局约束共享同一倍率，编译结果
+  不再依赖手工补灯光字段。
 
 ### S4.2 `[ACTIVE v0.8.9]` 约束式家具布置
 
@@ -74,21 +77,25 @@
 - `[DONE room-type extension baseline]` 相同 Registry/编译合同已扩展到厨房与卧室；
   厨房 8 个槽位、卧室 7 个槽位均通过边界、家具重叠与桌面跟随约束；卧室已用
   KayKit CC0 双人床替换临时沙发占位。
+- `[DONE sunroom constraints v0.8.14]` seed 404 阳台配方包含两面独立开口、10 个
+  对象、桌面 follow、逐实例地毯缩放和植物/座椅净空，确定性编译及约束测试通过。
 - `[NEXT]` 增加门口净空、家具朝向/视线评分、多开口切割和失败后的确定性重采样。
 
 ### S4.3 `[ACTIVE baseline]` 模块化住宅生成
 
 模块化住宅生成：房间连接图、楼层和功能分区。
 
-- `[DONE data baseline]` 客厅、厨房、卧室均由可编辑 Recipe 和确定性 Manifest
+- `[DONE data baseline]` 客厅、厨房、卧室和阳台均由可编辑 Recipe 和确定性 Manifest
   描述，并通过版本化 `world_locations.json` 组成有向房间连接图。
 - `[DONE study manifest baseline]` seed 303 书房以独立 Manifest 接入同一 Registry
   和地点图；下一轮补对应 Recipe 与确定性编译哈希，使来源合同与前三房间同级。
+- `[DONE sunroom module v0.8.14]` seed 404 阳台绿植房复用同一运行时与 Registry，
+  通过书房拼接为第五房间，新增状态植物、局部灯、便携道具、动态软装和窗洞。
 - `[DONE runtime baseline]` 同一个参数化房间运行时按地点元数据加载不同 Manifest，
   应用独立根节点、语义可见域、入口和 Cast 出生点。
 - `[DONE visual baseline]` 厨房和卧室使用适配玩偶屋相机的三面墙表现，真实模型
   覆盖率分别为 8/8 与 7/7、fallback 为 0，并通过 Metal 1280×720 截图验收。
-- `[DONE portal module baseline]` Recipe 开口与地点图 portal 数据已映射为四个可见
+- `[DONE portal module baseline]` Recipe 开口与地点图 portal 数据已映射为八个可见
   门模块；门框、门扇、碰撞、标签、点击旅行和 `traverse` 语义合同均由通用装配器
   创建，不按厨房/卧室硬编码节点。
 - `[NEXT]` 加入门口净空约束、真实走廊模块、房间级流送、楼层坐标和整套住宅

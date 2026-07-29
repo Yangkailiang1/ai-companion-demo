@@ -1,5 +1,5 @@
 # Verifies: S1.2, S2.5, S4.1
-# Covers: four authored profiles -> one active rig -> room switch -> old rig off
+# Covers: five authored profiles -> one active rig -> room switch -> old rig off
 
 extends SceneTree
 
@@ -25,6 +25,7 @@ func _run() -> void:
 		"kitchen": world.get_node("Kitchen"),
 		"bedroom": world.get_node("Bedroom"),
 		"study": world.get_node("Study"),
+		"sunroom": world.get_node("Sunroom"),
 	}
 	_verify_profiles(rooms)
 	_verify_active_rigs(rooms, "living_room")

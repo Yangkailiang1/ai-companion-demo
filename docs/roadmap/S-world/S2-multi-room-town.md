@@ -2,7 +2,7 @@
 
 > 所属分支：S. 场景与世界
 > 节点编号：S2
-> 状态：`[ACTIVE v0.8.9]`
+> 状态：`[ACTIVE v0.8.14]`
 > 依赖：T2（语义世界空间查询）、X1（存档跨场景位置）
 > 最后更新：2026-07-29 | 基线程：v0.8.9
 
@@ -45,7 +45,10 @@
   CC0 家具并新增真实双人床。两份布局均通过边界、重叠和桌面跟随约束编译。
 - `[DONE study expansion]` 新增 seed 303 独立参数化书房，通过卧室双向进入；
   书架、扶手椅、阅读桌、暖灯、刚体书本和地毯均复用统一 Registry，未增加
-  `asset_id` 专用生成分支。四房间旅行图、语义隔离、入口和导航合同通过。
+  `asset_id` 专用生成分支。
+- `[DONE sunroom expansion v0.8.14]` seed 404 阳台绿植房通过书房右侧门无缝接入；
+  两盆状态植物、扶手椅、矮桌、暖光灯、水壶、饮料、动态靠枕、缩放地毯和真实
+  窗洞全部由 Recipe/Registry 声明。五房间旅行图、语义隔离、入口和导航合同通过。
 - `[DONE semantic scope baseline]` `SemanticWorld` 为生成物体记录 `location_id`，
   LLM 的物体列表与自然语言快照只暴露当前房间，避免厨房角色继续规划客厅沙发。
 - `[DONE residency baseline]` 持久 `AgentResidencyRegistry` 以 `agent_id →
@@ -55,12 +58,12 @@
 - `[DONE AI traverse baseline]` 玩家点击门仍切换活动房间；角色执行同一
   `traverse` affordance 时只更新自己的居民位置，不移动 PlayerBody 或玩家镜头。
   离开当前房的角色在动作反馈结束后卸载，玩家进入目标房时重新实体化。
-- `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过四房间模型
+- `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过五房间模型
   覆盖率、语义隔离、Cast、导航和非法旅行原子性；客厅剧情、体验模式与关键路点
   回归通过。厨房和卧室采用三面墙玩偶屋结构，并通过 1280×720 Metal 截图验收。
 - `[DONE cross-location persistence]` 角色所在地点/坐标和已加载、未加载房间的对象
   状态均可跨存档恢复；v1 迁移和坏存档保护通过独立 headless 合同测试。
-- `[DONE visible portal baseline]` 六条出口边均有数据驱动的门洞、暖木门框、门扇、
+- `[DONE visible portal baseline]` 八条出口边均有数据驱动的门洞、暖木门框、门扇、
   碰撞和“厨房/卧室/客厅”3D 门牌；玩家可点击门旅行，悬停与按下有视觉反馈。
   `WorldTravelPortal` 只持有稳定 `exit_id`，目标地点仍由 Catalog/Loader 解析，
   同时以 `traverse` affordance 注册到 `SemanticWorld`，可供后续角色规划复用。
@@ -71,7 +74,7 @@
 - `[DONE player entry baseline]` 持久 `PlayerBody` 会按每个入口声明的位置和朝向
   落地；玩家入口不再覆盖咕咕嘎嘎的 AI 出生点，观察/第一人称跨房切换均可复用
   同一地点图。
-- `[DONE seamless home baseline]` 四个参数化房间已有声明式 `world_origin`，
+- `[DONE seamless home baseline]` 五个参数化房间已有声明式 `world_origin`，
   相邻门洞与地板在同一世界坐标对齐并同时常驻；PlayerBody 走过门区只切换活动
   语义房间，不再传送、清空画面或坠出地板。点击门仍作为无障碍快速旅行入口。
 - `[DONE physical door baseline]` 每个活动入口具有带碰撞的 `AnimatableBody3D`
@@ -97,8 +100,8 @@
 4. 角色进入已加载范围时实体化，离开范围时写回状态并释放表现节点。
 
 - `[DONE]` 逻辑居民位置常驻、当前房间按角色实体化、AI traverse 和存档恢复。
-- `[DONE small-home streaming baseline]` 客厅、厨房、卧室、书房几何和碰撞同时
-  常驻；仅活动房间启用 NavigationRegion 和完整 Cast，避免四张导航网格重叠。
+- `[DONE small-home streaming baseline]` 客厅、厨房、卧室、书房、阳台几何和碰撞
+  同时常驻；仅活动房间启用 NavigationRegion 和完整 Cast，避免导航网格重叠。
 - `[DONE offscreen-life baseline]` 当前房外居民按 30 秒/游戏小时低频执行符号活动，
   推进独立需求、记忆、心理活动完成记录和居民位置；进入对应房间时恢复完整角色，
   并通过折叠聊天显示最近的“生活痕迹”。演出模式下完全暂停。
@@ -107,7 +110,7 @@
 
 ## 建议执行顺序
 
-住宅四房间、地点图、跨地点存档、可点击门和居民归属基线已经建立；
+住宅五房间、地点图、跨地点存档、可点击门和居民归属基线已经建立；
 下一步先完成离屏低频状态推进，再补连续走廊。之后才
 扩大到庭院和街道，避免角色日程与流送策略反复返工。
 

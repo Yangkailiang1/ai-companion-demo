@@ -186,6 +186,43 @@ func get_active_object_ids() -> Array[String]:
 	return result
 
 
+## [T2.2][C9.1] 将旧蓝图中的功能引用解析为当前房间具备相同 affordance 的对象。
+## 精确 ID 优先；找不到时按能力与少量稳定语义条件选择，不依赖具体模型路径。
+func resolve_object_reference(reference_id: String) -> String:
+	if get_object(reference_id) != null:
+		return reference_id
+	var required_affordance := _reference_affordance(reference_id)
+	if required_affordance.is_empty():
+		return ""
+	for item in list_objects():
+		var affordances: Array = item.get("affordances", [])
+		if required_affordance not in affordances:
+			continue
+		var candidate_id := String(item.get("id", ""))
+		var candidate_name := String(item.get("name", ""))
+		var properties: Dictionary = item.get("properties", {})
+		if reference_id == "tv" and not (
+			"tv" in candidate_id.to_lower() or "电视" in candidate_name
+		):
+			continue
+		if reference_id == "watering_can" and not properties.has("water_amount"):
+			continue
+		return candidate_id
+	return ""
+
+
+## [T2.2] 返回传统功能引用对应的最低能力合同。
+func _reference_affordance(reference_id: String) -> String:
+	match reference_id:
+		"plant": return "water"
+		"sofa": return "sit"
+		"book": return "read"
+		"milk_tea": return "drink"
+		"tv": return "turn_on"
+		"watering_can": return "pick_up"
+	return ""
+
+
 # 更新物体状态
 func update_object_state(obj_id: String, new_state: String) -> void:
 	if objects.has(obj_id):

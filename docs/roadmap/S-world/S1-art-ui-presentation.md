@@ -24,7 +24,7 @@
 
 完善家具比例、接触阴影、墙体细节、窗景、昼夜灯光和环境音。
 
-- `[DONE baseline]` 四个参数化房间在 Manifest 中分别声明 key/fill/accent
+- `[DONE baseline]` 五个参数化房间在 Manifest 中分别声明 key/fill/accent
   色温、强度、位置与范围；运行时只启用玩家当前房间的三灯光组，避免拼接住宅
   的多个无限方向光叠加。
 - `[DONE baseline]` 主环境压低泛白环境光与曝光，启用 SSAO 接触阴影；方向主光

@@ -51,6 +51,10 @@ func create_placement(parent: Node, placement: Dictionary) -> Node3D:
 	var geometry: Dictionary = asset_entry.get("geometry", {})
 	var aabb_m: Array = geometry.get("aabb_m", [0.3, 0.3, 0.3])
 	var aabb_vec := _array_to_vector3(aabb_m)
+	var placement_scale := _array_to_vector3(
+		placement.get("scale", [1.0, 1.0, 1.0])
+	)
+	aabb_vec *= placement_scale
 	var fit_mode: String = geometry.get("fit_mode", "uniform")
 	var physics_role: String = asset_entry.get("roles", {}).get("physics", "none")
 	var visual_role: String = asset_entry.get("roles", {}).get("visual", "clutter")
