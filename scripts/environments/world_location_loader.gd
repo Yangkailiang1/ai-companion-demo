@@ -1,4 +1,4 @@
-# Roadmap: S2.1, S4.1, S2.2
+# Roadmap: S2.1, S2.2, P2.3
 # Responsibility: Select and replace the active WorldLocation scene; does not
 # generate geometry or own character behavior.
 # Collaborators: ParametricRoomRuntime, living_room.tscn, WorldTravelPortal
@@ -13,6 +13,8 @@ signal world_location_loaded(location_id: String, location: Node3D)
 const LEGACY_ROOM_PATH := "res://scenes/living_room.tscn"
 const PARAMETRIC_ROOM_PATH := \
 	"res://scenes/environments/parametric_living_room_runtime.tscn"
+const LEGACY_PLAYER_SPAWN := Vector3(0.0, 0.0, -2.2)
+const LEGACY_PLAYER_YAW_DEGREES := 180.0
 
 @export_enum("legacy", "parametric") var default_world_mode := "legacy"
 
@@ -49,6 +51,7 @@ func switch_location(requested_mode: String) -> String:
 	_active_location = packed.instantiate()
 	_active_location.name = "LivingRoom"
 	add_child(_active_location)
+	_position_player_at_floor(LEGACY_PLAYER_SPAWN, LEGACY_PLAYER_YAW_DEGREES)
 	current_mode = resolved_mode
 	current_location_id = "living_room"
 	_activate_legacy_semantics()
@@ -70,7 +73,7 @@ func travel_to(location_id: String, entry_id: String = "default") -> bool:
 	if next_location == null:
 		return false
 	location["location_id"] = location_id
-	location["cast_spawns"] = _resolve_spawns(location, entry_id)
+	location["cast_spawns"] = location.get("cast_spawns", {}).duplicate(true)
 	if next_location.has_method("configure_location"):
 		next_location.configure_location(location)
 	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))
@@ -82,6 +85,7 @@ func travel_to(location_id: String, entry_id: String = "default") -> bool:
 	current_mode = "parametric"
 	current_location_id = location_id
 	add_child(_active_location)
+	_position_player_at_entry(location, entry_id)
 	location_loaded.emit(current_mode, _active_location)
 	world_location_loaded.emit(current_location_id, _active_location)
 	return true
@@ -113,16 +117,25 @@ func _normalize_mode(requested_mode: String) -> String:
 	return requested_mode if requested_mode in ["legacy", "parametric"] else "legacy"
 
 
-## [S2.2] 将入口位置覆盖到玩家同行角色，其他角色保留房间声明出生点。
-func _resolve_spawns(location: Dictionary, entry_id: String) -> Dictionary:
-	var spawns: Dictionary = location.get("cast_spawns", {}).duplicate(true)
+## [S2.2][P2.3] 解析地点入口并传送持久玩家身体；AI Cast 出生点不受影响。
+func _position_player_at_entry(location: Dictionary, entry_id: String) -> void:
 	var entries = location.get("entries", {})
 	if entries is Dictionary and entries.has(entry_id):
 		var entry: Dictionary = entries[entry_id]
-		var actor_spawn: Dictionary = spawns.get("Agent", {}).duplicate(true)
-		actor_spawn["position"] = entry.get("position", actor_spawn.get("position", []))
-		spawns["Agent"] = actor_spawn
-	return spawns
+		var rotation := _array_to_vector3(
+			entry.get("rotation_deg", []), Vector3(0.0, LEGACY_PLAYER_YAW_DEGREES, 0.0)
+		)
+		_position_player_at_floor(
+			_array_to_vector3(entry.get("position", []), LEGACY_PLAYER_SPAWN),
+			rotation.y,
+		)
+
+
+## [P2.3] 将 PlayerBody 放到地面坐标；节点缺失时安全跳过。
+func _position_player_at_floor(floor_position: Vector3, yaw_degrees: float) -> void:
+	var player := get_node_or_null("PlayerBody")
+	if player != null and player.has_method("teleport_to_floor_position"):
+		player.teleport_to_floor_position(floor_position, yaw_degrees)
 
 
 ## [S2.2] 接收来自 WorldTravelPortal 的旅行请求，通过 travel_via 执行原子切换。
@@ -158,3 +171,10 @@ func _free_after_grace_period(retired: Node3D) -> void:
 		await get_tree().process_frame
 	if is_instance_valid(retired):
 		retired.queue_free()
+
+
+## [S2.2][P2.3] 将 JSON 三元数组转换为世界坐标。
+func _array_to_vector3(value: Variant, fallback: Vector3) -> Vector3:
+	if value is Array and value.size() == 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return fallback

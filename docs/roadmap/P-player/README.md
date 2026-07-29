@@ -9,7 +9,7 @@
 | 节点 | 文档 | 状态 | 简介 |
 |------|------|------|------|
 | P1 | [P1-player-avatar.md](./P1-player-avatar.md) | `[LATER]` | 玩家形象选择与模型导入 |
-| P2 | [P2-control-camera.md](./P2-control-camera.md) | `[NEXT]` | 第一/第三人称控制、相机和碰撞 |
+| P2 | [P2-control-camera.md](./P2-control-camera.md) | `[ACTIVE baseline]` | 观察/第一人称控制、相机和碰撞；第三人称待玩家模型 |
 | P3 | [P3-player-interaction.md](./P3-player-interaction.md) | `[NEXT]` | 对话、指向、赠送、协作等交互 |
 | P4 | [P4-personalization.md](./P4-personalization.md) | `[LATER]` | 个性化、无障碍、输入设备和成长记录 |
 
@@ -27,4 +27,4 @@ P 分支让玩家从"观察者"变为"参与者"。从基础的移动和对话�
 P2 玩家控制 + P3 交互 + C4 接触系统 ──> 玩家与角色共同活动
 ```
 
-> 最后更新：2026-07-24 | 基线程：v0.7
+> 最后更新：2026-07-29 | 基线程：v0.9

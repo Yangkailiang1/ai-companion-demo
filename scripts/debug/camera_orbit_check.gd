@@ -18,6 +18,7 @@ func _run() -> void:
 	current_scene = scene
 	for _frame in range(5):
 		await process_frame
+	root.gui_release_focus()
 
 	var camera := scene.find_child("Camera3D", true, false) as Camera3D
 	_assert(camera != null, "camera missing")

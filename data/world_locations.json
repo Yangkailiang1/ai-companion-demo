@@ -14,9 +14,9 @@
         "JueAgent": {"position": [2.9, 0.0, 1.0], "rotation_deg": [0.0, -15.0, 0.0]}
       },
       "entries": {
-        "default": {"position": [0.0, 0.0, -2.2]},
-        "from_kitchen": {"position": [-1.2, 0.0, -2.2]},
-        "from_bedroom": {"position": [1.2, 0.0, -2.2]}
+        "default": {"position": [0.0, 0.0, -2.2], "rotation_deg": [0.0, 180.0, 0.0]},
+        "from_kitchen": {"position": [-1.2, 0.0, -2.2], "rotation_deg": [0.0, 180.0, 0.0]},
+        "from_bedroom": {"position": [1.2, 0.0, -2.2], "rotation_deg": [0.0, 180.0, 0.0]}
       },
       "exits": {
         "to_kitchen": {
@@ -57,8 +57,8 @@
         "JueAgent": {"position": [0.65, 0.0, 1.8], "rotation_deg": [0.0, 180.0, 0.0]}
       },
       "entries": {
-        "default": {"position": [0.0, 0.0, 2.15]},
-        "from_living": {"position": [0.0, 0.0, 2.15]}
+        "default": {"position": [0.0, 0.0, 2.15], "rotation_deg": [0.0, 0.0, 0.0]},
+        "from_living": {"position": [0.0, 0.0, 2.15], "rotation_deg": [0.0, 0.0, 0.0]}
       },
       "exits": {
         "to_living": {
@@ -87,8 +87,8 @@
         "JueAgent": {"position": [0.65, 0.0, 2.65], "rotation_deg": [0.0, 180.0, 0.0]}
       },
       "entries": {
-        "default": {"position": [0.0, 0.0, 2.9]},
-        "from_living": {"position": [0.0, 0.0, 2.9]}
+        "default": {"position": [0.0, 0.0, 2.9], "rotation_deg": [0.0, 0.0, 0.0]},
+        "from_living": {"position": [0.0, 0.0, 2.9], "rotation_deg": [0.0, 0.0, 0.0]}
       },
       "exits": {
         "to_living": {

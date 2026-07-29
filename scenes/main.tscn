@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://main001"]
+[gd_scene load_steps=8 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/environments/world_location_loader.gd" id="1_world_loader"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
 [ext_resource type="Script" path="res://scripts/camera/orbit_room_camera.gd" id="3_orbit_camera"]
+[ext_resource type="Script" path="res://scripts/player/player_first_person_controller.gd" id="4_player"]
+[ext_resource type="Script" path="res://scripts/ui/player_camera_hint.gd" id="5_camera_hint"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -11,6 +13,10 @@ ambient_light_source = 2
 ambient_light_color = Color(0.92, 0.82, 0.68, 1)
 ambient_light_energy = 0.82
 tonemap_mode = 2
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
+radius = 0.35
+height = 1.8
 
 [node name="Main" type="Node3D"]
 
@@ -24,6 +30,15 @@ environment = SubResource("Environment_main")
 transform = Transform3D(1, 0, 0, 0, 0.737277, 0.67559, 0, -0.67559, 0.737277, 0, 6.8, 8.8)
 script = ExtResource("3_orbit_camera")
 fov = 48.0
+
+[node name="PlayerBody" type="CharacterBody3D" parent="WorldRoot"]
+position = Vector3(0, 0.9, -2.2)
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("4_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WorldRoot/PlayerBody"]
+shape = SubResource("CapsuleShape_player")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
@@ -149,14 +164,15 @@ layout_mode = 1
 anchors_preset = 0
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -220.0
+offset_left = -300.0
 offset_top = 18.0
-offset_right = 220.0
+offset_right = 100.0
 offset_bottom = 48.0
 mouse_filter = 2
 text = "右键拖拽 / 滚轮 / Q E 调整视角"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 16
+script = ExtResource("5_camera_hint")
 
 [node name="InputArea" type="Panel" parent="UILayer/UI"]
 layout_mode = 1

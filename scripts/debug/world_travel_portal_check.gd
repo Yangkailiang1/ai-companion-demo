@@ -4,7 +4,7 @@
 
 extends SceneTree
 
-const EXPECTED_KITCHEN_ENTRY := Vector3(0.0, 0.0, 2.15)
+const EXPECTED_KITCHEN_ENTRY := Vector3(0.0, 0.9, 2.15)
 
 var _failed := false
 var _temporary_paths: Array[String] = []
@@ -83,7 +83,7 @@ func _verify_four_traversals(loader: WorldLocationLoader, kitchen: Node, sibling
 	_assert(not bool(stale_sibling.get("success", false)), "retired sibling accepted")
 	await _settle()
 	_assert(loader.current_location_id == "kitchen", "kitchen travel")
-	_verify_agent_entry(loader, EXPECTED_KITCHEN_ENTRY)
+	_verify_player_entry(loader, EXPECTED_KITCHEN_ENTRY)
 	await _traverse_only_portal(loader, "living_room")
 	var bedroom := _find_portal(loader.get_active_location(), "Portal_door_to_bedroom")
 	_assert(bedroom != null, "fresh bedroom portal missing")
@@ -106,12 +106,12 @@ func _traverse_only_portal(loader: WorldLocationLoader, expected_location: Strin
 	_assert(loader.current_location_id == expected_location, "expected " + expected_location)
 
 
-## [S2.2] 验证旅行入口覆盖同行 Agent 出生点。
-func _verify_agent_entry(loader: WorldLocationLoader, expected: Vector3) -> void:
-	var agent := loader.get_active_location().get_node_or_null("Agent") as Node3D
-	_assert(agent != null, "Agent missing after travel")
-	if agent != null:
-		_assert(agent.position.distance_to(expected) < 0.05, "wrong kitchen entry")
+## [S2.2][P2.3] 验证旅行入口只定位持久 PlayerBody。
+func _verify_player_entry(loader: WorldLocationLoader, expected: Vector3) -> void:
+	var player := loader.get_node_or_null("PlayerBody") as Node3D
+	_assert(player != null, "PlayerBody missing after travel")
+	if player != null:
+		_assert(player.position.distance_to(expected) < 0.05, "wrong kitchen entry")
 
 
 ## [S2.2] 验证各类非法入口目录被拒绝且新目录不发布部分状态。
