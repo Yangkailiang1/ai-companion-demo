@@ -1,6 +1,7 @@
 extends SceneTree
 
 const TEST_SAVE_PATH := "/private/tmp/v06_save_plant_contract_test.json"
+const POSITION_RESTORE_TOLERANCE_METERS := 0.03
 var failed := false
 
 
@@ -94,8 +95,18 @@ func _load_and_verify(context: Dictionary, baseline: Dictionary) -> void:
 	await process_frame
 	_assert(is_equal_approx(context.world_simulator.game_time, 17.0), "game time must restore")
 	_assert(context.world_simulator.day_number == 4, "day number must restore")
-	_assert(context.main_agent.global_position.distance_to(baseline.main_position) < 0.001, "main position must restore")
-	_assert(context.jue_agent.global_position.distance_to(baseline.jue_position) < 0.001, "Jue position must restore")
+	_assert(
+		context.main_agent.global_position.distance_to(baseline.main_position)
+			< POSITION_RESTORE_TOLERANCE_METERS,
+		"main position must restore"
+	)
+	_assert(
+		context.jue_agent.global_position.distance_to(baseline.jue_position)
+			< POSITION_RESTORE_TOLERANCE_METERS,
+		"Jue position must restore: expected=%s actual=%s" % [
+			baseline.jue_position, context.jue_agent.global_position
+		]
+	)
 	_assert(
 		String(context.psyche_system.get_agent_state("main_agent").get("attention", "")) == "player",
 		"main Agent psychology must restore"

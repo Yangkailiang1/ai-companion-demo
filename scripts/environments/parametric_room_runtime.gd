@@ -1,8 +1,9 @@
-# Roadmap: S2.1, S4.1, C6.2
+# Roadmap: S2.1, S4.1, C6.2, X1.2
 # Responsibility: Assemble one playable generated room and its shared cast;
 # does not choose world mode or implement generation algorithms.
-# Collaborators: ParametricSceneBuilder, WorldCastAssembler
-# Tests: scripts/debug/world_location_loader_check.gd
+# Collaborators: ParametricSceneBuilder, WorldCastAssembler, SaveSystem
+# Tests: scripts/debug/world_location_loader_check.gd,
+# scripts/debug/cross_location_save_check.gd
 
 extends Node3D
 
@@ -16,6 +17,7 @@ var assembled_cast: Array[String] = []
 var location_id := "living_room"
 var location_description := ""
 var cast_spawns: Dictionary = {}
+var _location_spawns_restored := false
 
 
 ## [S2.2] 在节点入树前注入地点资源与角色出生策略。
@@ -49,11 +51,19 @@ func _load_json(path: String) -> Dictionary:
 	return parsed as Dictionary if parsed is Dictionary else {}
 
 
-## [S2.1][S4.2] 等待地点进入 World3D 后上传运行时 NavigationMesh 并强制同步。
+## [S2.1][S4.2][X1.2] 等待地点进入 World3D 后上传运行时 NavigationMesh 并强制同步。
 ## 生成网格在入树前逐多边形构造，不能依赖 Godot 的隐式上传时序。
+## 出生点阶段后触发 SaveSystem 延迟应用，使存档位置覆盖声明出生点。
 func _sync_navigation() -> void:
 	await get_tree().physics_frame
 	_restore_location_spawns()
+	_location_spawns_restored = true
+	# [X1.2] 出生点已恢复，若存在匹配当前位置的存档 Agent 状态则覆盖出生点
+	var save_system := get_node_or_null("/root/SaveSystem")
+	if save_system != null and save_system.has_method(
+		"apply_pending_agent_states_for_location"
+	):
+		save_system.apply_pending_agent_states_for_location(location_id)
 	var region := get_node_or_null(
 		"GeneratedRoom/Structure/NavigationRegion3D"
 	) as NavigationRegion3D
@@ -63,6 +73,11 @@ func _sync_navigation() -> void:
 	var map_rid := region.get_navigation_map()
 	if map_rid != RID():
 		NavigationServer3D.map_force_update(map_rid)
+
+
+## [X1.2] 返回地点声明出生点是否已经写入 Cast；纯读取。
+func are_location_spawns_restored() -> bool:
+	return _location_spawns_restored
 
 
 ## [S2.1][X1] 在存档尚未包含 location_id 时恢复当前地点声明的出生点。

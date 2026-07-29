@@ -1,22 +1,33 @@
 # Save system and stateful objects
 
-## v0.6 baseline
+## Schema v2 cross-location baseline
 
 `SaveSystem` stores a versioned JSON snapshot at:
 
 ```text
-user://world_save_v1.json
+user://world_save_v2.json
 ```
 
-Schema version 1 contains:
+Schema version 2 contains:
 
+- the active `world_mode` and `location_id`;
 - world time, day, time accumulator and Agent needs;
 - independent needs for each known `agent_id` (with the original main-Agent field
   retained for backward-compatible saves and HUD access);
 - each semantic object's state and structured properties;
-- each loaded Agent's identity, position, rotation, activity and emotion.
+- each loaded Agent's identity, location, position, rotation, activity and emotion;
 - each Agent's persistent mood, attention, intention, recent activities, private
   thought buffer, current daily plan and uncertain beliefs about other characters.
+
+The loader restores the location before applying world, object, and Agent state.
+Object state for unloaded rooms remains pending until that room's generated objects
+register with `SemanticWorld`. Agent transforms are applied once, after the target
+room's cast has spawned, then consumed.
+
+Version 1 remains readable: `user://world_save_v1.json` is used as a fallback when
+the v2 default does not exist and is migrated in memory to `legacy/living_room`.
+Unknown schemas, invalid locations, and malformed Agent/object records are rejected
+before the active room is replaced.
 
 The runtime attempts to load the default save after the startup scene is ready and
 autosaves every 60 seconds. Tests can pass an explicit path to `save_game()` and
@@ -53,8 +64,13 @@ containers rather than adding object-specific logic to `CognitiveCycle`.
 ```bash
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
   --script scripts/debug/save_plant_state_check.gd
+
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/cross_location_save_check.gd
 ```
 
-The check verifies severe dehydration, semantic visibility, two-Agent position
+The first check verifies severe dehydration, semantic visibility, two-Agent position
 restore, world-time restore, structured plant-state restore, and recovery through
-the real `water` affordance.
+the real `water` affordance. The cross-location check verifies kitchen/bedroom
+object state, two-Agent one-shot transform restoration, deferred room state, v1
+migration, same-room reload, and fail-closed behavior for malformed snapshots.

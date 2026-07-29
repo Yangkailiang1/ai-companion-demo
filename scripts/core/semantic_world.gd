@@ -2,11 +2,21 @@
 # 设计文档 §四：Object Affordance Graph + 自然语言描述生成
 # LLM 不是"看"像素，而是"读"这个模块生成的语义快照
 
+# Roadmap: T2, S2, S4, X1.2
+# Responsibility: Register and query semantic objects with location-scoped
+# visibility, deferred save-state persistence and structured properties;
+# does not own navigation, animation, physics, cognition or UI.
+# Collaborators: WorldSimulator, MessageBus, SaveSystem
+# Tests: scripts/debug/save_plant_state_check.gd,
+# scripts/debug/cross_location_save_check.gd
+
 extends Node
 
 # 场景物体字典: {object_id: ObjectData}
 var objects: Dictionary = {}
 var active_location_id := "living_room"
+## [X1.2] 挂起的对象状态 (未实例化的房间对象)
+var _pending_object_states: Dictionary = {}
 
 # 场景定义
 var scene_info: Dictionary = {
@@ -48,6 +58,7 @@ class ObjectData:
 		return base
 
 
+## [T2] 模块就绪时加载场景配置。
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load_scene_config()
@@ -114,8 +125,9 @@ func _create_default_objects() -> void:
 		objects[obj.id] = obj
 
 
-## [S4.2] 用生成场景 Manifest 的 placement 新增或刷新语义物体。
+## [S4.2][X1.2] 用生成场景 Manifest 的 placement 新增或刷新语义物体。
 ## 保留相同 object_id 已有的存档状态，仅同步空间、能力和 Godot 节点引用。
+## 若该 id 存在挂起状态则消费并应用。
 func upsert_generated_object(data: Dictionary, godot_node: Node3D) -> void:
 	var object_id := String(data.get("semantic_id", ""))
 	if object_id.is_empty():
@@ -140,6 +152,11 @@ func upsert_generated_object(data: Dictionary, godot_node: Node3D) -> void:
 	generated_properties["location_id"] = active_location_id
 	obj.properties.merge(generated_properties, true)
 	obj.godot_node = godot_node
+	# [X1.2] 如果有该物体之前的挂起状态，消费并应用到新注册的物体
+	if _pending_object_states.has(object_id):
+		var pending: Dictionary = _pending_object_states[object_id]
+		_apply_pending_state(obj, pending)
+		_pending_object_states.erase(object_id)
 
 
 ## [S2.2] 切换 AI 当前可见地点，并更新自然语言场景描述。
@@ -190,6 +207,7 @@ func update_object_properties(obj_id: String, properties: Dictionary, new_state:
 	})
 
 
+## [X1.2] 导出当前已注册物体的状态及仍挂起的未实例化房间物体状态。
 func export_save_state() -> Dictionary:
 	var result := {}
 	for obj_id in objects:
@@ -197,16 +215,33 @@ func export_save_state() -> Dictionary:
 			"state": objects[obj_id].state,
 			"properties": objects[obj_id].properties.duplicate(true),
 		}
+	# 合并挂起状态，避免旅途中保存丢失未加载房间的物体状态
+	for pending_id in _pending_object_states:
+		if not result.has(pending_id):
+			result[pending_id] = _pending_object_states[pending_id].duplicate(true)
 	return result
 
 
+## [X1.2] 导入存档物体状态；已注册物体直接应用，未注册的保留为挂起状态。
+## 形式错误条目按物体跳过，不清除有效挂起状态。
 func import_save_state(data: Dictionary) -> void:
 	for obj_id in data:
-		if not objects.has(obj_id) or not data[obj_id] is Dictionary:
+		var saved := _normalize_saved_object_state(data[obj_id])
+		if saved.is_empty():
 			continue
-		var saved: Dictionary = data[obj_id]
-		objects[obj_id].state = String(saved.get("state", objects[obj_id].state))
-		objects[obj_id].properties = saved.get("properties", {}).duplicate(true)
+		if objects.has(obj_id):
+			var obj: ObjectData = objects[obj_id]
+			_apply_pending_state(obj, saved)
+		else:
+			_pending_object_states[obj_id] = saved
+
+
+## [X1.2] 供测试专用：清空已注册物体和挂起状态以模拟全新运行时。
+## 不影响已实例化的 Godot 节点。
+func reset_for_testing() -> void:
+	objects.clear()
+	_pending_object_states.clear()
+
 
 # 查看某个 affordance 动词是否可用
 func can_interact(obj_id: String, verb: String) -> bool:
@@ -270,6 +305,31 @@ func _dict_to_vec3(dict_or_array) -> Vector3:
 func _is_object_in_active_location(obj: ObjectData) -> bool:
 	var location_id := String(obj.properties.get("location_id", "living_room"))
 	return location_id == active_location_id
+
+
+## [X1.2] 将保存的状态和属性应用到已注册物体，只覆盖可持久化字段；
+## 不覆盖空间坐标、affordance 和模型元数据。
+func _apply_pending_state(obj: ObjectData, saved: Dictionary) -> void:
+	if saved.has("state"):
+		obj.state = saved.state
+	if saved.has("properties"):
+		obj.properties.merge(saved.properties, true)
+
+
+## [X1.2] 严格提取可持久化字段；畸形条目返回空且不影响已有 pending。
+func _normalize_saved_object_state(value: Variant) -> Dictionary:
+	if not value is Dictionary:
+		return {}
+	var normalized := {}
+	if value.has("state"):
+		if not value.state is String:
+			return {}
+		normalized["state"] = value.state
+	if value.has("properties"):
+		if not value.properties is Dictionary:
+			return {}
+		normalized["properties"] = value.properties.duplicate(true)
+	return normalized
 
 
 func _load_json(path: String) -> Variant:
