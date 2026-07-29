@@ -32,7 +32,9 @@ DeepSeek 每次只接收一个小批次，并显式调用对应 Skill。不要�
 ```text
 使用 $prepare-character-model-assets 处理指定目录中最多 3 个同格式角色包。
 逐个分类 public_redistributable/local_only/rejected，生成 GLB、角色 manifest、
-骨骼/Morph/动画清单和转换报告。不要修改动作库、表情库或核心 Runtime。
+骨骼/Morph/动画清单、`character_intake.json` 和转换报告。逐个运行
+`tools/assets/validate_character_intake.py <intake> --project-root .`。
+不要修改动作库、表情库或核心 Runtime。
 ```
 
 需要：完整压缩包、readme/许可证、贴图、PMX/FBX/VRM/GLB 主文件。PMX 与授权

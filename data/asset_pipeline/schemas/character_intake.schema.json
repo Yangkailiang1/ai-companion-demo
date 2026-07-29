@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-companion-demo/asset_pipeline/schemas/character_intake.schema.json",
+  "title": "Character Intake",
+  "description": "O2.2 machine-readable intake slice for a single character model package.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "description": "Intake schema version; must be exactly 1.",
+      "type": "integer",
+      "const": 1
+    },
+    "character_id": {
+      "description": "Stable lower snake_case identifier for this character.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "classification": {
+      "description": "License classification tier.",
+      "type": "string",
+      "enum": [
+        "public_redistributable",
+        "local_only",
+        "rejected"
+      ]
+    },
+    "status": {
+      "description": "Pipeline status; never accepted.",
+      "type": "string",
+      "enum": [
+        "downloaded",
+        "inventoried",
+        "metadata_candidate",
+        "quarantined",
+        "rejected"
+      ]
+    },
+    "model_path": {
+      "description": "res:// path to the character model GLB/GLTF.",
+      "type": "string",
+      "pattern": "^res://"
+    },
+    "provenance_path": {
+      "description": "res:// path to provenance JSON.",
+      "type": "string",
+      "pattern": "^res://"
+    },
+    "inventories": {
+      "description": "res:// paths to bone, morph, and animation inventory JSON files.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bones": {
+          "type": "string",
+          "pattern": "^res://"
+        },
+        "morphs": {
+          "type": "string",
+          "pattern": "^res://"
+        },
+        "animations": {
+          "type": "string",
+          "pattern": "^res://"
+        }
+      },
+      "required": ["bones", "morphs", "animations"]
+    },
+    "source_sha256": {
+      "description": "Lowercase 64-character hex digest of the model source.",
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "notes": {
+      "description": "Optional non-empty notes about the intake.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "character_id",
+    "classification",
+    "status",
+    "model_path",
+    "provenance_path",
+    "inventories",
+    "source_sha256"
+  ]
+}

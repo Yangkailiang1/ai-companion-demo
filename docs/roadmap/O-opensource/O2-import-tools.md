@@ -33,10 +33,19 @@
   [`ASSET_PIPELINE_CONTRACTS.md`](../../ASSET_PIPELINE_CONTRACTS.md) 与
   [`DEEPSEEK_ASSET_PIPELINE_HANDOFF.md`](../../DEEPSEEK_ASSET_PIPELINE_HANDOFF.md)。
 
-### O2.2 `[NEXT]` 机器可读 intake schemas
+### O2.2 `[ACTIVE character slice]` 机器可读 intake schemas
 
 为人物包、动作包、表情包及批处理结果建立正式 JSON Schema、CLI 校验器和
-Godot 编辑器预览入口；当前 Skill 合同先作为可执行基线。
+Godot 编辑器预览入口。
+
+- `[DONE character intake]` 人物包已有 Draft 2020-12 Schema、无第三方依赖 CLI
+  和真实企鹅 intake；`public_redistributable` / `local_only` / `rejected`
+  与 pipeline 状态分离，禁止自动化输出 `accepted`。
+- 9 项正负例覆盖许可证 fail-closed、redistribution、SHA、缺文件、坏 JSON、
+  `..`、反斜杠与符号链接越界、rejected 规则；真实企鹅包通过且保持
+  `local_only`。
+- `[NEXT]` 以相同结构补动作、表情和批处理结果 schema，再增加 Godot 编辑器
+  只读预览入口。
 
 ### O2.3 `[DONE golden pipeline]` 安全资产发布黄金样例
 

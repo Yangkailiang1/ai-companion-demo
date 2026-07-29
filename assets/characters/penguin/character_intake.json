@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "character_id": "penguin",
+  "classification": "local_only",
+  "status": "inventoried",
+  "model_path": "res://assets/characters/penguin/penguin.glb",
+  "provenance_path": "res://assets/characters/penguin/provenance.json",
+  "inventories": {
+    "bones": "res://assets/characters/penguin/bone_inventory.json",
+    "morphs": "res://assets/characters/penguin/morph_inventory.json",
+    "animations": "res://assets/characters/penguin/animation_inventory.json"
+  },
+  "source_sha256": "15435e0997a422c6dfd14564408bb09217242b8662aa622139831820f1d9e48b",
+  "notes": [
+    "Local .blend/.vrm source with no redistribution terms; private prototype only."
+  ]
+}

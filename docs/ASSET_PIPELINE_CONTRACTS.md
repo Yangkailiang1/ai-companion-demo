@@ -1,7 +1,7 @@
 # 解耦资产流水线合同
 
 > Roadmap：S4、C2、C3、C6、O2、O4
-> 最后更新：2026-07-28
+> 最后更新：2026-07-29
 
 项目把外部素材拆成四类独立输入。素材下载、转换、语义映射和 Godot 接入不能在
 一个批处理中混做；四条流水线只能通过版本化 Manifest、Registry 和 Adapter 合同
@@ -46,6 +46,12 @@ LLM、记忆、人格、剧情导演和物理世界只消费稳定语义 ID，�
 4. DeepSeek/Claude Code 只负责审计、提取、转换、生成候选配置和测试证据。
 5. Codex 负责许可证终审、视觉验收、目录晋级、路线图状态、提交和推送。
 6. 测量、轴向与预览状态必须绑定源 SHA-256；同名文件内容变化后退回 inventoried。
+
+人物批处理还必须生成符合
+`data/asset_pipeline/schemas/character_intake.schema.json` 的
+`character_intake.json`，并运行 `tools/assets/validate_character_intake.py`。
+校验器会限制状态、阻止 `res://` 越界（含符号链接）、核对 provenance SHA 和
+redistribution，并确认骨骼、Morph、动画清单都存在且可解析。
 
 ## 对应 Skills
 

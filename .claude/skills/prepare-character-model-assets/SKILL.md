@@ -28,6 +28,8 @@ Read `CLAUDE.md`, `docs/roadmap/C-characters/C6-character-import.md`,
 7. Produce:
    - `model.glb`;
    - `provenance.json`;
+   - `character_intake.json` conforming to
+     `data/asset_pipeline/schemas/character_intake.schema.json`;
    - bone, morph, material, and embedded-animation inventories;
    - a version-1 manifest based on
      `data/examples/chibi_character_manifest.example.json`;
@@ -39,6 +41,9 @@ Read `CLAUDE.md`, `docs/roadmap/C-characters/C6-character-import.md`,
    material/alpha correctness, collision dimensions, and absence of a T-pose idle.
 10. Run character adapter and runtime-binding checks. Report failures per character;
     never let one broken package invalidate accepted siblings.
+11. Before handoff, run `tools/assets/validate_character_intake.py` for every package.
+    Treat missing files, malformed inventory JSON, SHA/license mismatch, or any
+    `res://` traversal/symlink escape as a per-character failure.
 
 ## Boundaries
 
