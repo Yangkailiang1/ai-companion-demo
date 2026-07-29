@@ -34,22 +34,25 @@
 
 ### S2.2 `[ACTIVE baseline]` 完整住宅
 
-增加厨房、卧室、走廊，形成第一套住宅。
+增加厨房、卧室、书房、走廊，形成第一套住宅。
 
-- `[DONE graph/runtime baseline]` `data/world_locations.json` 已声明客厅、厨房、卧室
+- `[DONE graph/runtime baseline]` `data/world_locations.json` 已声明客厅、厨房、卧室、书房
   的资源、入口、出口、共享 Cast 出生点和场景描述；`WorldLocationCatalog` 对出口
   目标与入口做 fail-closed 查询，`WorldLocationLoader.travel_to/travel_via` 可在不
   破坏当前地点的前提下切换房间。
 - `[DONE generated room baseline]` 厨房与卧室已有独立 Recipe/Manifest；厨房使用
   KayKit Restaurant Bits 的冰箱、水槽、烤箱、餐桌和餐椅，卧室复用已验收的
   CC0 家具并新增真实双人床。两份布局均通过边界、重叠和桌面跟随约束编译。
+- `[DONE study expansion]` 新增 seed 303 独立参数化书房，通过卧室双向进入；
+  书架、扶手椅、阅读桌、暖灯、刚体书本和地毯均复用统一 Registry，未增加
+  `asset_id` 专用生成分支。四房间旅行图、语义隔离、入口和导航合同通过。
 - `[DONE semantic scope baseline]` `SemanticWorld` 为生成物体记录 `location_id`，
   LLM 的物体列表与自然语言快照只暴露当前房间，避免厨房角色继续规划客厅沙发。
 - `[DONE cast policy baseline]` 地点目录新增声明式 `cast_members`。咕咕嘎嘎作为
   当前显式随行角色进入各房间；诀与本地 Q 版居民保留在客厅，不再因玩家点击门
   而整批复制/传送。运行时角色适配器采用引用计数，旧地点宽限释放不会误删新
   地点的角色绑定。
-- `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过三房间模型
+- `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过四房间模型
   覆盖率、语义隔离、Cast、导航和非法旅行原子性；客厅剧情、体验模式与关键路点
   回归通过。厨房和卧室采用三面墙玩偶屋结构，并通过 1280×720 Metal 截图验收。
 - `[DONE cross-location persistence]` 角色所在地点/坐标和已加载、未加载房间的对象
@@ -60,7 +63,8 @@
   同时以 `traverse` affordance 注册到 `SemanticWorld`，可供后续角色规划复用。
 - `[DONE portal safety/acceptance]` 退役地点会先停用全部门，阻止双击和两帧释放
   宽限期内的陈旧入口再次旅行；严格目录校验拒绝缺字段、坏向量、非正尺寸和重复
-  语义 ID。四次旅行、三房间入口数量、出生点及 1280×720 Metal 画面均已验收。
+  语义 ID。原三房间入口、出生点及 1280×720 Metal 画面已验收；新增书房完成
+  headless 旅行/导航合同，Metal 画面验收列入下一轮。
 - `[DONE player entry baseline]` 持久 `PlayerBody` 会按每个入口声明的位置和朝向
   落地；玩家入口不再覆盖咕咕嘎嘎的 AI 出生点，观察/第一人称跨房切换均可复用
   同一地点图。
@@ -87,13 +91,13 @@
 3. 空间布局完成后预加载相邻一跳房间，远处地点只做低频离屏模拟；
 4. 角色进入已加载范围时实体化，离开范围时写回状态并释放表现节点。
 
-当前所有参数化房间共用局部原点，因此不能简单同时显示，否则几何、NavMesh 和
+当前四个参数化房间共用局部原点，因此不能简单同时显示，否则几何、NavMesh 和
 角色会重叠。现阶段保持“当前房间实体化”是正确的性能与一致性基线。
 
 ## 建议执行顺序
 
-住宅三房间、地点图、跨地点存档、可点击门和房间 Cast 策略基线已经建立；
-下一步先完成居民归属注册表与离屏状态，再补连续走廊和第四个独立房间。之后才
+住宅四房间、地点图、跨地点存档、可点击门和房间 Cast 策略基线已经建立；
+下一步先完成居民归属注册表与离屏状态，再补连续走廊。之后才
 扩大到庭院和街道，避免角色日程与流送策略反复返工。
 
 ## 相关节点

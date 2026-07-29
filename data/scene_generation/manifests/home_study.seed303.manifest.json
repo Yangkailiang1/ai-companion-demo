@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "manifest_id": "home_study-303-runtime",
+  "recipe_id": "home_study",
+  "recipe_version": "1.0.0",
+  "registry_id": "living_room_shadow",
+  "registry_version": "1.3.0",
+  "seed": 303,
+  "generation_hash": "runtime-study-seed303",
+  "room": {
+    "name": "暖光书房",
+    "dimensions_m": {
+      "width": 7.5,
+      "depth": 6.4,
+      "height": 3.0
+    },
+    "bounds": {
+      "min": [-3.0, 0.0, -2.7],
+      "max": [3.0, 0.0, 2.7]
+    },
+    "floor": {
+      "thickness_m": 0.1,
+      "material_key": "warm_study_floor"
+    },
+    "walls": [
+      {
+        "wall_id": "back",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      },
+      {
+        "wall_id": "left",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      },
+      {
+        "wall_id": "right",
+        "thickness_m": 0.2,
+        "height_m": 3.0,
+        "material_key": "warm_plaster"
+      }
+    ],
+    "openings": [
+      {
+        "opening_id": "door_to_bedroom",
+        "type": "door",
+        "wall_id": "left",
+        "position": [-3.75, 1.1, 1.55],
+        "size": [1.25, 2.2]
+      }
+    ]
+  },
+  "placements": [
+    {
+      "semantic_id": "study_bookshelf",
+      "asset_id": "bookshelf_current",
+      "display_name": "书房书架",
+      "position": [-2.55, 1.175, -2.75],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [-2.1, 0, -1.95],
+      "description": "摆满读物的高书架。",
+      "needs_proximity": true,
+      "affordances": ["browse", "take_book", "put_book_back"],
+      "effects": {"fun": 8},
+      "initial_state": "书籍排列整齐",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "study_chair",
+      "asset_id": "reading_armchair",
+      "display_name": "书房扶手椅",
+      "position": [1.75, 0.52, -1.0],
+      "rotation_deg": [0, -35, 0],
+      "interaction_point": [1.35, 0, -0.25],
+      "description": "靠窗阅读用的软扶手椅。",
+      "needs_proximity": true,
+      "affordances": ["sit", "read", "inspect"],
+      "effects": {"energy": 7, "fun": 8},
+      "initial_state": "空着",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "study_table",
+      "asset_id": "coffee_table_current",
+      "display_name": "阅读矮桌",
+      "position": [0.0, 0.25, 0.35],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [0.0, 0, 1.25],
+      "description": "可以摆放书和饮料的阅读桌。",
+      "needs_proximity": true,
+      "affordances": ["inspect", "place_item"],
+      "effects": {},
+      "initial_state": "桌面整洁",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "study_lamp",
+      "asset_id": "standing_lamp",
+      "display_name": "书房落地灯",
+      "position": [2.55, 0.86, -2.1],
+      "rotation_deg": [0, 0, 0],
+      "interaction_point": [2.0, 0, -1.65],
+      "description": "提供暖色阅读光线的落地灯。",
+      "needs_proximity": true,
+      "affordances": ["turn_on", "turn_off", "inspect"],
+      "effects": {},
+      "initial_state": "暖光已开启",
+      "properties": {},
+      "consumable": false
+    },
+    {
+      "semantic_id": "study_book",
+      "asset_id": "book_current",
+      "display_name": "桌上的故事书",
+      "position": [0.2, 0.56, 0.35],
+      "rotation_deg": [0, 14, 0],
+      "interaction_point": [0.2, 0, 1.25],
+      "description": "一本可以拿起、阅读、放下或投掷的故事书。",
+      "needs_proximity": true,
+      "affordances": ["read", "pick_up", "put_down", "throw"],
+      "effects": {"fun": 16},
+      "initial_state": "摊放在桌面",
+      "properties": {"reading_progress": 0},
+      "consumable": false
+    },
+    {
+      "semantic_id": "study_rug",
+      "asset_id": "conversation_rug",
+      "display_name": "书房地毯",
+      "position": [0.0, 0.03, 0.3],
+      "rotation_deg": [0, 90, 0],
+      "interaction_point": [0.0, 0, 0.8],
+      "description": "让阅读角更安静温暖的布艺地毯。",
+      "needs_proximity": false,
+      "affordances": [],
+      "effects": {},
+      "initial_state": "铺得平整",
+      "properties": {},
+      "consumable": false
+    }
+  ],
+  "audit": {
+    "compiler_version": "1.1.0",
+    "warnings": []
+  }
+}

@@ -30,6 +30,8 @@
 所在位置、阅读进度、当前读者和放回位置。
 
 - `[DONE]` 书已使用 `RigidBody3D`，支持拿起、放下和投掷；书架支持浏览、取书和放回。
+- `[DONE parametric reuse]` 新书房的桌面故事书复用同一刚体/拿取/投掷管线，
+  验证新增房间只需声明 Manifest 即可获得物理交互。
 - `[DONE H10-B1]` 交互锚点查询 API 和 `InteractionReservation` 占用预订协议已接入；
   pick_up 时自动 reserve→commit，put_down/throw 时自动 release。
   参见 [交互锚点与占用预订协议](../../INTERACTION_ANCHORS_AND_RESERVATION.md)。

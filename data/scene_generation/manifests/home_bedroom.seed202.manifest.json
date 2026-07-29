@@ -64,6 +64,20 @@
           1.25,
           2.2
         ]
+      },
+      {
+        "opening_id": "door_to_study",
+        "type": "door",
+        "wall_id": "right",
+        "position": [
+          3.75,
+          1.1,
+          1.55
+        ],
+        "size": [
+          1.25,
+          2.2
+        ]
       }
     ]
   },

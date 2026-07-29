@@ -91,7 +91,8 @@
       },
       "entries": {
         "default": {"position": [0.0, 0.0, 2.9], "rotation_deg": [0.0, 0.0, 0.0]},
-        "from_living": {"position": [0.0, 0.0, 2.9], "rotation_deg": [0.0, 0.0, 0.0]}
+        "from_living": {"position": [0.0, 0.0, 2.9], "rotation_deg": [0.0, 0.0, 0.0]},
+        "from_study": {"position": [2.65, 0.0, 1.55], "rotation_deg": [0.0, -90.0, 0.0]}
       },
       "exits": {
         "to_living": {
@@ -104,6 +105,48 @@
             "rotation_deg": [0.0, 90.0, 0.0],
             "size": [1.25, 2.2],
             "label": "客厅"
+          }
+        },
+        "to_study": {
+          "target_location_id": "study",
+          "target_entry_id": "from_bedroom",
+          "portal": {
+            "semantic_id": "door_to_study",
+            "display_name": "通往书房",
+            "position": [3.75, 1.1, 1.55],
+            "rotation_deg": [0.0, -90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "书房"
+          }
+        }
+      }
+    },
+    "study": {
+      "display_name": "暖光书房",
+      "scene_path": "res://scenes/environments/parametric_living_room_runtime.tscn",
+      "root_name": "Study",
+      "manifest_path": "res://data/scene_generation/manifests/home_study.seed303.manifest.json",
+      "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
+      "scene_description": "一间有书架、阅读椅、矮桌和暖灯的安静书房。",
+      "cast_members": ["Agent"],
+      "cast_spawns": {
+        "Agent": {"position": [0.0, 0.0, 2.35], "rotation_deg": [0.0, 180.0, 0.0]}
+      },
+      "entries": {
+        "default": {"position": [0.0, 0.0, 2.45], "rotation_deg": [0.0, 0.0, 0.0]},
+        "from_bedroom": {"position": [-2.65, 0.0, 1.55], "rotation_deg": [0.0, 90.0, 0.0]}
+      },
+      "exits": {
+        "to_bedroom": {
+          "target_location_id": "bedroom",
+          "target_entry_id": "from_study",
+          "portal": {
+            "semantic_id": "door_to_bedroom_study",
+            "display_name": "回到卧室",
+            "position": [-3.75, 1.1, 1.55],
+            "rotation_deg": [0.0, 90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "卧室"
           }
         }
       }

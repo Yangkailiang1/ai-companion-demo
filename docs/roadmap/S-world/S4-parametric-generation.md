@@ -82,6 +82,8 @@
 
 - `[DONE data baseline]` 客厅、厨房、卧室均由可编辑 Recipe 和确定性 Manifest
   描述，并通过版本化 `world_locations.json` 组成有向房间连接图。
+- `[DONE study manifest baseline]` seed 303 书房以独立 Manifest 接入同一 Registry
+  和地点图；下一轮补对应 Recipe 与确定性编译哈希，使来源合同与前三房间同级。
 - `[DONE runtime baseline]` 同一个参数化房间运行时按地点元数据加载不同 Manifest，
   应用独立根节点、语义可见域、入口和 Cast 出生点。
 - `[DONE visual baseline]` 厨房和卧室使用适配玩偶屋相机的三面墙表现，真实模型

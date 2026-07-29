@@ -10,8 +10,10 @@
 - `[DONE S2 baseline]` 参数化地点以 `cast_members` 明确随行 Cast 与留守居民，
   修复所有角色随玩家点击门整批迁移。
 - `[DONE S3 reuse]` 厨房新增真实 `RigidBody3D` 餐桌饮料，可拿起、放下和投掷。
-- `[NEXT]` 实现持久居民归属注册表、角色 `traverse` 迁移和离屏低频模拟；完成后
-  再新增书房/走廊并升级为当前房间 + 相邻一跳的流送。
+- `[DONE S2 expansion]` seed 303 独立参数化书房接入住宅地点图，复用统一家具
+  Registry，并带可拿取/投掷的刚体书本。
+- `[NEXT]` 实现持久居民归属注册表、角色 `traverse` 迁移和离屏低频模拟；随后
+  新增连续走廊并升级为当前房间 + 相邻一跳的流送。
 
 ## v0.6（稳定客厅生活）
 
@@ -51,7 +53,8 @@
    15/15 模型槽位、碰撞、导航、语义和有状态物体已由 Manifest 生成，并可通过
    `AI_GAMES_WORLD_MODE=parametric` 在真实主场景中运行。共享 Cast/Spawner、
    参数化完整剧情和关键路点连通性合同已完成；厨房、卧室 Recipe/Manifest 与
-   三房间地点连接图、动态测试与 Metal 截图验收已完成；Schema v2 跨房间存档、
+   原三房间地点连接图、动态测试与 Metal 截图验收已完成，书房 Manifest 已扩展
+   为四房间 headless 旅行基线；Schema v2 跨房间存档、
    v1 迁移和坏存档保护也已通过。四条出口已有参数化门洞、可点击门、碰撞、标签
    和 `traverse` 语义合同；下一步补真实走廊、玩家实体连续穿越和角色自主跨房。
 10. `[DONE tooling baseline] O2 + S4 + C2 + C3 + C6` 外部素材已拆成场景、人物、

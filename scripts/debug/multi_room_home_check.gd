@@ -12,7 +12,7 @@ func _init() -> void:
 	call_deferred("_run")
 
 
-## [S2.2][S4.3] 验证住宅三地点的完整旅行纵切片。
+## [S2.2][S4.3] 验证住宅四地点的完整旅行纵切片。
 func _run() -> void:
 	var scene := (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	root.add_child(scene)
@@ -40,8 +40,21 @@ func _run() -> void:
 	await _settle()
 	_assert(loader.travel_via("to_bedroom"), "living -> bedroom edge failed")
 	await _settle()
-	_check_room(loader, "bedroom", "Bedroom", 7, "bed", 1, ["Agent"])
+	_check_room(loader, "bedroom", "Bedroom", 7, "bed", 2, ["Agent"])
 	_assert(not _visible_semantic_ids().has("kitchen_fridge"), "bedroom sees kitchen fridge")
+	_assert(loader.travel_via("to_study"), "bedroom -> study edge failed")
+	await _settle()
+	_check_room(loader, "study", "Study", 6, "study_bookshelf", 1, ["Agent"])
+	var study_book := loader.get_active_location().get_node_or_null(
+		"StudyBook/PhysicsBody"
+	) as RigidBody3D
+	_assert(
+		study_book != null and study_book.freeze,
+		"study book is not a ready rigid body",
+	)
+	_assert(loader.travel_via("to_bedroom"), "study -> bedroom edge failed")
+	await _settle()
+	_assert(loader.current_location_id == "bedroom", "study return target wrong")
 	var active_before := loader.get_active_location()
 	_assert(not loader.travel_to("missing_room"), "invalid travel unexpectedly succeeded")
 	_assert(loader.get_active_location() == active_before, "invalid travel replaced active room")
