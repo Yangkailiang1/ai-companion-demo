@@ -1,7 +1,7 @@
-# Roadmap: S2.1, S4.1
+# Roadmap: S2.1, S4.1, S2.2
 # Responsibility: Select and replace the active WorldLocation scene; does not
 # generate geometry or own character behavior.
-# Collaborators: ParametricRoomRuntime, living_room.tscn
+# Collaborators: ParametricRoomRuntime, living_room.tscn, WorldTravelPortal
 # Tests: scripts/debug/world_location_loader_check.gd
 
 class_name WorldLocationLoader
@@ -58,6 +58,7 @@ func switch_location(requested_mode: String) -> String:
 
 
 ## [S2.2] 原子装载目录中的参数化地点；非法目标不破坏当前场景。
+## 在新地点入树前连接 portal_travel_requested 信号以保证不丢失入口事件。
 func travel_to(location_id: String, entry_id: String = "default") -> bool:
 	var location := _catalog.get_location(location_id)
 	if location.is_empty():
@@ -73,6 +74,9 @@ func travel_to(location_id: String, entry_id: String = "default") -> bool:
 	if next_location.has_method("configure_location"):
 		next_location.configure_location(location)
 	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))
+	# [S2.2] 在入树前连接入口旅行信号
+	if next_location.has_signal("portal_travel_requested"):
+		next_location.portal_travel_requested.connect(_on_room_portal_travel_requested)
 	_clear_active_location()
 	_active_location = next_location
 	current_mode = "parametric"
@@ -121,6 +125,11 @@ func _resolve_spawns(location: Dictionary, entry_id: String) -> Dictionary:
 	return spawns
 
 
+## [S2.2] 接收来自 WorldTravelPortal 的旅行请求，通过 travel_via 执行原子切换。
+func _on_room_portal_travel_requested(exit_id: String) -> void:
+	travel_via(exit_id)
+
+
 ## [S2.2] 兼容旧客厅时恢复语义可见域。
 func _activate_legacy_semantics() -> void:
 	var semantic_world := get_node_or_null("/root/SemanticWorld")
@@ -134,6 +143,8 @@ func _clear_active_location() -> void:
 	if not is_instance_valid(_active_location):
 		return
 	var retired := _active_location
+	if retired.has_method("deactivate_portals"):
+		retired.deactivate_portals()
 	_active_location = null
 	_retire_serial += 1
 	retired.name = "RetiringLocation_%d" % _retire_serial

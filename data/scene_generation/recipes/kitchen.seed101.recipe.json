@@ -16,7 +16,15 @@
       {"wall_id": "left", "thickness_m": 0.2, "height_m": 3.0, "material_key": "warm_plaster"},
       {"wall_id": "right", "thickness_m": 0.2, "height_m": 3.0, "material_key": "warm_plaster"}
     ],
-    "openings": []
+    "openings": [
+      {
+        "opening_id": "door_to_living",
+        "type": "door",
+        "wall_id": "right",
+        "position": [3.5, 1.1, 0.0],
+        "size": [1.25, 2.2]
+      }
+    ]
   },
   "object_slots": [
     {

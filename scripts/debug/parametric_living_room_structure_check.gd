@@ -53,12 +53,8 @@ func _run_check() -> void:
 		errors += _check_floor_and_walls(structure, manifest)
 		errors += _check_navigation(structure)
 
-	var placements_node := generated_room.get_node_or_null("Placements")
-	if placements_node == null:
-		printerr("FAIL: no Placements node found")
-		errors += 1
-	else:
-		errors += _check_visual_collision_origins(placements_node)
+	# [S4.1] 生成物体已提升为地点公共子节点，PlacementsStaging 不再保留。
+	errors += _check_visual_collision_origins(check_root)
 
 	if errors > 0:
 		printerr("\nFAIL: %d error(s)" % errors)
@@ -163,12 +159,12 @@ func _check_navigation(structure: Node3D) -> int:
 ## [S4.1] 对于每个 placement，验证其内部 Visual 子树的 AABB 中心位于
 ## 局部原点（允许通过设置 position 位移来实现居中）。
 ## CollisionShape 必须直接位于局部 (0,0,0)。
-func _check_visual_collision_origins(placements_node: Node3D) -> int:
+func _check_visual_collision_origins(room_parent: Node3D) -> int:
 	var errs := 0
 	var checked := 0
 
-	for child in placements_node.get_children():
-		if not child is Node3D:
+	for child in room_parent.get_children():
+		if not child is Node3D or not child.has_meta("semantic_id"):
 			continue
 		checked += 1
 		var sid: String = child.get_meta("semantic_id", "unnamed")

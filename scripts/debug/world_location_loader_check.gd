@@ -1,5 +1,5 @@
 # Verifies: S2.1, S4.1, C6.2
-# Covers: legacy default -> parametric switch -> invalid-mode fallback.
+# Covers: explicit legacy -> parametric switch -> invalid-mode fallback.
 
 extends SceneTree
 
@@ -18,7 +18,8 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	var world_root := scene.get_node("WorldRoot") as WorldLocationLoader
-	_assert(world_root.current_mode == "legacy", "main must default to legacy")
+	# [X1.2] 自动存档可能恢复参数化地点；模式合同测试必须先显式归一到 legacy。
+	_assert(world_root.switch_location("legacy") == "legacy", "legacy switch failed")
 	_assert(world_root.has_node("LivingRoom/Sofa"), "legacy room path missing")
 	_assert(
 		world_root.get_node("LivingRoom/Agent").scene_file_path

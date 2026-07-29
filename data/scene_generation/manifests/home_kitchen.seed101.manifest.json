@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "manifest_id": "home_kitchen-101-10fd204cd564",
+  "manifest_id": "home_kitchen-101-40126e7195e5",
   "recipe_id": "home_kitchen",
   "recipe_version": "1.0.0",
   "registry_id": "living_room_shadow",
   "registry_version": "1.3.0",
   "seed": 101,
-  "generation_hash": "10fd204cd564ecc7d88c5bf4d1759d364fed88e0d82751736c3338b2258e266f",
+  "generation_hash": "40126e7195e5ad7d1062249afb46c324b13fedd277e4c68c9994b5d4b569cc54",
   "room": {
     "name": "厨房",
     "dimensions_m": {
@@ -50,7 +50,22 @@
         "material_key": "warm_plaster"
       }
     ],
-    "openings": []
+    "openings": [
+      {
+        "opening_id": "door_to_living",
+        "type": "door",
+        "wall_id": "right",
+        "position": [
+          3.5,
+          1.1,
+          0.0
+        ],
+        "size": [
+          1.25,
+          2.2
+        ]
+      }
+    ]
   },
   "placements": [
     {

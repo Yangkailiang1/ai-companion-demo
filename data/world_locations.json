@@ -19,8 +19,30 @@
         "from_bedroom": {"position": [1.2, 0.0, -2.2]}
       },
       "exits": {
-        "to_kitchen": {"target_location_id": "kitchen", "target_entry_id": "from_living"},
-        "to_bedroom": {"target_location_id": "bedroom", "target_entry_id": "from_living"}
+        "to_kitchen": {
+          "target_location_id": "kitchen",
+          "target_entry_id": "from_living",
+          "portal": {
+            "semantic_id": "door_to_kitchen",
+            "display_name": "通往厨房",
+            "position": [-4.0, 1.1, 0.9],
+            "rotation_deg": [0.0, 90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "厨房"
+          }
+        },
+        "to_bedroom": {
+          "target_location_id": "bedroom",
+          "target_entry_id": "from_living",
+          "portal": {
+            "semantic_id": "door_to_bedroom",
+            "display_name": "通往卧室",
+            "position": [4.0, 1.1, -0.5],
+            "rotation_deg": [0.0, -90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "卧室"
+          }
+        }
       }
     },
     "kitchen": {
@@ -39,7 +61,18 @@
         "from_living": {"position": [0.0, 0.0, 2.15]}
       },
       "exits": {
-        "to_living": {"target_location_id": "living_room", "target_entry_id": "from_kitchen"}
+        "to_living": {
+          "target_location_id": "living_room",
+          "target_entry_id": "from_kitchen",
+          "portal": {
+            "semantic_id": "door_to_living_kitchen",
+            "display_name": "回到客厅",
+            "position": [3.5, 1.1, 0.0],
+            "rotation_deg": [0.0, -90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "客厅"
+          }
+        }
       }
     },
     "bedroom": {
@@ -58,7 +91,18 @@
         "from_living": {"position": [0.0, 0.0, 2.9]}
       },
       "exits": {
-        "to_living": {"target_location_id": "living_room", "target_entry_id": "from_bedroom"}
+        "to_living": {
+          "target_location_id": "living_room",
+          "target_entry_id": "from_bedroom",
+          "portal": {
+            "semantic_id": "door_to_living_bedroom",
+            "display_name": "回到客厅",
+            "position": [-3.75, 1.1, 0.0],
+            "rotation_deg": [0.0, 90.0, 0.0],
+            "size": [1.25, 2.2],
+            "label": "客厅"
+          }
+        }
       }
     }
   }

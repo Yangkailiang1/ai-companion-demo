@@ -21,16 +21,16 @@ func _run() -> void:
 	var loader := scene.get_node("WorldRoot") as WorldLocationLoader
 	_assert(loader.switch_location("parametric") == "parametric", "living room load failed")
 	await _settle()
-	_check_room(loader, "living_room", "LivingRoom", 15, "sofa")
+	_check_room(loader, "living_room", "LivingRoom", 15, "sofa", 2)
 	_assert(loader.travel_via("to_kitchen"), "living -> kitchen edge failed")
 	await _settle()
-	_check_room(loader, "kitchen", "Kitchen", 8, "kitchen_fridge")
+	_check_room(loader, "kitchen", "Kitchen", 8, "kitchen_fridge", 1)
 	_assert(not _visible_semantic_ids().has("sofa"), "kitchen sees living-room sofa")
 	_assert(loader.travel_via("to_living"), "kitchen -> living edge failed")
 	await _settle()
 	_assert(loader.travel_via("to_bedroom"), "living -> bedroom edge failed")
 	await _settle()
-	_check_room(loader, "bedroom", "Bedroom", 7, "bed")
+	_check_room(loader, "bedroom", "Bedroom", 7, "bed", 1)
 	_assert(not _visible_semantic_ids().has("kitchen_fridge"), "bedroom sees kitchen fridge")
 	var active_before := loader.get_active_location()
 	_assert(not loader.travel_to("missing_room"), "invalid travel unexpectedly succeeded")
@@ -41,13 +41,14 @@ func _run() -> void:
 	quit(1 if _failed else 0)
 
 
-## [S2.2][S4.3][C6.2] 检查生成覆盖、共享 Cast、语义域和导航网格。
+## [S2.2][S4.3][C6.2] 检查生成覆盖、共享 Cast、语义域、导航网格和入口数量。
 func _check_room(
 	loader: WorldLocationLoader,
 	location_id: String,
 	root_name: String,
 	placement_count: int,
-	required_object_id: String
+	required_object_id: String,
+	portal_count: int = 0,
 ) -> void:
 	_assert(loader.current_location_id == location_id, "wrong current location: " + location_id)
 	var room := loader.get_active_location()
@@ -61,6 +62,11 @@ func _check_room(
 	for actor_name in ["Agent", "JueAgent", "LocalCharacterSpawner"]:
 		_assert(room.has_node(actor_name), "cast missing: %s/%s" % [location_id, actor_name])
 	_assert(_visible_semantic_ids().has(required_object_id), "semantic object missing: " + required_object_id)
+	var found_portals := 0
+	for child in room.get_children():
+		if str(child.name).begins_with("Portal_"):
+			found_portals += 1
+	_assert(found_portals == portal_count, "portal count %s: expected %d got %d" % [location_id, portal_count, found_portals])
 	_check_navigation(room, location_id)
 
 

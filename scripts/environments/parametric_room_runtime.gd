@@ -1,11 +1,19 @@
-# Roadmap: S2.1, S4.1, C6.2, X1.2
-# Responsibility: Assemble one playable generated room and its shared cast;
-# does not choose world mode or implement generation algorithms.
-# Collaborators: ParametricSceneBuilder, WorldCastAssembler, SaveSystem
+# Roadmap: S2.1, S2.2, S4.1
+# Responsibility: Assemble one playable generated room, its shared cast and
+# visible travel portals; does not choose world mode or implement generation
+# algorithms.
+# Collaborators: ParametricSceneBuilder, WorldCastAssembler, WorldTravelPortal,
+# SaveSystem
 # Tests: scripts/debug/world_location_loader_check.gd,
-# scripts/debug/cross_location_save_check.gd
+# scripts/debug/cross_location_save_check.gd,
+# scripts/debug/world_travel_portal_check.gd
 
 extends Node3D
+
+const WorldPortalAssemblerScript = preload("res://scripts/environments/world_portal_assembler.gd")
+
+## [S2.2] 入口旅行请求；由 WorldLocationLoader 连接并处理。
+signal portal_travel_requested(exit_id: String)
 
 @export_file("*.json") var manifest_path := \
 	"res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json"
@@ -14,22 +22,25 @@ extends Node3D
 
 var build_report: Dictionary = {}
 var assembled_cast: Array[String] = []
+var portal_paths: Array[String] = []
 var location_id := "living_room"
 var location_description := ""
 var cast_spawns: Dictionary = {}
 var _location_spawns_restored := false
+var _exits: Dictionary = {}
 
 
-## [S2.2] 在节点入树前注入地点资源与角色出生策略。
+## [S2.2] 在节点入树前注入地点资源、角色出生策略与出口入口数据。
 func configure_location(location_data: Dictionary) -> void:
 	location_id = String(location_data.get("location_id", location_id))
 	manifest_path = String(location_data.get("manifest_path", manifest_path))
 	registry_path = String(location_data.get("registry_path", registry_path))
 	location_description = String(location_data.get("scene_description", ""))
 	cast_spawns = location_data.get("cast_spawns", {}).duplicate(true)
+	_exits = location_data.get("exits", {}).duplicate(true)
 
 
-## [S2.1][S4.1][C6.2] 构建房间后再迁移角色，保证角色入树时导航已存在。
+## [S2.1][S4.1][C6.2][S2.2] 构建房间，迁移角色，然后创建可见入口。
 func _ready() -> void:
 	var manifest := _load_json(manifest_path)
 	var registry := _load_json(registry_path)
@@ -40,6 +51,7 @@ func _ready() -> void:
 	build_report = ParametricSceneBuilder.new().build_room(self, manifest, registry)
 	assembled_cast = WorldCastAssembler.new().assemble_into(self)
 	call_deferred("_sync_navigation")
+	_activate_portals()
 
 
 ## [S4.1] 读取并解析项目内 JSON；失败返回空 Dictionary，不创建部分房间。
@@ -95,6 +107,31 @@ func _restore_location_spawns() -> void:
 		elif actor.has_meta("location_spawn_position"):
 			actor.position = actor.get_meta("location_spawn_position")
 			actor.rotation = actor.get_meta("location_spawn_rotation")
+
+
+## [S2.2] 从已校验出口数据创建可见入口，并将每个入口的 travel_requested
+## 信号转发为当前房间的 portal_travel_requested 信号。
+## 副作用：在房间下创建 WorldTravelPortal 节点。
+func _activate_portals() -> void:
+	if _exits.is_empty():
+		return
+	var portals: Array = WorldPortalAssemblerScript.new().assemble(self, _exits, location_id)
+	for portal in portals:
+		portal.travel_requested.connect(_on_portal_travel_requested)
+		portal_paths.append(String(portal.name))
+
+
+## [S2.2] 入口旅行转发；简单委托该房间的信号发出请求。
+func _on_portal_travel_requested(exit_id: String) -> void:
+	portal_travel_requested.emit(exit_id)
+
+
+## [S2.2] 地点退役前停用所有门廊，避免两帧宽限期内陈旧点击触发旅行。
+func deactivate_portals() -> void:
+	for portal_path in portal_paths:
+		var portal := get_node_or_null(portal_path)
+		if portal != null and portal.has_method("deactivate"):
+			portal.deactivate()
 
 
 ## [S2.2] 激活当前房间的语义可见域，使 AI 只读取所在地点物体。
