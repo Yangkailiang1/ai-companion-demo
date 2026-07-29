@@ -60,6 +60,18 @@ func _verify_portal_contract(portal: Node, semantic_id: String, label: String) -
 	var descendants := _all_children(portal)
 	_assert(_contains_type(descendants, "MeshInstance3D"), semantic_id + " mesh")
 	_assert(_contains_type(descendants, "CollisionShape3D"), semantic_id + " collision")
+	var leaf_body := portal.get_node_or_null("Frame/DoorLeafPivot/DoorLeafBody")
+	_assert(leaf_body is AnimatableBody3D, semantic_id + " physical door leaf")
+	_assert(
+		leaf_body != null and leaf_body.get_node_or_null("DoorLeafCollision") != null,
+		semantic_id + " door leaf collision",
+	)
+	var approach := portal.get_node_or_null("DoorApproachSensor") as Area3D
+	_assert(
+		approach != null and approach.collision_mask == 2,
+		semantic_id + " player approach sensor",
+	)
+	_assert((portal as Area3D).collision_mask == 2, semantic_id + " player threshold mask")
 	var label_node := portal.get_node_or_null("PortalLabel") as Label3D
 	_assert(label_node != null and label_node.text == label, semantic_id + " label")
 	_assert(portal.has_signal("travel_requested"), semantic_id + " signal")

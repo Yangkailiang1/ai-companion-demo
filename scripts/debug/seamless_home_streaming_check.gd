@@ -83,20 +83,47 @@ func _verify_walkthrough_without_teleport(loader: WorldLocationLoader) -> void:
 	_assert(portal != null and player != null, "walkthrough actors missing")
 	if portal == null or player == null:
 		return
-	player.global_position = Vector3(-4.08, 0.9, 0.9)
-	var before := player.global_position
-	portal.call("_on_body_entered", player)
+	player.global_position = Vector3(-3.48, 0.9, 0.9)
+	await physics_frame
 	await process_frame
+	_assert(loader.current_location_id == "living_room", "approach switched room too early")
+	var source_pivot := portal.get_node_or_null("Frame/DoorLeafPivot") as Node3D
+	await create_timer(0.25).timeout
+	_assert(
+		source_pivot != null and source_pivot.rotation_degrees.y < -70.0,
+		"approach sensor did not open door",
+	)
+	player.global_position = Vector3(-4.0, 0.9, 0.9)
+	var before := player.global_position
+	for _frame in range(4):
+		await physics_frame
+		await process_frame
 	_assert(loader.current_location_id == "kitchen", "walkthrough did not activate kitchen")
 	_assert(
-		player.global_position.distance_to(before) < 0.01,
+		player.global_position.distance_to(before) < 1.0,
 		"walkthrough teleported player",
 	)
+	await create_timer(0.3).timeout
+	await process_frame
 	var semantic := root.get_node_or_null("SemanticWorld")
 	if semantic != null:
 		_assert(
 			String(semantic.get("active_location_id")) == "kitchen",
 			"semantic location did not follow body",
+		)
+	var source_portal := living.get_node_or_null("Portal_door_to_kitchen") as Node3D
+	var kitchen := loader.get_node_or_null("Kitchen") as Node3D
+	var target_portal := (
+		kitchen.get_node_or_null("Portal_door_to_living_kitchen") as Node3D
+		if kitchen != null else null
+	)
+	_assert(source_portal != null and not source_portal.visible, "source door stayed active")
+	_assert(target_portal != null and target_portal.visible, "arrival door not visible")
+	if target_portal != null:
+		var pivot := target_portal.get_node_or_null("Frame/DoorLeafPivot") as Node3D
+		_assert(
+			pivot != null and pivot.rotation_degrees.y < -70.0,
+			"arrival door did not open",
 		)
 
 

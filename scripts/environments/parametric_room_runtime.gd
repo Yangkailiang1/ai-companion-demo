@@ -67,6 +67,8 @@ func _ready() -> void:
 	_set_navigation_enabled(_location_active)
 	call_deferred("_sync_navigation")
 	_activate_portals()
+	if not _location_active:
+		deactivate_portals()
 
 
 ## [S4.1] 读取并解析项目内 JSON；失败返回空 Dictionary，不创建部分房间。
@@ -206,7 +208,10 @@ func set_location_active(active: bool) -> void:
 	_location_active = active
 	_set_navigation_enabled(active)
 	if active:
+		reactivate_portals()
 		refresh_semantic_registration()
+	else:
+		deactivate_portals()
 
 
 ## [S2.5] 切换生成房间导航区；不存在导航区时安全跳过。
@@ -238,6 +243,22 @@ func refresh_semantic_registration() -> void:
 		var portal := get_node_or_null(portal_path)
 		if portal != null and portal.has_method("refresh_semantic_registration"):
 			portal.refresh_semantic_registration()
+
+
+## [S2.5][P2.3] 让最靠近玩家的目标房门保持开启，隐藏成对门切换的视觉跳变。
+func open_nearest_portal(world_position: Vector3) -> void:
+	var nearest: Node3D
+	var nearest_distance := INF
+	for portal_path in portal_paths:
+		var portal := get_node_or_null(portal_path) as Node3D
+		if portal == null:
+			continue
+		var distance := portal.global_position.distance_to(world_position)
+		if distance < nearest_distance:
+			nearest = portal
+			nearest_distance = distance
+	if nearest != null and nearest.has_method("open_temporarily"):
+		nearest.open_temporarily()
 
 
 ## [S2.2] 激活当前房间的语义可见域，使 AI 只读取所在地点物体。

@@ -22,6 +22,8 @@ var semantic_id := ""
 var _material: StandardMaterial3D
 var _requested := false
 var _label_node: Label3D
+var _door_leaf: PhysicalDoorLeaf
+var _approach_sensor: Area3D
 
 
 ## [S2.2] 使用已校验的 portal 数据显示门框、碰撞体和标签。
@@ -43,9 +45,12 @@ func configure(data: Dictionary) -> void:
 	name = "Portal_" + semantic_id
 	self.position = position
 	rotation_degrees = rotation_deg
+	collision_layer = 1
+	collision_mask = 2
 
 	_build_frame(size)
 	_build_collision(size)
+	_build_approach_sensor(size)
 	_build_label()
 	_register_semantic()
 	input_ray_pickable = true
@@ -85,14 +90,9 @@ func _build_frame(size: Array) -> void:
 	_add_box_mesh(frame, "Threshold",
 		Vector3(width, 0.06, 0.28),
 		Vector3(0.0, -height * 0.5 + 0.03, 0.0), _material)
-	var leaf := Node3D.new()
-	leaf.name = "DoorLeafPivot"
-	leaf.position = Vector3(-width * 0.5 + post_width, 0.0, 0.0)
-	leaf.rotation_degrees.y = -24.0
-	frame.add_child(leaf)
-	_add_box_mesh(leaf, "DoorLeaf",
-		Vector3(width * 0.72, height * 0.88, 0.07),
-		Vector3(width * 0.36, -0.04, 0.0), _material)
+	_door_leaf = PhysicalDoorLeaf.new()
+	frame.add_child(_door_leaf)
+	_door_leaf.configure(width, height, post_width, _material)
 
 
 ## [S2.2] 添加单个盒子网格，附带指定材质。
@@ -114,10 +114,28 @@ func _build_collision(size: Array) -> void:
 	var collision_shape := CollisionShape3D.new()
 	collision_shape.name = "PortalCollision"
 	var box := BoxShape3D.new()
-	box.size = Vector3(width, height, 0.35)
+	box.size = Vector3(width, height, 0.22)
 	collision_shape.shape = box
 	collision_shape.position = Vector3.ZERO
 	add_child(collision_shape)
+
+
+## [S2.5][P2.3] 创建门前感应区；只开门，不提前切换语义房间。
+func _build_approach_sensor(size: Array) -> void:
+	var width: float = float(size[0]) if size.size() >= 1 else 1.25
+	var height: float = float(size[1]) if size.size() >= 2 else 2.2
+	_approach_sensor = Area3D.new()
+	_approach_sensor.name = "DoorApproachSensor"
+	_approach_sensor.collision_layer = 0
+	_approach_sensor.collision_mask = 2
+	add_child(_approach_sensor)
+	var shape_node := CollisionShape3D.new()
+	shape_node.name = "ApproachCollision"
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(width * 1.08, height, 1.35)
+	shape_node.shape = shape
+	_approach_sensor.add_child(shape_node)
+	_approach_sensor.body_entered.connect(_on_approach_body_entered)
 
 
 ## [S2.2] 创建门上方 3D 标签。
@@ -165,7 +183,17 @@ func refresh_semantic_registration() -> void:
 ## [S2.2][P2.3] 玩家身体走进门区时请求连续房间切换；AI 仍使用语义交互。
 func _on_body_entered(body: Node3D) -> void:
 	if body is PlayerFirstPersonController and not _requested:
+		open_temporarily()
 		walkthrough_requested.emit(exit_id)
+
+
+## [S2.5][P2.3] 玩家靠近门时先开门，仍保留当前语义房间直到跨过门槛。
+func _on_approach_body_entered(body: Node3D) -> void:
+	if (
+		(body is PlayerFirstPersonController or body.is_in_group("agents"))
+		and not _requested
+	):
+		open_temporarily()
 
 
 ## [S2.2] 左键点击时发出 travel_requested；防止重复激活。
@@ -203,6 +231,8 @@ func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
 		var transferred := bool(loader.transfer_agent_via(
 			actor_id, location_id, exit_id
 		))
+		if transferred:
+			open_temporarily()
 		return {
 			"handled": true,
 			"success": transferred,
@@ -224,16 +254,28 @@ func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
 func deactivate() -> void:
 	_requested = true
 	input_ray_pickable = false
-	monitoring = false
-	monitorable = false
+	visible = false
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
+	if _approach_sensor != null:
+		_approach_sensor.set_deferred("monitoring", false)
+		_approach_sensor.set_deferred("monitorable", false)
+	if _door_leaf != null:
+		_door_leaf.set_collision_active(false)
 
 
 ## [S2.5] 已加载房间重新激活时解除一次性点击锁。
 func reactivate() -> void:
 	_requested = false
 	input_ray_pickable = true
-	monitoring = true
-	monitorable = true
+	visible = true
+	set_deferred("monitoring", true)
+	set_deferred("monitorable", true)
+	if _approach_sensor != null:
+		_approach_sensor.set_deferred("monitoring", true)
+		_approach_sensor.set_deferred("monitorable", true)
+	if _door_leaf != null:
+		_door_leaf.set_collision_active(true)
 	if _material != null:
 		_material.albedo_color = WOOD_COLOR
 
@@ -248,9 +290,16 @@ func _request_travel() -> void:
 	if _requested or not is_inside_tree():
 		return
 	_requested = true
+	open_temporarily()
 	if _material != null:
 		_material.albedo_color = WOOD_PRESS_COLOR
 	travel_requested.emit(exit_id)
+
+
+## [S2.2][S2.5] 播放门扇开合并短暂停留，供连续穿越和快速旅行共用。
+func open_temporarily() -> void:
+	if _door_leaf != null:
+		_door_leaf.open_temporarily()
 
 
 ## [S2.2] 将 JSON 三元数组转换为 Vector3；纯函数。

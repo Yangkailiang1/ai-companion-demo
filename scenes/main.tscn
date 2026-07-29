@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://main001"]
+[gd_scene load_steps=11 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/environments/world_location_loader.gd" id="1_world_loader"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/ui/player_camera_hint.gd" id="5_camera_hint"]
 [ext_resource type="Script" path="res://scripts/ui/player_view_mode_button.gd" id="6_view_button"]
 [ext_resource type="Script" path="res://scripts/characters/agent_residency_registry.gd" id="7_residency"]
+[ext_resource type="Script" path="res://scripts/core/offscreen_life_simulator.gd" id="8_offscreen_life"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -27,6 +28,9 @@ script = ExtResource("1_world_loader")
 
 [node name="AgentResidencyRegistry" type="Node" parent="WorldRoot"]
 script = ExtResource("7_residency")
+
+[node name="OffscreenLifeSimulator" type="Node" parent="WorldRoot"]
+script = ExtResource("8_offscreen_life")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="WorldRoot"]
 environment = SubResource("Environment_main")

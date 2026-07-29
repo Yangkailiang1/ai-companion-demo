@@ -95,6 +95,9 @@ func load_game(path: String = "") -> Error:
 	SemanticWorld.import_save_state(data.get("objects", {}))
 	if has_node("/root/AgentPsycheSystem"):
 		get_node("/root/AgentPsycheSystem").import_save_state(data.get("psychology", {}))
+	var offscreen := _resolve_offscreen_life()
+	if offscreen != null:
+		offscreen.import_save_state(data.get("offscreen_life", {}))
 	_pending_agent_states = data.get("agents", {}).duplicate(true)
 	loader = _resolve_loader()
 	if loader != null and loader.has_method("reconcile_active_cast"):
@@ -164,6 +167,10 @@ func _build_snapshot() -> Dictionary:
 		"objects": SemanticWorld.export_save_state(),
 		"psychology": AgentPsycheSystem.export_save_state(),
 		"residency": residency_state,
+		"offscreen_life": (
+			_resolve_offscreen_life().export_save_state()
+			if _resolve_offscreen_life() != null else {}
+		),
 		"agents": agents,
 	}
 
@@ -295,6 +302,9 @@ func _validate_snapshot(data: Dictionary) -> bool:
 	if data.has("residency") and not data.residency is Dictionary:
 		last_error = "invalid save: residency must be an object"
 		return false
+	if data.has("offscreen_life") and not data.offscreen_life is Dictionary:
+		last_error = "invalid save: offscreen_life must be an object"
+		return false
 	var location: Dictionary = data.location
 	if not location.get("world_mode", null) is String or not (
 		location.get("location_id", null) is String
@@ -367,6 +377,15 @@ func _resolve_loader() -> WorldLocationLoader:
 	if wr is WorldLocationLoader:
 		return wr
 	return null
+
+
+## [C5.6][X1.2] 解析 WorldRoot 下的离屏生活模拟器。
+func _resolve_offscreen_life() -> OffscreenLifeSimulator:
+	var loader := _resolve_loader()
+	return (
+		loader.get_node_or_null("OffscreenLifeSimulator") as OffscreenLifeSimulator
+		if loader != null else null
+	)
 
 
 ## [X1.2] 查询活动参数化房间是否已写入声明出生点；纯读取。

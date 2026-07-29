@@ -258,6 +258,9 @@ func _score_activity(agent: Node, agent_id: String, definition: Dictionary) -> D
 	var activity_id := String(definition.get("id", ""))
 	if activity_id.is_empty() or not _resources_available(definition.get("resources", [])):
 		return {}
+	var focus_target := String(definition.get("focus_target", ""))
+	if not focus_target.is_empty() and SemanticWorld.get_object(focus_target) == null:
+		return {}
 	var cooldown_seconds := float(definition.get("cooldown_seconds", 30.0))
 	var cooldown_key := "%s:%s" % [agent_id, activity_id]
 	var last_started := int(_activity_last_started.get(cooldown_key, -int(cooldown_seconds * 1000.0)))

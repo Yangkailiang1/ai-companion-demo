@@ -296,6 +296,13 @@ func _on_room_portal_walkthrough_requested(
 		String(edge.get("target_entry_id", "default")),
 		false,
 	)
+	var player := get_node_or_null("PlayerBody") as Node3D
+	if (
+		player != null
+		and is_instance_valid(_active_location)
+		and _active_location.has_method("open_nearest_portal")
+	):
+		_active_location.open_nearest_portal(player.global_position)
 
 
 ## [S2.5] 更新语义可见域而不依赖房间构建顺序。

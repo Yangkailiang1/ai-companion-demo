@@ -16,7 +16,11 @@ extends Control
 @onready var input_area: Panel = $InputArea
 @onready var chat_toggle: Button = $ChatToggleButton
 
-var display_names = {"main_agent": "咕咕嘎嘎", "jue_agent": "诀"}
+var display_names = {
+	"main_agent": "咕咕嘎嘎",
+	"jue_agent": "诀",
+	"life_trace": "生活记录",
+}
 const PLAYER_NAME := "你"
 const MAX_CHAT_LINES := 10
 const STATE_COLORS := {

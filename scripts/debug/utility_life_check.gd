@@ -119,7 +119,12 @@ func _verify_micro_behavior(bus: Node, autonomy: Node) -> void:
 	autonomy._active_activities.clear()
 	autonomy._resource_owners.clear()
 	autonomy._agent_available_after_msec.clear()
-	for agent in ["main_agent", "jue_agent"]:
+	var agent_ids: Array[String] = []
+	for node in get_nodes_in_group("agents"):
+		var agent_id := String(node.get("agent_name"))
+		if not agent_id.is_empty():
+			agent_ids.append(agent_id)
+	for agent in agent_ids:
 		for activity in ["plant_care", "read_book", "rest_on_sofa", "wander_room"]:
 			autonomy._activity_last_started["%s:%s" % [agent, activity]] = Time.get_ticks_msec()
 	autonomy._last_global_start_msec = -2000

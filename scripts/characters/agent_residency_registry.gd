@@ -84,6 +84,11 @@ func get_agent_location(agent_id: String) -> String:
 	return String(_agent_locations.get(agent_id, ""))
 
 
+## [C5.3][C5.6] 返回全部逻辑居民位置快照，供离屏模拟只读遍历。
+func get_agent_locations() -> Dictionary:
+	return _agent_locations.duplicate(true)
+
+
 ## [X1.2] 导出纯数据居民位置，供存档和离屏模拟复用。
 func export_save_state() -> Dictionary:
 	return {"agent_locations": _agent_locations.duplicate(true)}
