@@ -33,7 +33,7 @@ func _run() -> void:
 	scene.free()
 	await process_frame
 	if not _failed:
-		print("PLAYER_FIRST_PERSON_PASS modes=2 collision=true travel=true")
+		print("PLAYER_FIRST_PERSON_PASS modes=2 collision=true travel=true mouse_capture=true")
 	quit(1 if _failed else 0)
 
 
@@ -66,10 +66,25 @@ func _verify_modes_and_movement(
 	_assert(camera.set_view_mode("first_person"), "first-person switch failed")
 	await process_frame
 	_assert(player.is_control_enabled(), "first-person movement disabled")
+	_assert(camera.is_pointer_captured(), "first-person did not capture mouse")
 	_assert(
 		camera.global_position.distance_to(player.get_eye_global_position()) < 0.02,
 		"camera not at eye",
 	)
+	await create_timer(0.12).timeout
+	var look_before := camera.global_rotation
+	_move_mouse(camera, Vector2(90.0, -25.0))
+	_assert(camera.global_rotation.distance_to(look_before) > 0.05, "free mouse look failed")
+	camera._input(_key_event(KEY_ESCAPE, true))
+	_assert(not camera.is_pointer_captured(), "Esc did not release mouse")
+	var released_rotation := camera.global_rotation
+	_move_mouse(camera, Vector2(120.0, 20.0))
+	_assert(
+		camera.global_rotation.distance_to(released_rotation) < 0.01,
+		"released mouse still changed view",
+	)
+	_right_click(camera)
+	_assert(camera.is_pointer_captured(), "right click did not recapture mouse")
 	var move_before := player.global_position
 	_send_key(KEY_W, true)
 	await _physics_frames(75)
@@ -106,6 +121,7 @@ func _verify_focus_lock(scene: Node, player: CharacterBody3D, camera: Camera3D) 
 	_assert(player.global_position.distance_to(body_before) < 0.03, "moved while typing")
 	_assert(camera.global_rotation.distance_to(rotation_before) < 0.01, "look changed while typing")
 	_assert(camera.get_view_mode() == "first_person", "V toggled while typing")
+	_assert(not camera.is_pointer_captured(), "text focus did not release mouse")
 
 
 ## [P2.3][S2.2] 验证玩家入口与 AI Cast 出生策略解耦。
@@ -139,6 +155,23 @@ func _drag_camera(camera: Camera3D, relative: Vector2) -> void:
 	release.pressed = false
 	release.position = drag.position
 	camera._input(release)
+
+
+## [P2.3] 合成无需按键的捕获鼠标移动。
+func _move_mouse(camera: Camera3D, relative: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.relative = relative
+	motion.position = Vector2(640.0, 360.0)
+	camera._input(motion)
+
+
+## [P2.3] 在第一人称释放状态下合成右键重捕获。
+func _right_click(camera: Camera3D) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_RIGHT
+	event.pressed = true
+	event.position = Vector2(640.0, 360.0)
+	camera._input(event)
 
 
 ## [P2.3] 向 Input 单例发送物理键状态。

@@ -8,6 +8,7 @@
 extends Camera3D
 
 signal view_mode_changed(mode: String)
+signal pointer_capture_changed(is_captured: bool)
 
 const MODE_OBSERVER := "observer"
 const MODE_FIRST_PERSON := "first_person"
@@ -27,6 +28,8 @@ var _first_person_yaw := 0.0
 var _first_person_pitch := -0.12
 var _is_orbiting := false
 var _orbit_button := MOUSE_BUTTON_NONE
+var _pointer_captured := false
+var _ignore_mouse_motion_until_msec := 0
 var _player: CharacterBody3D
 
 
@@ -38,6 +41,12 @@ func _ready() -> void:
 		_player.set_control_enabled(false)
 		_player.entry_teleported.connect(_on_player_entry_teleported)
 	_update_camera()
+
+
+## [P2.3] 节点退出时恢复系统光标，避免编辑器或窗口遗留捕获状态。
+func _exit_tree() -> void:
+	if _pointer_captured:
+		_set_pointer_captured(false)
 
 
 ## [P2.4] 切换稳定视角模式；非法模式不改变状态并返回 false。
@@ -56,6 +65,9 @@ func set_view_mode(mode: String) -> bool:
 	if mode == MODE_FIRST_PERSON:
 		_first_person_yaw = _player.global_rotation.y
 		get_viewport().gui_release_focus()
+		_set_pointer_captured(true)
+	else:
+		_set_pointer_captured(false)
 	_update_camera()
 	view_mode_changed.emit(_view_mode)
 	return true
@@ -66,27 +78,71 @@ func get_view_mode() -> String:
 	return _view_mode
 
 
-## [P2.4] V 键切换模式；鼠标拖拽/滚轮按模式更新视角。
+## [P2.3] 返回第一人称是否已捕获系统鼠标；纯读取。
+func is_pointer_captured() -> bool:
+	return _pointer_captured
+
+
+## [P2.3][P2.4] V 切模式、Esc 释放鼠标；第一人称捕获后直接读取鼠标位移。
 func _input(event: InputEvent) -> void:
 	if _is_text_input_focused():
+		if is_pointer_captured():
+			_set_pointer_captured(false)
 		if event is InputEventMouseButton and not event.pressed:
 			_is_orbiting = false
 		return
 	if event is InputEventKey:
 		var key := event as InputEventKey
+		if (
+			_view_mode == MODE_FIRST_PERSON
+			and key.pressed
+			and not key.echo
+			and key.physical_keycode == KEY_ESCAPE
+			and is_pointer_captured()
+		):
+			_set_pointer_captured(false)
+			get_viewport().set_input_as_handled()
+			return
 		if key.pressed and not key.echo and key.physical_keycode == KEY_V:
 			set_view_mode(
 				MODE_FIRST_PERSON if _view_mode == MODE_OBSERVER else MODE_OBSERVER
 			)
 			get_viewport().set_input_as_handled()
 			return
+	if _view_mode == MODE_FIRST_PERSON:
+		_handle_first_person_input(event)
+		return
 	if event is InputEventMouseButton:
 		_handle_mouse_button(event as InputEventMouseButton)
 	elif event is InputEventMouseMotion and _is_orbiting:
 		_handle_mouse_drag(event as InputEventMouseMotion)
 
 
-## [P2.1][P2.3] 处理视角拖拽与观察模式滚轮缩放。
+## [P2.3] 捕获状态下直接转向；释放后右键重新捕获而不抢占左键交互。
+func _handle_first_person_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and is_pointer_captured():
+		if Time.get_ticks_msec() < _ignore_mouse_motion_until_msec:
+			return
+		var motion := event as InputEventMouseMotion
+		_first_person_yaw -= motion.relative.x * mouse_sensitivity
+		_first_person_pitch = clampf(
+			_first_person_pitch - motion.relative.y * mouse_sensitivity, -1.2, 1.2
+		)
+		_update_camera()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		if (
+			button.pressed
+			and button.button_index == MOUSE_BUTTON_RIGHT
+			and not is_pointer_captured()
+			and not _is_pointer_over_ui(button.position)
+		):
+			_set_pointer_captured(true)
+			get_viewport().set_input_as_handled()
+
+
+## [P2.1] 处理观察模式视角拖拽与滚轮缩放。
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
 	if event.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
 		if event.pressed and _is_pointer_over_ui(event.position):
@@ -108,16 +164,10 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## [P2.1][P2.3] 更新当前模式的 yaw/pitch 并刷新相机。
+## [P2.1] 更新观察模式的 yaw/pitch 并刷新相机。
 func _handle_mouse_drag(event: InputEventMouseMotion) -> void:
-	if _view_mode == MODE_OBSERVER:
-		yaw -= event.relative.x * mouse_sensitivity
-		pitch = clampf(pitch - event.relative.y * mouse_sensitivity, -1.1, -0.32)
-	else:
-		_first_person_yaw -= event.relative.x * mouse_sensitivity
-		_first_person_pitch = clampf(
-			_first_person_pitch - event.relative.y * mouse_sensitivity, -1.2, 1.2
-		)
+	yaw -= event.relative.x * mouse_sensitivity
+	pitch = clampf(pitch - event.relative.y * mouse_sensitivity, -1.1, -0.32)
 	_update_camera()
 	get_viewport().set_input_as_handled()
 
@@ -125,6 +175,8 @@ func _handle_mouse_drag(event: InputEventMouseMotion) -> void:
 ## [P2.1][P2.3] 驱动观察模式键盘环绕或持续同步第一人称眼位。
 func _process(delta: float) -> void:
 	if _view_mode == MODE_FIRST_PERSON:
+		if _is_text_input_focused() and is_pointer_captured():
+			_set_pointer_captured(false)
 		_update_camera()
 		return
 	if _is_text_input_focused():
@@ -160,6 +212,20 @@ func _on_player_entry_teleported(yaw_radians: float) -> void:
 	_first_person_yaw = yaw_radians
 	if _view_mode == MODE_FIRST_PERSON:
 		_update_camera()
+
+
+## [P2.3] 切换 Godot 鼠标模式并广播实际捕获状态。
+func _set_pointer_captured(captured: bool) -> void:
+	if _pointer_captured == captured:
+		return
+	_pointer_captured = captured
+	if captured:
+		_ignore_mouse_motion_until_msec = Time.get_ticks_msec() + 100
+	var requested_mode := (
+		Input.MOUSE_MODE_CAPTURED if captured else Input.MOUSE_MODE_VISIBLE
+	)
+	Input.mouse_mode = requested_mode
+	pointer_capture_changed.emit(captured)
 
 
 ## [P2.3] 判断聊天文本控件是否占有键盘焦点；纯读取。

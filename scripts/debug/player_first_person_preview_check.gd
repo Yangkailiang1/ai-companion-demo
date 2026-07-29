@@ -28,6 +28,25 @@ func _run() -> void:
 		push_error("PLAYER_FIRST_PERSON_PREVIEW_FAIL: mode unavailable")
 		quit(1)
 		return
+	if (
+		not camera.is_pointer_captured()
+		or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED
+	):
+		push_error("PLAYER_FIRST_PERSON_PREVIEW_FAIL: OS mouse not captured")
+		quit(1)
+		return
+	camera._input(_key_event(KEY_ESCAPE))
+	await process_frame
+	if camera.is_pointer_captured() or Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
+		push_error("PLAYER_FIRST_PERSON_PREVIEW_FAIL: Esc did not release OS mouse")
+		quit(1)
+		return
+	camera._input(_right_click_event())
+	await process_frame
+	if not camera.is_pointer_captured() or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		push_error("PLAYER_FIRST_PERSON_PREVIEW_FAIL: right click did not recapture")
+		quit(1)
+		return
 	for _frame in range(18):
 		await process_frame
 	await RenderingServer.frame_post_draw
@@ -41,3 +60,21 @@ func _run() -> void:
 		OUTPUT_PATH, image.get_width(), image.get_height(),
 	])
 	quit(0)
+
+
+## [P2.3] 构造 Esc 物理键事件；纯函数。
+func _key_event(keycode: Key) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.keycode = keycode
+	event.physical_keycode = keycode
+	event.pressed = true
+	return event
+
+
+## [P2.3] 构造场景中央右键事件；纯函数。
+func _right_click_event() -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_RIGHT
+	event.pressed = true
+	event.position = Vector2(640.0, 360.0)
+	return event

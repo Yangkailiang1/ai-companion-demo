@@ -22,22 +22,26 @@ Q/E 键盘预览保持兼容，聊天输入聚焦时不会误转镜头。
 
 - `WorldRoot/PlayerBody` 是跨房间保留的隐形 `CharacterBody3D`，含胶囊碰撞、
   重力、地面吸附和相机相对 WASD，不混用任何 AI Agent。
-- 第一人称使用玩家眼位和右键拖拽视角，不永久捕获鼠标，仍可点击旅行门和聊天 UI。
+- 第一人称使用玩家眼位并自动捕获鼠标；无需按键，直接移动鼠标即可转向。`Esc`
+  释放系统光标但不退出第一人称，右键点击非 UI 场景可重新捕获；释放后仍可点击
+  旅行门和聊天 UI。
 - 地点入口声明位置及朝向；跨房旅行后玩家落在对应入口，AI Cast 仍使用各自
   `cast_spawns`，修复旧观察模式把主 Agent 当成玩家入口载体的问题。
 - `[NEXT]` 增加灵敏度、减少镜头运动、键位重映射与 PlayerBody 存档。
 
 ### P2.4 `[DONE two-mode baseline]` 模式切换
 
-V 键可在观察/第一人称间切换，模式提示同步变化；LineEdit/TextEdit 聚焦期间，
-WASD、镜头拖拽和 V 切换全部锁定。第三人称加入后扩展为三模式。
+V 键可在观察/第一人称间切换，模式与鼠标捕获提示同步变化；LineEdit/TextEdit
+聚焦期间会释放系统光标，WASD、鼠标视角和 V 切换全部锁定。第三人称加入后扩展
+为三模式。
 
 ## 自动验收
 
 - `player_first_person_check.gd`：碰撞底座、无临时可见网格、移动/墙体约束、
-  聊天焦点锁、双模式、入口位置和 AI 出生点解耦。
+  鼠标捕获/Esc 释放/右键重捕获、聊天焦点锁、双模式、入口位置和 AI 出生点解耦。
 - `camera_orbit_check.gd`：观察模式环绕、UI 指针阻挡和文本焦点。
-- `player_first_person_preview_check.gd`：1280×720 Metal 第一人称构图。
+- `player_first_person_preview_check.gd`：1280×720 Metal 第一人称构图，并在真实
+  macOS 窗口验证系统鼠标捕获、Esc 释放和重捕获。
 
 ## 相关节点
 

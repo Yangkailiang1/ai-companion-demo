@@ -52,9 +52,10 @@ Prefer these small modules:
      default and preserves current orbit/zoom/Q-E behavior.
    - Public `set_view_mode(mode) -> bool` and `get_view_mode() -> String`.
    - `V` toggles modes unless a LineEdit/TextEdit is focused.
-   - First-person uses the persistent body eye position, right-drag yaw/pitch,
-     and does not capture the pointer permanently (world portal clicks and chat
-     remain usable).
+   - First-person uses the persistent body eye position and captures the pointer;
+     plain mouse motion updates yaw/pitch without holding a button.
+   - Escape releases the system pointer without leaving first person. Right-click
+     on non-UI world space recaptures it; left click remains free for portals.
    - Entering first person releases existing GUI focus once; clicking/focusing
      chat afterwards blocks movement, view drag, V toggle and keyboard camera.
    - Returning to observer restores the prior observer target/distance/yaw/pitch.
@@ -96,13 +97,15 @@ instantiate `main.tscn`, disable autonomous scheduling, and prove:
    eye.
 5. simulated W input moves the body on the generated room floor, while wall and
    furniture collision keep it inside room bounds.
-6. focusing the existing LineEdit immediately prevents movement and right-drag
-   camera rotation; V cannot toggle while text is focused.
+6. focusing the existing LineEdit releases the pointer and immediately prevents
+   movement/mouse look; V cannot toggle while text is focused.
 7. after releasing focus, V returns to observer and body control disables.
 8. travel living→kitchen places PlayerBody at `from_living`, while `Agent`
    remains at the kitchen's declared cast spawn (not at the player entry).
 9. travel kitchen→living continues to work and first-person can be re-entered.
-10. CameraHint text changes with mode.
+10. CameraHint text changes with mode and capture/release state.
+11. entering first person captures the mouse, plain motion rotates, Escape
+    releases it, released motion is ignored, and right-click recaptures it.
 
 Also update:
 

@@ -363,8 +363,8 @@ AI Living Town
 
 - `P2.1 [DONE baseline]` 保留当前房间中心观察相机作为“导演/布置模式”。
 - `P2.2 [NEXT]` 在持久 PlayerBody 上增加第三人称模型、上下楼和交互射线。
-- `P2.3 [DONE baseline]` 隐形 CharacterBody 玩家已有碰撞、重力、WASD、右键
-  第一人称视角和跨房入口位置/朝向；不使用胶囊可视占位人。
+- `P2.3 [DONE baseline]` 隐形 CharacterBody 玩家已有碰撞、重力、WASD、捕获
+  鼠标直接转向、Esc 释放光标和跨房入口位置/朝向；不使用胶囊可视占位人。
 - `P2.4 [DONE two-mode baseline]` V 切换观察/第一人称，聊天聚焦时锁定移动、
   镜头和模式切换；第三人称接入后扩展为三模式。
 
