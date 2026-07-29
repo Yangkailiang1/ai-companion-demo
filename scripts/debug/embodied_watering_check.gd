@@ -7,6 +7,8 @@ var failed := false
 var completed := false
 var failure_reason := ""
 var saw_watering_cue := false
+var saw_pour_start := false
+var saw_pour_finish := false
 
 
 ## [C4.4][C9.5b] Starts the asynchronous embodied-watering acceptance flow.
@@ -28,6 +30,17 @@ func _run() -> void:
 	await _wait_for_navigation(agent)
 	var can_body := room.get_node("WateringCan/PhysicsBody") as RigidBody3D
 	var can_home := can_body.get_parent()
+	var presentation := can_body.find_child(
+		"StylizedWateringCan", true, false
+	)
+	_assert(presentation != null, "watering presentation missing")
+	if presentation != null:
+		presentation.tool_use_started.connect(
+			func(verb: String): saw_pour_start = verb == "water"
+		)
+		presentation.tool_use_finished.connect(
+			func(verb: String): saw_pour_finish = verb == "water"
+		)
 	var plant = root.get_node("SemanticWorld").get_object("plant")
 	plant.properties["moisture"] = 10.0
 	var moisture_before := float(plant.properties.get("moisture", 0.0))
@@ -57,6 +70,11 @@ func _run() -> void:
 	_assert(float(plant.properties.get("moisture", 0.0)) > moisture_before,
 		"watering did not increase plant moisture")
 	_assert(saw_watering_cue, "watering performance cue was not emitted")
+	_assert(saw_pour_start and saw_pour_finish, "watering presentation did not complete")
+	_assert(
+		presentation == null or not bool(presentation.get("is_pouring")),
+		"watering presentation stayed active",
+	)
 	print("EMBODIED_WATERING_%s moisture=%.1f actions=%d" % [
 		"FAIL" if failed else "PASS",
 		float(plant.properties.get("moisture", 0.0)),

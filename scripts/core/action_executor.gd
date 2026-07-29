@@ -180,6 +180,10 @@ func _travel_to(target: Vector3) -> Dictionary:
 func _interact(params: Dictionary) -> void:
 	var obj_id: String = params.get("object", "")
 	var verb: String = params.get("verb", "")
+	if not String(params.get("held_tool", "")).is_empty():
+		await _play_held_tool(params, obj_id)
+		if _cancelled:
+			return
 	var result := _object_interactor.perform(obj_id, verb, _agent_id())
 	if not ResultClass.is_success(result):
 		_finish_result(result)
@@ -195,6 +199,27 @@ func _interact(params: Dictionary) -> void:
 			})
 	await get_tree().create_timer(1.0).timeout
 	_on_action_finished()
+
+
+## [C4.4][C9.5b] 让当前持有工具自行播放使用表现；缺失表现组件时保持兼容。
+func _play_held_tool(params: Dictionary, target_id: String) -> void:
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world == null:
+		return
+	var held_tool = semantic_world.get_object(
+		String(params.get("held_tool", ""))
+	)
+	var target = semantic_world.get_object(target_id)
+	if held_tool == null or not is_instance_valid(held_tool.godot_node):
+		return
+	if not held_tool.godot_node.has_method("play_tool_use"):
+		return
+	var target_position: Vector3 = (
+		target.position if target != null else Vector3.ZERO
+	)
+	await held_tool.godot_node.play_tool_use(
+		String(params.get("verb", "")), target_position
+	)
 
 
 func _speak(params: Dictionary) -> void:

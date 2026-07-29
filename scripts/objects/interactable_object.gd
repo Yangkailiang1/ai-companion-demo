@@ -115,6 +115,14 @@ func get_reserved_by() -> String:
 	return _reservation.get_reserved_by()
 
 
+## [C4.4][S3.1] 将工具表现委托给资产子树，不按具体资源路径分支。
+func play_tool_use(verb: String, target_position: Vector3 = Vector3.ZERO) -> bool:
+	for descendant in find_children("*", "", true, false):
+		if descendant.has_method("play_tool_use"):
+			return bool(await descendant.play_tool_use(verb, target_position))
+	return false
+
+
 ## [S3.2][D3] 先委托专用状态组件；否则执行语义世界声明的通用交互反馈。
 ## 这样 Planner 看到的 affordance 与导演实际可执行能力保持一致。
 func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:

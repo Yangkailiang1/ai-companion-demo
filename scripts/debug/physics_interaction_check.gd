@@ -21,6 +21,10 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	await process_frame
+	var world_root := scene.get_node("WorldRoot") as WorldLocationLoader
+	_assert(world_root.switch_location("legacy") == "legacy", "legacy physics fixture unavailable")
+	await process_frame
+	await process_frame
 	var room := scene.get_node(ROOM_PATH)
 	_verify_character_colliders()
 	_verify_scene_colliders(room)

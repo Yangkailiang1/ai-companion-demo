@@ -1,4 +1,6 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/objects/watering_can_presentation.gd" id="1_presentation"]
 
 [sub_resource type="StandardMaterial3D" id="CanMaterial"]
 albedo_color = Color(0.18, 0.58, 0.62, 1)
@@ -35,6 +37,7 @@ rings = 16
 ring_segments = 24
 
 [node name="StylizedWateringCan" type="Node3D"]
+script = ExtResource("1_presentation")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = SubResource("BodyMesh")
