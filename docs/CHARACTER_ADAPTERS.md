@@ -194,6 +194,33 @@ LLM/router chooses "wave"
 诀 adapter plays Jue-retargeted wave clip
 ```
 
+## Anime rendering profile (`v0.8.11`)
+
+All materialized character families now share `anime_toon_v1` without changing
+their skeleton or motion adapter. `AnimeRenderAdapter` walks only the declared
+model subtree, duplicates each live `StandardMaterial3D`, preserves its color and
+textures, then enables Godot's Toon diffuse/specular response.
+
+Each surface receives a second-pass outline shader. The shader:
+
+- expands back faces along their normals and draws a dark purple silhouette;
+- samples the source albedo alpha, so hair cards and cut-out clothing do not
+  become solid blocks;
+- divides the local outline width by model scale, keeping Jue's centimeter-scale
+  FBX and the Q models visually consistent.
+
+The adapter is attached to `main_agent.tscn`, `jue_agent.tscn` and
+`local_runtime_character.tscn`; newly imported manifest characters therefore
+inherit the same style automatically. Furniture and room meshes are outside those
+model roots and remain PBR.
+
+Validate the live material boundary with:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . \
+  --script scripts/debug/anime_character_rendering_check.gd
+```
+
 ## Validation
 
 Run the adapter coverage check after importing a new character or editing any mapping:

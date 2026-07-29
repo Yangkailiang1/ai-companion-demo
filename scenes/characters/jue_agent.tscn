@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="1_agent"]
 [ext_resource type="Script" path="res://scripts/ui/dialogue_bubble.gd" id="2_bubble"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/characters/expression_driver.gd" id="4_expression"]
 [ext_resource type="Script" path="res://scripts/characters/jue_visual_adapter.gd" id="5_visual"]
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="6_pose"]
+[ext_resource type="Script" path="res://scripts/characters/anime_render_adapter.gd" id="7_anime"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_jue"]
 radius = 0.36
@@ -88,6 +89,10 @@ path_desired_distance = 0.3
 target_desired_distance = 0.45
 radius = 0.36
 height = 1.85
+
+[node name="AnimeRenderAdapter" type="Node" parent="."]
+script = ExtResource("7_anime")
+model_roots = Array[NodePath]([NodePath("../JueModelRoot")])
 
 [node name="CharacterAnimationDriver" type="Node" parent="." node_paths=PackedStringArray("procedural_root")]
 script = ExtResource("3_driver")

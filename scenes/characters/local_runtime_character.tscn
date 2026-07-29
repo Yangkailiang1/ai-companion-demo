@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/characters/agent_base.gd" id="1_agent"]
 [ext_resource type="Script" path="res://scripts/characters/character_runtime_binding.gd" id="2_binding"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/characters/character_pose_overlay.gd" id="4_pose"]
 [ext_resource type="Script" path="res://scripts/characters/expression_driver.gd" id="5_expression"]
 [ext_resource type="Script" path="res://scripts/ui/dialogue_bubble.gd" id="6_bubble"]
+[ext_resource type="Script" path="res://scripts/characters/anime_render_adapter.gd" id="7_anime"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_character"]
 resource_local_to_scene = true
@@ -29,6 +30,10 @@ position = Vector3(0, 1.18, 0.34)
 
 [node name="CharacterRuntimeBinding" type="Node" parent="."]
 script = ExtResource("2_binding")
+
+[node name="AnimeRenderAdapter" type="Node" parent="."]
+script = ExtResource("7_anime")
+model_roots = Array[NodePath]([NodePath("../ModelRoot")])
 
 [node name="AgentNameLabel" type="Label3D" parent="."]
 position = Vector3(0, 1.55, 0)
