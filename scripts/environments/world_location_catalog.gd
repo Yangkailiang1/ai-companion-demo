@@ -11,6 +11,9 @@ const DEFAULT_PATH := "res://data/world_locations.json"
 
 var default_location_id := ""
 var locations: Dictionary = {}
+var initial_agent_locations: Dictionary = {}
+var player_companion_ids: Array = []
+var local_character_manifests: Dictionary = {}
 
 
 ## [S2.2] 从 JSON 装载地点图并进行结构/入口一致性/入口块校验。
@@ -32,8 +35,34 @@ func load_catalog(path: String = DEFAULT_PATH) -> bool:
 		return false
 	if not _validate_portals(candidate_locations):
 		return false
+	var candidate_residency = parsed.get("agent_residency", {})
+	var candidate_companions = parsed.get("player_companion_ids", [])
+	var candidate_manifests = parsed.get("local_character_manifests", {})
+	if (
+		not candidate_residency is Dictionary
+		or not candidate_companions is Array
+		or not candidate_manifests is Dictionary
+		or not _validate_residency(candidate_residency, candidate_locations)
+	):
+		return false
 	locations = candidate_locations
 	default_location_id = candidate_default
+	initial_agent_locations = candidate_residency.duplicate(true)
+	player_companion_ids = candidate_companions.duplicate()
+	local_character_manifests = candidate_manifests.duplicate(true)
+	return true
+
+
+## [S2.2] 拒绝未知居民地点，避免角色永久无法实体化。
+func _validate_residency(
+	residency: Dictionary,
+	candidate_locations: Dictionary,
+) -> bool:
+	for agent_id in residency:
+		if String(agent_id).is_empty():
+			return false
+		if not candidate_locations.has(String(residency[agent_id])):
+			return false
 	return true
 
 

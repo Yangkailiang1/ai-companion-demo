@@ -16,12 +16,15 @@ Schema v1 已保存世界时间、需求、物体状态和已加载角色位置�
 
 - Schema v2 增加顶层 `location {world_mode, location_id}`，每个 Agent 快照同时
   记录 `location_id`，加载时先恢复地点，再恢复世界、对象和角色。
+- Schema v2 可选顶层 `residency.agent_locations` 保存全部居民的逻辑房间，包括
+  当前未加载角色；加载地点前先恢复归属，再按目标房间实体化，旧 v2 存档仍兼容。
 - 未加载房间的语义对象状态进入延迟队列，在对应 Recipe 实例化并注册对象时消费；
   已恢复的 Agent 坐标也只在目标地点新 Cast 生成后应用一次。
 - 默认写入 `user://world_save_v2.json`；首次加载会回退读取 v1，并在内存中迁移为
   `legacy/living_room`，不会把旧客厅坐标错误套到参数化房间。
 - 未知 Schema、非法地点和畸形 Agent/对象字段均在改变当前世界前 fail-closed。
-- `cross_location_save_check.gd` 覆盖厨房/卧室对象、双 Agent 坐标、延迟恢复、
+- `cross_location_save_check.gd` 与 `agent_residency_check.gd` 覆盖厨房/卧室对象、
+  Agent 坐标、AI 独立过门、居民归属、延迟恢复、
   跨房间/同房间读取、一次性应用、v1 迁移和坏存档保护。
 
 ## 后续方向

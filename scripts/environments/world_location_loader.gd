@@ -30,6 +30,14 @@ var _catalog := WorldLocationCatalog.new()
 func _enter_tree() -> void:
 	if not _catalog.load_catalog():
 		push_error("WorldLocationLoader: location catalog unavailable")
+	var residency := get_residency_registry()
+	if residency != null:
+		residency.configure(
+			_catalog.initial_agent_locations,
+			_catalog.player_companion_ids,
+			_catalog.local_character_manifests,
+			_catalog.locations.keys(),
+		)
 	var requested_mode := OS.get_environment("AI_GAMES_WORLD_MODE").strip_edges()
 	if requested_mode.is_empty():
 		requested_mode = default_world_mode
@@ -74,9 +82,16 @@ func travel_to(location_id: String, entry_id: String = "default") -> bool:
 		return false
 	location["location_id"] = location_id
 	location["cast_spawns"] = location.get("cast_spawns", {}).duplicate(true)
-	location["cast_members"] = location.get(
-		"cast_members", WorldCastAssembler.CAST_NODE_NAMES
-	).duplicate()
+	var residency := get_residency_registry()
+	if residency != null:
+		residency.move_companions(location_id)
+		var policy: Dictionary = residency.get_cast_policy(location_id)
+		location["cast_members"] = policy.cast_members
+		location["local_character_manifests"] = policy.local_character_manifests
+	else:
+		location["cast_members"] = location.get(
+			"cast_members", WorldCastAssembler.CAST_NODE_NAMES
+		).duplicate()
 	if next_location.has_method("configure_location"):
 		next_location.configure_location(location)
 	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))
@@ -113,6 +128,51 @@ func get_location_catalog() -> WorldLocationCatalog:
 ## [S2.1] 返回当前地点节点；纯读取。
 func get_active_location() -> Node3D:
 	return _active_location
+
+
+## [S2.2][C5.3] 返回跨房持久的居民归属注册表。
+func get_residency_registry() -> AgentResidencyRegistry:
+	return get_node_or_null("AgentResidencyRegistry") as AgentResidencyRegistry
+
+
+## [C5.3][S2.2] 让 AI 沿地点图迁移；不切换玩家房间或 PlayerBody。
+func transfer_agent_via(
+	agent_id: String,
+	source_location_id: String,
+	exit_id: String,
+) -> bool:
+	if source_location_id != current_location_id:
+		return false
+	if not _catalog.can_travel(source_location_id, exit_id):
+		return false
+	var residency := get_residency_registry()
+	if residency == null or residency.get_agent_location(agent_id) != source_location_id:
+		return false
+	var edge := _catalog.get_exit(source_location_id, exit_id)
+	var target_id := String(edge.get("target_location_id", ""))
+	if not residency.move_agent(agent_id, target_id):
+		return false
+	_reconcile_cast_after_traverse()
+	return true
+
+
+## [C5.3][X1.2] 立即按逻辑居民状态刷新当前房间，供存档恢复调用。
+func reconcile_active_cast() -> void:
+	var residency := get_residency_registry()
+	if (
+		residency != null
+		and is_instance_valid(_active_location)
+		and _active_location.has_method("reconcile_cast")
+	):
+		_active_location.reconcile_cast(
+			residency.get_cast_policy(current_location_id)
+		)
+
+
+## [C5.3] 给动作队列留出完成反馈时间，再移除已离房角色表现。
+func _reconcile_cast_after_traverse() -> void:
+	await get_tree().create_timer(1.1).timeout
+	reconcile_active_cast()
 
 
 ## [S2.1] 将未知模式收敛到公开兼容的 legacy 模式；纯函数。

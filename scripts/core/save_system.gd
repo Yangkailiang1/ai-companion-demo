@@ -81,6 +81,12 @@ func load_game(path: String = "") -> Error:
 		return ERR_FILE_UNRECOGNIZED
 	if data.is_empty() or not _validate_snapshot(data):
 		return ERR_INVALID_DATA
+	var loader := _resolve_loader()
+	if loader != null and data.get("residency", null) is Dictionary:
+		var residency = loader.get_residency_registry()
+		if residency != null and not residency.import_save_state(data.residency):
+			last_error = "failed to restore agent residency"
+			return ERR_INVALID_DATA
 	var location_ok := _restore_location(data.get("location", {}))
 	if not location_ok:
 		last_error = "failed to restore location from save"
@@ -90,7 +96,9 @@ func load_game(path: String = "") -> Error:
 	if has_node("/root/AgentPsycheSystem"):
 		get_node("/root/AgentPsycheSystem").import_save_state(data.get("psychology", {}))
 	_pending_agent_states = data.get("agents", {}).duplicate(true)
-	var loader := _resolve_loader()
+	loader = _resolve_loader()
+	if loader != null and loader.has_method("reconcile_active_cast"):
+		loader.reconcile_active_cast()
 	if loader == null or loader.current_mode == "legacy":
 		_apply_pending_agent_states()
 	elif _is_active_room_spawn_ready(loader):
@@ -139,8 +147,12 @@ func _build_snapshot() -> Dictionary:
 			"location_id": active_location_id,
 		}
 	var world_mode := "legacy"
+	var residency_state := {}
 	if loader != null:
 		world_mode = loader.current_mode
+		var residency = loader.get_residency_registry()
+		if residency != null:
+			residency_state = residency.export_save_state()
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"saved_at_unix": Time.get_unix_time_from_system(),
@@ -151,6 +163,7 @@ func _build_snapshot() -> Dictionary:
 		"world": WorldSimulator.export_save_state(),
 		"objects": SemanticWorld.export_save_state(),
 		"psychology": AgentPsycheSystem.export_save_state(),
+		"residency": residency_state,
 		"agents": agents,
 	}
 
@@ -276,6 +289,9 @@ func _validate_snapshot(data: Dictionary) -> bool:
 			return false
 	if data.has("psychology") and not data.psychology is Dictionary:
 		last_error = "invalid save: psychology must be an object"
+		return false
+	if data.has("residency") and not data.residency is Dictionary:
+		last_error = "invalid save: residency must be an object"
 		return false
 	var location: Dictionary = data.location
 	if not location.get("world_mode", null) is String or not (

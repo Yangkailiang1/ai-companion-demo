@@ -1,6 +1,19 @@
 {
   "schema_version": 1,
   "default_location_id": "living_room",
+  "agent_residency": {
+    "main_agent": "living_room",
+    "jue_agent": "living_room",
+    "castorice_agent": "living_room",
+    "cartethyia_agent": "living_room",
+    "xiangliyao_agent": "living_room"
+  },
+  "player_companion_ids": ["main_agent"],
+  "local_character_manifests": {
+    "castorice_agent": "res://assets/local_characters/castorice/character_manifest.json",
+    "cartethyia_agent": "res://assets/local_characters/cartethyia/character_manifest.json",
+    "xiangliyao_agent": "res://assets/local_characters/xiangliyao/character_manifest.json"
+  },
   "locations": {
     "living_room": {
       "display_name": "温馨客厅",

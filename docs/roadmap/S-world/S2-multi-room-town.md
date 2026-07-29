@@ -48,16 +48,19 @@
   `asset_id` 专用生成分支。四房间旅行图、语义隔离、入口和导航合同通过。
 - `[DONE semantic scope baseline]` `SemanticWorld` 为生成物体记录 `location_id`，
   LLM 的物体列表与自然语言快照只暴露当前房间，避免厨房角色继续规划客厅沙发。
-- `[DONE cast policy baseline]` 地点目录新增声明式 `cast_members`。咕咕嘎嘎作为
-  当前显式随行角色进入各房间；诀与本地 Q 版居民保留在客厅，不再因玩家点击门
-  而整批复制/传送。运行时角色适配器采用引用计数，旧地点宽限释放不会误删新
-  地点的角色绑定。
+- `[DONE residency baseline]` 持久 `AgentResidencyRegistry` 以 `agent_id →
+  location_id` 记录咕咕嘎嘎、诀和三个本地 Q 版居民；`player_companion_ids`
+  只把明确随行的咕咕嘎嘎带进玩家房间，其余居民按各自位置实体化。Q 版生成器
+  也会按 manifest 过滤，不再整批复制。
+- `[DONE AI traverse baseline]` 玩家点击门仍切换活动房间；角色执行同一
+  `traverse` affordance 时只更新自己的居民位置，不移动 PlayerBody 或玩家镜头。
+  离开当前房的角色在动作反馈结束后卸载，玩家进入目标房时重新实体化。
 - `[DONE runtime/visual acceptance]` `multi_room_home_check.gd` 已通过四房间模型
   覆盖率、语义隔离、Cast、导航和非法旅行原子性；客厅剧情、体验模式与关键路点
   回归通过。厨房和卧室采用三面墙玩偶屋结构，并通过 1280×720 Metal 截图验收。
 - `[DONE cross-location persistence]` 角色所在地点/坐标和已加载、未加载房间的对象
   状态均可跨存档恢复；v1 迁移和坏存档保护通过独立 headless 合同测试。
-- `[DONE visible portal baseline]` 四条出口边均有数据驱动的门洞、暖木门框、门扇、
+- `[DONE visible portal baseline]` 六条出口边均有数据驱动的门洞、暖木门框、门扇、
   碰撞和“厨房/卧室/客厅”3D 门牌；玩家可点击门旅行，悬停与按下有视觉反馈。
   `WorldTravelPortal` 只持有稳定 `exit_id`，目标地点仍由 Catalog/Loader 解析，
   同时以 `traverse` affordance 注册到 `SemanticWorld`，可供后续角色规划复用。
@@ -68,9 +71,6 @@
 - `[DONE player entry baseline]` 持久 `PlayerBody` 会按每个入口声明的位置和朝向
   落地；玩家入口不再覆盖咕咕嘎嘎的 AI 出生点，观察/第一人称跨房切换均可复用
   同一地点图。
-- `[NEXT residency]` 增加持久 `AgentResidencyRegistry`，以 `agent_id →
-  location_id` 保存每个居民的位置；角色只有在自己的计划完成 `traverse`
-  后才迁移。当前 `cast_members` 是防止整批跟随的过渡基线，不等价于自主跨房。
 - `[NEXT]` 增加真实走廊模块和第三人称玩家表现，把“点击门切房间”升级为连续
   走近、开门、穿越。
 
@@ -82,7 +82,7 @@
 
 增加街道、咖啡馆、公园等公共地点。
 
-### S2.5 `[LATER]` 场景流送与离屏模拟
+### S2.5 `[ACTIVE logical-residency baseline]` 场景流送与离屏模拟
 
 采用分层装载：
 
@@ -94,10 +94,14 @@
 当前四个参数化房间共用局部原点，因此不能简单同时显示，否则几何、NavMesh 和
 角色会重叠。现阶段保持“当前房间实体化”是正确的性能与一致性基线。
 
+- `[DONE]` 逻辑居民位置常驻、当前房间按角色实体化、AI traverse 和存档恢复。
+- `[NEXT]` 为未加载居民运行低频需求/日程推进，重新进入时恢复活动、情绪和
+  剩余任务；之后才增加相邻一跳预加载。
+
 ## 建议执行顺序
 
-住宅四房间、地点图、跨地点存档、可点击门和房间 Cast 策略基线已经建立；
-下一步先完成居民归属注册表与离屏状态，再补连续走廊。之后才
+住宅四房间、地点图、跨地点存档、可点击门和居民归属基线已经建立；
+下一步先完成离屏低频状态推进，再补连续走廊。之后才
 扩大到庭院和街道，避免角色日程与流送策略反复返工。
 
 ## 相关节点

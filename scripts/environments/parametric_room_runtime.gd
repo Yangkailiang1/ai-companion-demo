@@ -27,6 +27,7 @@ var location_id := "living_room"
 var location_description := ""
 var cast_spawns: Dictionary = {}
 var cast_members: Array[String] = ["Agent", "JueAgent", "LocalCharacterSpawner"]
+var local_character_manifests: Array[String] = []
 var _location_spawns_restored := false
 var _exits: Dictionary = {}
 
@@ -41,6 +42,9 @@ func configure_location(location_data: Dictionary) -> void:
 	cast_members.assign(location_data.get(
 		"cast_members", WorldCastAssembler.CAST_NODE_NAMES
 	))
+	local_character_manifests.assign(
+		location_data.get("local_character_manifests", [])
+	)
 	_exits = location_data.get("exits", {}).duplicate(true)
 
 
@@ -53,7 +57,9 @@ func _ready() -> void:
 		return
 	_activate_semantic_location()
 	build_report = ParametricSceneBuilder.new().build_room(self, manifest, registry)
-	assembled_cast = WorldCastAssembler.new().assemble_into(self, cast_members)
+	assembled_cast = WorldCastAssembler.new().assemble_into(
+		self, cast_members, local_character_manifests
+	)
 	call_deferred("_sync_navigation")
 	_activate_portals()
 
@@ -96,10 +102,35 @@ func are_location_spawns_restored() -> bool:
 	return _location_spawns_restored
 
 
+## [S2.2][C5.3] 按居民注册表增删当前房间表现节点，不重建几何或移动玩家。
+func reconcile_cast(policy: Dictionary) -> void:
+	var next_members: Array = policy.get("cast_members", [])
+	var next_manifests: Array = policy.get("local_character_manifests", [])
+	for node_name in WorldCastAssembler.CAST_NODE_NAMES:
+		var existing := get_node_or_null(node_name)
+		var should_exist: bool = node_name in next_members
+		if (
+			node_name == "LocalCharacterSpawner"
+			and existing != null
+			and should_exist
+			and existing.get_meta("residency_manifest_paths", []) != next_manifests
+		):
+			should_exist = false
+		if existing != null and not should_exist:
+			remove_child(existing)
+			existing.queue_free()
+	var added := WorldCastAssembler.new().assemble_into(
+		self, next_members, next_manifests
+	)
+	cast_members.assign(next_members)
+	local_character_manifests.assign(next_manifests)
+	_restore_location_spawns(added)
+
+
 ## [S2.1][X1] 在存档尚未包含 location_id 时恢复当前地点声明的出生点。
 ## 避免把 legacy 客厅坐标直接套到参数化布局；X1 v2 后由位置迁移器替代。
-func _restore_location_spawns() -> void:
-	for node_name in ["Agent", "JueAgent"]:
+func _restore_location_spawns(node_names: Array = ["Agent", "JueAgent"]) -> void:
+	for node_name in node_names:
 		var actor := get_node_or_null(node_name) as Node3D
 		if actor == null:
 			continue

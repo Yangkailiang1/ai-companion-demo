@@ -1,5 +1,5 @@
 # Verifies: S2.2
-# Covers: visible portal contract -> four traversals -> stale guard -> strict
+# Covers: visible portal contract -> six traversals -> stale guard -> strict
 # catalog validation without publishing partial state.
 
 extends SceneTree
@@ -28,13 +28,13 @@ func _run() -> void:
 	var kitchen := _verify_living_portals(living)
 	var bedroom := _find_portal(living, "Portal_door_to_bedroom")
 	if kitchen != null and bedroom != null:
-		await _verify_four_traversals(loader, kitchen, bedroom)
+		await _verify_six_traversals(loader, kitchen, bedroom)
 	_verify_malformed_catalogs()
 	_cleanup_temporary_files()
 	scene.free()
 	await process_frame
 	if not _failed:
-		print("WORLD_TRAVEL_PORTAL_PASS locations=3 traversals=4")
+		print("WORLD_TRAVEL_PORTAL_PASS locations=4 traversals=6")
 	quit(1 if _failed else 0)
 
 
@@ -71,8 +71,8 @@ func _verify_portal_contract(portal: Node, semantic_id: String, label: String) -
 	_assert(not portal.has_meta("target_location_id"), semantic_id + " target metadata")
 
 
-## [S2.2] 经客厅→厨房→客厅→卧室→客厅完成四次旅行并验证陈旧入口。
-func _verify_four_traversals(loader: WorldLocationLoader, kitchen: Node, sibling: Node) -> void:
+## [S2.2] 经厨房、卧室、书房完成六次旅行并验证陈旧入口。
+func _verify_six_traversals(loader: WorldLocationLoader, kitchen: Node, sibling: Node) -> void:
 	var invalid: Dictionary = kitchen.perform_interaction("sit", "")
 	_assert(not bool(invalid.get("handled", true)), "invalid verb handled")
 	var first: Dictionary = kitchen.perform_interaction("traverse", "")
@@ -92,16 +92,34 @@ func _verify_four_traversals(loader: WorldLocationLoader, kitchen: Node, sibling
 	bedroom.perform_interaction("traverse", "")
 	await _settle()
 	_assert(loader.current_location_id == "bedroom", "bedroom travel")
+	var study := _find_portal(loader.get_active_location(), "Portal_door_to_study")
+	_assert(study != null, "study portal missing")
+	if study != null:
+		study.perform_interaction("traverse", "")
+		await _settle()
+		_assert(loader.current_location_id == "study", "study travel")
+		await _traverse_only_portal(loader, "bedroom")
 	await _traverse_only_portal(loader, "living_room")
 
 
 ## [S2.2] 激活当前房间唯一入口并检查目标地点。
 func _traverse_only_portal(loader: WorldLocationLoader, expected_location: String) -> void:
 	var portals := _find_portals(loader.get_active_location())
-	_assert(portals.size() == 1, "single return portal expected")
-	if portals.size() != 1:
+	var selected: Node = null
+	var location := loader.get_location_catalog().get_location(loader.current_location_id)
+	for exit_id in location.get("exits", {}):
+		var edge: Dictionary = location.exits[exit_id]
+		if String(edge.get("target_location_id", "")) != expected_location:
+			continue
+		var semantic_id := String(edge.get("portal", {}).get("semantic_id", ""))
+		selected = _find_portal(
+			loader.get_active_location(), "Portal_" + semantic_id
+		)
+		break
+	_assert(selected != null, "portal to %s expected" % expected_location)
+	if selected == null:
 		return
-	portals[0].perform_interaction("traverse", "")
+	selected.perform_interaction("traverse", "")
 	await _settle()
 	_assert(loader.current_location_id == expected_location, "expected " + expected_location)
 

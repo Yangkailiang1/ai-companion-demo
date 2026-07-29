@@ -175,13 +175,25 @@ func _on_mouse_exited() -> void:
 	_material.albedo_color = WOOD_COLOR
 
 
-## [S2.2] 供测试使用的公共交互 API，调用后立即触发旅行。
-## 无效动词返回 handled:false。
-func perform_interaction(verb: String, _actor_id: String = "") -> Dictionary:
+## [S2.2][C5.3] 玩家空 actor_id 时切换活动房间；AI actor_id 只迁移该居民。
+## 两条路径共享地点图校验，但 AI 迁移不会移动 PlayerBody 或玩家镜头。
+func perform_interaction(verb: String, actor_id: String = "") -> Dictionary:
 	if verb != "traverse":
 		return {"handled": false}
 	if _requested or not is_inside_tree():
 		return {"handled": true, "success": false, "reason": "stale"}
+	if not actor_id.is_empty():
+		var loader := get_parent().get_parent()
+		if loader == null or not loader.has_method("transfer_agent_via"):
+			return {"handled": true, "success": false, "reason": "loader_missing"}
+		var transferred := bool(loader.transfer_agent_via(
+			actor_id, location_id, exit_id
+		))
+		return {
+			"handled": true,
+			"success": transferred,
+			"reason": "" if transferred else "resident_transfer_rejected",
+		}
 	_request_travel()
 	return {"handled": true, "success": true}
 

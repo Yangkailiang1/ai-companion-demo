@@ -20,6 +20,7 @@ const CAST_NODE_NAMES := ["Agent", "JueAgent", "LocalCharacterSpawner"]
 func assemble_into(
 	target: Node3D,
 	cast_members: Array = CAST_NODE_NAMES,
+	local_character_manifests: Array = [],
 ) -> Array[String]:
 	var assembled: Array[String] = []
 	for index in range(CAST_SCENE_PATHS.size()):
@@ -34,6 +35,11 @@ func assemble_into(
 			continue
 		var cast_node := packed.instantiate() as Node3D
 		cast_node.name = node_name
+		if node_name == "LocalCharacterSpawner" and not local_character_manifests.is_empty():
+			cast_node.set("manifest_paths", local_character_manifests)
+			cast_node.set_meta(
+				"residency_manifest_paths", local_character_manifests.duplicate()
+			)
 		cast_node.set_meta("location_spawn_position", cast_node.position)
 		cast_node.set_meta("location_spawn_rotation", cast_node.rotation)
 		target.add_child(cast_node)

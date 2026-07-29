@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://main001"]
+[gd_scene load_steps=10 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/environments/world_location_loader.gd" id="1_world_loader"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/player/player_first_person_controller.gd" id="4_player"]
 [ext_resource type="Script" path="res://scripts/ui/player_camera_hint.gd" id="5_camera_hint"]
 [ext_resource type="Script" path="res://scripts/ui/player_view_mode_button.gd" id="6_view_button"]
+[ext_resource type="Script" path="res://scripts/characters/agent_residency_registry.gd" id="7_residency"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -23,6 +24,9 @@ height = 1.8
 
 [node name="WorldRoot" type="Node3D" parent="."]
 script = ExtResource("1_world_loader")
+
+[node name="AgentResidencyRegistry" type="Node" parent="WorldRoot"]
+script = ExtResource("7_residency")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="WorldRoot"]
 environment = SubResource("Environment_main")
