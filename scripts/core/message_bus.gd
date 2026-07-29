@@ -61,6 +61,9 @@ signal performance_script_requested(script_text: String)
 signal story_plan_started(script_text: String)
 signal story_plan_ready(document: Dictionary)
 signal story_plan_failed(reason: String)
+signal story_started(story_id: String, cast_ids: Array)
+signal story_beat_started(index: int, beat: Dictionary)
+signal story_finished(success: bool, reason: String)
 
 
 func _ready():

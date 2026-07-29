@@ -31,11 +31,19 @@ var _orbit_button := MOUSE_BUTTON_NONE
 var _pointer_captured := false
 var _ignore_mouse_motion_until_msec := 0
 var _player: CharacterBody3D
+var _cinematic_active := false
+var _cinematic_returning := false
+var _cinematic_position := Vector3.ZERO
+var _cinematic_focus := Vector3.ZERO
+var _cinematic_target_focus := Vector3.ZERO
+var _cinematic_fov := 48.0
+var _observer_fov := 48.0
 
 
 ## [P2.1][P2.3] 初始化默认观察模式并绑定持久玩家身体。
 func _ready() -> void:
 	current = true
+	_observer_fov = fov
 	_player = get_parent().get_node_or_null("PlayerBody") as CharacterBody3D
 	if _player != null:
 		_player.set_control_enabled(false)
@@ -63,6 +71,7 @@ func set_view_mode(mode: String) -> bool:
 	if _player != null:
 		_player.set_control_enabled(mode == MODE_FIRST_PERSON)
 	if mode == MODE_FIRST_PERSON:
+		_cancel_cinematic_immediate()
 		_first_person_yaw = _player.global_rotation.y
 		get_viewport().gui_release_focus()
 		_set_pointer_captured(true)
@@ -212,6 +221,9 @@ func _process(delta: float) -> void:
 			_set_pointer_captured(false)
 		_update_camera()
 		return
+	if _cinematic_active:
+		_update_cinematic_camera(delta)
+		return
 	if _is_text_input_focused():
 		return
 	var direction := 0.0
@@ -226,6 +238,8 @@ func _process(delta: float) -> void:
 
 ## [P2.1][P2.3] 按当前模式写入相机世界变换。
 func _update_camera() -> void:
+	if _cinematic_active:
+		return
 	if _view_mode == MODE_FIRST_PERSON and _player != null:
 		global_position = _player.get_eye_global_position()
 		global_rotation = Vector3(_first_person_pitch, _first_person_yaw, 0.0)
@@ -238,6 +252,79 @@ func _update_camera() -> void:
 	)
 	global_position = target + offset
 	look_at(target, Vector3.UP)
+
+
+## [D2.2][P2.1] Starts or retargets a smooth observer-only cinematic shot.
+func begin_cinematic_shot(
+	shot_position: Vector3,
+	shot_target: Vector3,
+	shot_fov: float,
+) -> bool:
+	if _view_mode != MODE_OBSERVER:
+		return false
+	if not _cinematic_active:
+		_cinematic_focus = target
+		_observer_fov = fov
+	_cinematic_active = true
+	_cinematic_returning = false
+	_cinematic_position = shot_position
+	_cinematic_target_focus = shot_target
+	_cinematic_fov = clampf(shot_fov, 28.0, 55.0)
+	return true
+
+
+## [D2.2][P2.1] Smoothly returns to the unchanged player orbit after a story.
+func end_cinematic_shot() -> void:
+	if not _cinematic_active:
+		return
+	_cinematic_returning = true
+	_cinematic_position = _observer_position()
+	_cinematic_target_focus = target
+	_cinematic_fov = _observer_fov
+
+
+## [D2.2][S1.2] Applies critically damped-feeling position, focus and FOV motion.
+func _update_cinematic_camera(delta: float) -> void:
+	var stable_delta := maxf(delta, 1.0 / 60.0)
+	var blend := 1.0 - exp(-5.2 * stable_delta)
+	global_position = global_position.lerp(_cinematic_position, blend)
+	_cinematic_focus = _cinematic_focus.lerp(_cinematic_target_focus, blend)
+	fov = lerpf(fov, _cinematic_fov, blend)
+	look_at(_cinematic_focus, Vector3.UP)
+	if (
+		_cinematic_returning
+		and global_position.distance_to(_cinematic_position) < 0.025
+		and _cinematic_focus.distance_to(_cinematic_target_focus) < 0.015
+	):
+		_cancel_cinematic_immediate()
+		_update_camera()
+
+
+## [D2.2][P2.1] Computes the stable orbit pose without mutating the camera.
+func _observer_position() -> Vector3:
+	var horizontal_distance := cos(pitch) * distance
+	return target + Vector3(
+		sin(yaw) * horizontal_distance,
+		sin(-pitch) * distance,
+		cos(yaw) * horizontal_distance,
+	)
+
+
+## [D2.2][P2.4] Cancels presentation ownership before first-person control.
+func _cancel_cinematic_immediate() -> void:
+	_cinematic_active = false
+	_cinematic_returning = false
+	fov = _observer_fov
+
+
+## [D2.2][T4.2] Returns the public cinematic camera contract state.
+func get_cinematic_diagnostics() -> Dictionary:
+	return {
+		"active": _cinematic_active,
+		"returning": _cinematic_returning,
+		"target_focus": _cinematic_target_focus,
+		"target_fov": _cinematic_fov,
+	}
 
 
 ## [P2.3][S2.2] 地点入口传送后同步第一人称朝向。

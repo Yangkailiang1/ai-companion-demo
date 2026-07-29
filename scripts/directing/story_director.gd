@@ -14,6 +14,7 @@ const STORY_TIMEOUT_SECONDS := 180.0
 const MOVE_ARRIVAL_TOLERANCE := 1.0
 const PAUSE_MIN := 0.1
 const PAUSE_MAX := 5.0
+const StoryWorldBridgeScript := preload("res://scripts/directing/story_world_bridge.gd")
 
 var _phase: Phase = Phase.IDLE
 var _current_story: Dictionary = {}
@@ -25,6 +26,7 @@ var _story_elapsed: float = 0.0
 var _run_epoch: int = 0
 var _did_pause_autonomy: bool = false
 var _autonomy_was_enabled: bool = false
+var _world_bridge := StoryWorldBridgeScript.new()
 
 
 ## [D1] 注册到场景树，设置常驻处理模式，连接剧情请求信号。
@@ -77,7 +79,7 @@ func play_story_document(document: Dictionary) -> int:
 		_last_error = "已有剧情正在播放: %s" % _current_story.get("title", _current_story.get("story_id", "unknown"))
 		return 1
 	_last_error = ""  # 成功启动前清空上次错误
-	var allowed_cast := _get_registry_cast()
+	var allowed_cast := _world_bridge.get_registry_cast()
 	var ValidatorScript = load("res://scripts/directing/story_schema_validator.gd")
 	var validator = ValidatorScript.new(allowed_cast)
 	if not validator.validate(document):
@@ -99,6 +101,9 @@ func play_story_document(document: Dictionary) -> int:
 		_set_cast_collision_exceptions(true)
 		_pause_autonomy()
 		_interrupt_cast()
+		MessageBus.story_started.emit(
+			String(_current_story.get("story_id", "")), _cast_ids.duplicate()
+		)
 		call_deferred("_execute_story")
 		return 0
 	else:
@@ -183,6 +188,7 @@ func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
 
 	if epoch != _run_epoch:
 		return false
+	MessageBus.story_beat_started.emit(index, beat.duplicate(true))
 	if beat.has("look_at_actor"):
 		var target_node: Node3D = _cast_nodes.get(String(beat["look_at_actor"]))
 		if not is_instance_valid(target_node):
@@ -195,10 +201,14 @@ func _execute_beat(index: int, beat: Dictionary, epoch: int) -> bool:
 
 	if epoch != _run_epoch:
 		return false
-	if beat.has("interact") and not _perform_story_interaction(
-		actor_id, beat["interact"], epoch
-	):
-		return false
+	if beat.has("interact"):
+		var interaction_result: Dictionary = _world_bridge.perform_interaction(
+			actor_id, beat["interact"]
+		)
+		if not bool(interaction_result.get("ok", false)):
+			if epoch == _run_epoch:
+				_finish_story(false, String(interaction_result.get("reason", "")))
+			return false
 
 	if epoch != _run_epoch:
 		return false
@@ -230,32 +240,6 @@ func _emit_beat_performance(actor_id: String, beat: Dictionary) -> void:
 		)
 
 
-## [D2][S3.2] 通过语义物体节点执行一个已验证的场景交互。
-## 未注册、无处理器或拒绝该动词时终止演出，避免只演动画却不改变世界。
-func _perform_story_interaction(
-	actor_id: String,
-	interaction: Dictionary,
-	epoch: int
-) -> bool:
-	var object_id := String(interaction.get("object", ""))
-	var verb := String(interaction.get("verb", ""))
-	var object = SemanticWorld.get_object(object_id)
-	if object == null or not is_instance_valid(object.godot_node):
-		if epoch == _run_epoch:
-			_finish_story(false, "交互物体不可用: %s" % object_id)
-		return false
-	if not object.godot_node.has_method("perform_interaction"):
-		if epoch == _run_epoch:
-			_finish_story(false, "交互物体没有处理器: %s" % object_id)
-		return false
-	var result: Dictionary = object.godot_node.perform_interaction(verb, actor_id)
-	if not bool(result.get("handled", false)):
-		if epoch == _run_epoch:
-			_finish_story(false, "交互被拒绝: %s.%s" % [object_id, verb])
-		return false
-	return true
-
-
 ## [D2][T4.5] 解析并执行单个 Beat 的安全走位，取消时立即返回。
 func _move_actor_for_beat(
 	actor_id: String,
@@ -263,7 +247,7 @@ func _move_actor_for_beat(
 	move_to: Dictionary,
 	epoch: int
 ) -> bool:
-	var target_pos := _resolve_move_target(move_to)
+	var target_pos := _world_bridge.resolve_move_target(move_to)
 	if target_pos == Vector3.INF:
 		if epoch == _run_epoch:
 			_finish_story(false, "无法解析走位目标: %s" % var_to_str(move_to))
@@ -271,27 +255,6 @@ func _move_actor_for_beat(
 	agent.move_to_position(target_pos)
 	var move_ok := await _await_move(actor_id, agent, target_pos, epoch)
 	return epoch == _run_epoch and move_ok
-
-
-## [D1] 解析 move_to 中的 waypoint 或 object 到世界坐标。
-## 无法解析时返回 Vector3.INF。
-func _resolve_move_target(move_to: Dictionary) -> Vector3:
-	if move_to.has("waypoint"):
-		var nav := RoomNavigation.new()
-		var wp := String(move_to["waypoint"])
-		if not nav.has_waypoint(wp):
-			return Vector3.INF
-		return nav.get_waypoint(wp)
-	if move_to.has("object"):
-		var obj_id := String(move_to["object"])
-		if not has_node("/root/SemanticWorld"):
-			return Vector3.INF
-		var semantic := get_node("/root/SemanticWorld")
-		var obj = semantic.get_object(obj_id)
-		if not obj:
-			return Vector3.INF
-		return obj.interaction_point
-	return Vector3.INF
 
 
 ## [D2][T4.5] 轮询 Agent 移动状态并验证最终距离，避免局部闭包状态失联。
@@ -413,6 +376,7 @@ func _finish_story(success: bool, reason: String) -> void:
 		_last_error = ""  # 成功后 last_error 为空
 	else:
 		_last_error = reason
+	MessageBus.story_finished.emit(success, reason)
 	_set_cast_collision_exceptions(false)
 	_cast_nodes.clear()
 	_current_story = {}
@@ -430,11 +394,3 @@ func _write_story_memory() -> void:
 		var memory := get_node("/root/MemorySystem")
 		for actor_id in _cast_ids:
 			memory.add_episode_for_agent(actor_id, content, 7.0)
-
-
-## [D1] 从 CharacterAdapterRegistry 获取已注册角色列表作为 cast 白名单。
-func _get_registry_cast() -> Array[String]:
-	if has_node("/root/CharacterAdapterRegistry"):
-		var registry := get_node("/root/CharacterAdapterRegistry")
-		return registry.get_registered_agent_ids()
-	return ["main_agent", "jue_agent"]

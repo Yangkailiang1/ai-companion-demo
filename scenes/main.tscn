@@ -45,6 +45,18 @@ transform = Transform3D(1, 0, 0, 0, 0.737277, 0.67559, 0, -0.67559, 0.737277, 0,
 script = ExtResource("3_orbit_camera")
 fov = 48.0
 
+[node name="CinematicFillLight" type="SpotLight3D" parent="WorldRoot/Camera3D"]
+visible = false
+light_color = Color(1, 0.82, 0.68, 1)
+light_energy = 0.42
+shadow_enabled = false
+spot_range = 9.0
+spot_attenuation = 1.35
+spot_angle = 43.0
+distance_fade_enabled = true
+distance_fade_begin = 7.0
+distance_fade_length = 3.0
+
 [node name="PlayerBody" type="CharacterBody3D" parent="WorldRoot"]
 position = Vector3(0, 0.9, -2.2)
 collision_layer = 2

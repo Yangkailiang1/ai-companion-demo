@@ -52,6 +52,8 @@ func _verify_actor(actor: Node) -> void:
 		"%s has no toon surface" % actor.name)
 	_assert(int(diagnostics.get("outlined_surfaces", 0)) > 0,
 		"%s has no opaque outline" % actor.name)
+	_assert(float(diagnostics.get("rim_strength", 0.0)) > 0.0,
+		"%s has no anime rim light" % actor.name)
 	var material_counts := _count_live_materials(actor)
 	_assert(int(material_counts.get("toon", 0)) > 0,
 		"%s live materials are not toon" % actor.name)

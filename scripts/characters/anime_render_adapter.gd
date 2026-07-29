@@ -15,6 +15,8 @@ const OUTLINE_SHADER := preload("res://assets/shaders/anime_outline.gdshader")
 @export var outline_color := Color(0.055, 0.045, 0.075, 1.0)
 @export_range(0.5, 1.0, 0.05) var minimum_roughness := 0.7
 @export_range(0.0, 0.3, 0.05) var maximum_metallic := 0.1
+@export_range(0.0, 1.0, 0.05) var rim_strength := 0.32
+@export_range(0.0, 1.0, 0.05) var rim_tint := 0.42
 
 var _adapted_mesh_count := 0
 var _adapted_surface_count := 0
@@ -85,6 +87,9 @@ func _create_toon_material(
 	toon.specular_mode = BaseMaterial3D.SPECULAR_TOON
 	toon.roughness = maxf(toon.roughness, minimum_roughness)
 	toon.metallic = minf(toon.metallic, maximum_metallic)
+	toon.rim_enabled = true
+	toon.rim = rim_strength
+	toon.rim_tint = rim_tint
 	toon.next_pass = _create_outline_material(mesh_instance, toon)
 	_outlined_surface_count += 1
 	return toon
@@ -119,6 +124,7 @@ func get_render_diagnostics() -> Dictionary:
 		"adapted_surfaces": _adapted_surface_count,
 		"outlined_surfaces": _outlined_surface_count,
 		"skipped_surfaces": _skipped_surface_count,
+		"rim_strength": rim_strength,
 		"profile": "anime_toon_v1",
 	}
 
