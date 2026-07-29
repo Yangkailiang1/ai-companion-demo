@@ -21,6 +21,8 @@
 容量、新鲜度、持有者、饮用次数和空杯状态。
 
 - `[DONE]` 奶茶已使用 `RigidBody3D`，支持拿起、放下和投掷。
+- `[DONE parametric reuse]` 厨房参数化 Manifest 新增餐桌饮料，直接复用统一
+  `milk_tea_cup` 资产、碰撞、语义 affordance 和刚体交互，无需房间专用代码。
 - `[NEXT]` 增加容量、新鲜度、饮用次数、空杯视觉与存档。
 
 ### S3.3 `[ACTIVE physics baseline]` 书

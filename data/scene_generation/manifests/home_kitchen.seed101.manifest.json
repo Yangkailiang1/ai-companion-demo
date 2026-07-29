@@ -299,6 +299,43 @@
       "consumable": false
     },
     {
+      "semantic_id": "kitchen_cup",
+      "asset_id": "milk_tea_cup",
+      "display_name": "餐桌上的饮料",
+      "position": [
+        0.45,
+        0.95,
+        0.25
+      ],
+      "rotation_deg": [
+        0,
+        -12,
+        0
+      ],
+      "interaction_point": [
+        0.45,
+        0,
+        1.25
+      ],
+      "description": "放在餐桌上的一杯饮料，可以被拿起、放下或投掷。",
+      "needs_proximity": true,
+      "affordances": [
+        "drink",
+        "pick_up",
+        "put_down",
+        "throw"
+      ],
+      "effects": {
+        "hunger": 8,
+        "fun": 5
+      },
+      "initial_state": "放在餐桌上",
+      "properties": {
+        "volume_percent": 100
+      },
+      "consumable": true
+    },
+    {
       "semantic_id": "kitchen_lamp",
       "asset_id": "standing_lamp",
       "display_name": "厨房暖灯",

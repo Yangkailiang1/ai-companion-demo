@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://main001"]
+[gd_scene load_steps=9 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/environments/world_location_loader.gd" id="1_world_loader"]
 [ext_resource type="Script" path="res://scripts/ui/chat_input.gd" id="2_chat"]
 [ext_resource type="Script" path="res://scripts/camera/orbit_room_camera.gd" id="3_orbit_camera"]
 [ext_resource type="Script" path="res://scripts/player/player_first_person_controller.gd" id="4_player"]
 [ext_resource type="Script" path="res://scripts/ui/player_camera_hint.gd" id="5_camera_hint"]
+[ext_resource type="Script" path="res://scripts/ui/player_view_mode_button.gd" id="6_view_button"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -173,6 +174,23 @@ text = "右键拖拽 / 滚轮 / Q E 调整视角"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 16
 script = ExtResource("5_camera_hint")
+
+[node name="ViewModeButton" type="Button" parent="UILayer/UI"]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 112.0
+offset_top = 14.0
+offset_right = 316.0
+offset_bottom = 52.0
+mouse_filter = 0
+text = "进入第一人称  V"
+theme_override_colors/font_color = Color(0.25, 0.13, 0.07, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.06, 0.03, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.16, 0.05, 1)
+theme_override_font_sizes/font_size = 17
+script = ExtResource("6_view_button")
 
 [node name="InputArea" type="Panel" parent="UILayer/UI"]
 layout_mode = 1

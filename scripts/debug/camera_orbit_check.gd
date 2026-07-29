@@ -47,6 +47,15 @@ func _run() -> void:
 	_assert(camera.global_position.distance_to(Vector3(0.15, 0.78, 0.35)) > 5.0, "camera too close to orbit target")
 
 	var after_orbit_position := camera.global_position
+	var pan := InputEventPanGesture.new()
+	pan.delta = Vector2(8.0, -3.0)
+	camera._input(pan)
+	await process_frame
+	var after_trackpad_position := camera.global_position
+	_assert(
+		after_trackpad_position.distance_to(after_orbit_position) > 0.1,
+		"trackpad pan did not orbit",
+	)
 
 	var blocked_press := InputEventMouseButton.new()
 	blocked_press.button_index = MOUSE_BUTTON_RIGHT
@@ -59,7 +68,7 @@ func _run() -> void:
 	blocked_drag.position = Vector2(340, 685)
 	camera._input(blocked_drag)
 	await process_frame
-	var blocked_movement := camera.global_position.distance_to(after_orbit_position)
+	var blocked_movement := camera.global_position.distance_to(after_trackpad_position)
 	_assert(blocked_movement < 0.05, "camera orbited while pointer was over input UI: %.3f" % blocked_movement)
 
 	var line_edit := scene.find_child("LineEdit", true, false) as LineEdit

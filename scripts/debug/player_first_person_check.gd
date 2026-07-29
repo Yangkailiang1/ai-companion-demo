@@ -59,12 +59,16 @@ func _verify_modes_and_movement(
 	_assert(camera.get_view_mode() == "observer", "observer not default")
 	_assert(not player.is_control_enabled(), "observer movement enabled")
 	_assert(not camera.set_view_mode("bad_mode"), "invalid mode accepted")
+	var view_button := scene.find_child("ViewModeButton", true, false) as Button
+	_assert(view_button != null, "view-mode button missing")
+	_assert(view_button != null and "第一人称" in view_button.text, "observer button text")
 	root.gui_release_focus()
 	var orbit_before := camera.global_position
 	_drag_camera(camera, Vector2(120.0, -20.0))
 	_assert(camera.global_position.distance_to(orbit_before) > 0.2, "observer orbit failed")
 	_assert(camera.set_view_mode("first_person"), "first-person switch failed")
 	await process_frame
+	_assert(view_button != null and "导演" in view_button.text, "first-person button text")
 	_assert(player.is_control_enabled(), "first-person movement disabled")
 	_assert(camera.is_pointer_captured(), "first-person did not capture mouse")
 	_assert(

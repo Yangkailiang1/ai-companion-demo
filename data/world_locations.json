@@ -9,6 +9,7 @@
       "manifest_path": "res://data/scene_generation/manifests/living_room_shadow.seed42.manifest.json",
       "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
       "scene_description": "一间有沙发、电视、茶几和绿植的温馨客厅。",
+      "cast_members": ["Agent", "JueAgent", "LocalCharacterSpawner"],
       "cast_spawns": {
         "Agent": {"position": [-1.15, 0.0, 0.4], "rotation_deg": [0.0, 0.0, 0.0]},
         "JueAgent": {"position": [2.9, 0.0, 1.0], "rotation_deg": [0.0, -15.0, 0.0]}
@@ -52,6 +53,7 @@
       "manifest_path": "res://data/scene_generation/manifests/home_kitchen.seed101.manifest.json",
       "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
       "scene_description": "一间有冰箱、水槽、烤箱和餐桌的暖色厨房。",
+      "cast_members": ["Agent"],
       "cast_spawns": {
         "Agent": {"position": [-0.65, 0.0, 1.8], "rotation_deg": [0.0, 180.0, 0.0]},
         "JueAgent": {"position": [0.65, 0.0, 1.8], "rotation_deg": [0.0, 180.0, 0.0]}
@@ -82,6 +84,7 @@
       "manifest_path": "res://data/scene_generation/manifests/home_bedroom.seed202.manifest.json",
       "registry_path": "res://data/scene_generation/registries/living_room_shadow_registry.json",
       "scene_description": "一间有软榻、阅读椅、矮桌和床边灯的安静卧室。",
+      "cast_members": ["Agent"],
       "cast_spawns": {
         "Agent": {"position": [-0.65, 0.0, 2.65], "rotation_deg": [0.0, 180.0, 0.0]},
         "JueAgent": {"position": [0.65, 0.0, 2.65], "rotation_deg": [0.0, 180.0, 0.0]}

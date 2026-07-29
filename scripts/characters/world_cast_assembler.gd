@@ -7,23 +7,32 @@
 class_name WorldCastAssembler
 extends RefCounted
 
-const CAST_SCENES := [
-	preload("res://scenes/characters/main_agent.tscn"),
-	preload("res://scenes/characters/jue_agent.tscn"),
-	preload("res://scenes/characters/local_character_spawner.tscn"),
+const CAST_SCENE_PATHS := [
+	"res://scenes/characters/main_agent.tscn",
+	"res://scenes/characters/jue_agent.tscn",
+	"res://scenes/characters/local_character_spawner.tscn",
 ]
 const CAST_NODE_NAMES := ["Agent", "JueAgent", "LocalCharacterSpawner"]
 
 
 ## [S2.1][C6.2] 在地点根节点下实例化共享 Cast，保持既有公共 NodePath。
 ## 已存在同名节点时跳过，避免重复角色与重复认知信号连接。
-func assemble_into(target: Node3D) -> Array[String]:
+func assemble_into(
+	target: Node3D,
+	cast_members: Array = CAST_NODE_NAMES,
+) -> Array[String]:
 	var assembled: Array[String] = []
-	for index in range(CAST_SCENES.size()):
+	for index in range(CAST_SCENE_PATHS.size()):
 		var node_name: String = CAST_NODE_NAMES[index]
+		if node_name not in cast_members:
+			continue
 		if target.has_node(node_name):
 			continue
-		var cast_node := (CAST_SCENES[index] as PackedScene).instantiate() as Node3D
+		var packed := load(CAST_SCENE_PATHS[index]) as PackedScene
+		if packed == null:
+			push_warning("WorldCastAssembler: unavailable cast scene " + CAST_SCENE_PATHS[index])
+			continue
+		var cast_node := packed.instantiate() as Node3D
 		cast_node.name = node_name
 		cast_node.set_meta("location_spawn_position", cast_node.position)
 		cast_node.set_meta("location_spawn_rotation", cast_node.rotation)

@@ -42,7 +42,7 @@ func _run() -> void:
 	quit(1 if _failed else 0)
 
 
-## [X1.2] 创建卧室/厨房对象状态和两个 Agent 坐标的 v2 存档样本。
+## [X1.2] 创建卧室/厨房对象状态和随行 Agent 坐标的 v2 存档样本。
 func _establish_v2_fixture(context: Dictionary) -> Dictionary:
 	var loader: WorldLocationLoader = context.loader
 	var semantic: Node = context.semantic
@@ -58,11 +58,10 @@ func _establish_v2_fixture(context: Dictionary) -> Dictionary:
 	semantic.update_object_state("kitchen_fridge", "嗡嗡运转")
 	var room: Node = loader.get_active_location()
 	var saved_main := Vector3(-2.1, 0.0, 0.7)
-	var saved_jue := Vector3(1.8, 0.0, -0.6)
 	(room.get_node("Agent") as Node3D).global_position = saved_main
-	(room.get_node("JueAgent") as Node3D).global_position = saved_jue
+	_assert(not room.has_node("JueAgent"), "resident Jue must not follow into kitchen")
 	_assert(context.save_sys.save_game(TEST_SAVE_PATH) == OK, "save v2 failed: " + context.save_sys.last_error)
-	return {"main": saved_main, "jue": saved_jue}
+	return {"main": saved_main}
 
 
 ## [X1.2] 模拟重启后恢复活动房间、对象状态和两个 Agent 坐标。
@@ -77,7 +76,6 @@ func _restore_v2_and_verify(context: Dictionary, saved: Dictionary) -> void:
 	await _settle()
 	var room: Node = loader.get_active_location()
 	(room.get_node("Agent") as Node3D).global_position = Vector3(9.0, 0.0, 9.0)
-	(room.get_node("JueAgent") as Node3D).global_position = Vector3(-9.0, 0.0, -9.0)
 	_assert(context.save_sys.load_game(TEST_SAVE_PATH) == OK, "load v2 failed: " + context.save_sys.last_error)
 	_assert(loader.current_mode == "parametric", "mode not parametric")
 	_assert(loader.current_location_id == "kitchen", "not kitchen: " + loader.current_location_id)
@@ -86,10 +84,6 @@ func _restore_v2_and_verify(context: Dictionary, saved: Dictionary) -> void:
 	_assert(
 		(room.get_node("Agent") as Node3D).global_position.distance_to(saved.main) < 0.02,
 		"main pos not restored"
-	)
-	_assert(
-		(room.get_node("JueAgent") as Node3D).global_position.distance_to(saved.jue) < 0.02,
-		"jue pos not restored"
 	)
 	var fridge = semantic.get_object("kitchen_fridge")
 	_assert(

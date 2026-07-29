@@ -26,6 +26,7 @@ var portal_paths: Array[String] = []
 var location_id := "living_room"
 var location_description := ""
 var cast_spawns: Dictionary = {}
+var cast_members: Array[String] = ["Agent", "JueAgent", "LocalCharacterSpawner"]
 var _location_spawns_restored := false
 var _exits: Dictionary = {}
 
@@ -37,6 +38,9 @@ func configure_location(location_data: Dictionary) -> void:
 	registry_path = String(location_data.get("registry_path", registry_path))
 	location_description = String(location_data.get("scene_description", ""))
 	cast_spawns = location_data.get("cast_spawns", {}).duplicate(true)
+	cast_members.assign(location_data.get(
+		"cast_members", WorldCastAssembler.CAST_NODE_NAMES
+	))
 	_exits = location_data.get("exits", {}).duplicate(true)
 
 
@@ -49,7 +53,7 @@ func _ready() -> void:
 		return
 	_activate_semantic_location()
 	build_report = ParametricSceneBuilder.new().build_room(self, manifest, registry)
-	assembled_cast = WorldCastAssembler.new().assemble_into(self)
+	assembled_cast = WorldCastAssembler.new().assemble_into(self, cast_members)
 	call_deferred("_sync_navigation")
 	_activate_portals()
 

@@ -21,16 +21,26 @@ func _run() -> void:
 	var loader := scene.get_node("WorldRoot") as WorldLocationLoader
 	_assert(loader.switch_location("parametric") == "parametric", "living room load failed")
 	await _settle()
-	_check_room(loader, "living_room", "LivingRoom", 15, "sofa", 2)
+	_check_room(
+		loader, "living_room", "LivingRoom", 15, "sofa", 2,
+		["Agent", "JueAgent", "LocalCharacterSpawner"],
+	)
 	_assert(loader.travel_via("to_kitchen"), "living -> kitchen edge failed")
 	await _settle()
-	_check_room(loader, "kitchen", "Kitchen", 8, "kitchen_fridge", 1)
+	_check_room(loader, "kitchen", "Kitchen", 9, "kitchen_fridge", 1, ["Agent"])
+	var kitchen_cup := loader.get_active_location().get_node_or_null(
+		"KitchenCup/PhysicsBody"
+	) as RigidBody3D
+	_assert(
+		kitchen_cup != null and kitchen_cup.freeze,
+		"kitchen portable cup is not a ready rigid body",
+	)
 	_assert(not _visible_semantic_ids().has("sofa"), "kitchen sees living-room sofa")
 	_assert(loader.travel_via("to_living"), "kitchen -> living edge failed")
 	await _settle()
 	_assert(loader.travel_via("to_bedroom"), "living -> bedroom edge failed")
 	await _settle()
-	_check_room(loader, "bedroom", "Bedroom", 7, "bed", 1)
+	_check_room(loader, "bedroom", "Bedroom", 7, "bed", 1, ["Agent"])
 	_assert(not _visible_semantic_ids().has("kitchen_fridge"), "bedroom sees kitchen fridge")
 	var active_before := loader.get_active_location()
 	_assert(not loader.travel_to("missing_room"), "invalid travel unexpectedly succeeded")
@@ -49,6 +59,7 @@ func _check_room(
 	placement_count: int,
 	required_object_id: String,
 	portal_count: int = 0,
+	expected_cast: Array[String] = [],
 ) -> void:
 	_assert(loader.current_location_id == location_id, "wrong current location: " + location_id)
 	var room := loader.get_active_location()
@@ -60,7 +71,10 @@ func _check_room(
 	_assert(int(report.get("loaded", 0)) == placement_count, "model coverage: " + location_id)
 	_assert(int(report.get("fallbacks", -1)) == 0, "fallback model: " + location_id)
 	for actor_name in ["Agent", "JueAgent", "LocalCharacterSpawner"]:
-		_assert(room.has_node(actor_name), "cast missing: %s/%s" % [location_id, actor_name])
+		_assert(
+			room.has_node(actor_name) == (actor_name in expected_cast),
+			"cast policy mismatch: %s/%s" % [location_id, actor_name],
+		)
 	_assert(_visible_semantic_ids().has(required_object_id), "semantic object missing: " + required_object_id)
 	var found_portals := 0
 	for child in room.get_children():

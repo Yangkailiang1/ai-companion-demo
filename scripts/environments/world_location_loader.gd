@@ -74,6 +74,9 @@ func travel_to(location_id: String, entry_id: String = "default") -> bool:
 		return false
 	location["location_id"] = location_id
 	location["cast_spawns"] = location.get("cast_spawns", {}).duplicate(true)
+	location["cast_members"] = location.get(
+		"cast_members", WorldCastAssembler.CAST_NODE_NAMES
+	).duplicate()
 	if next_location.has_method("configure_location"):
 		next_location.configure_location(location)
 	next_location.name = String(location.get("root_name", location_id.to_pascal_case()))

@@ -112,7 +112,11 @@ func _input(event: InputEvent) -> void:
 	if _view_mode == MODE_FIRST_PERSON:
 		_handle_first_person_input(event)
 		return
-	if event is InputEventMouseButton:
+	if event is InputEventPanGesture:
+		_handle_trackpad_pan(event as InputEventPanGesture)
+	elif event is InputEventMagnifyGesture:
+		_handle_trackpad_zoom(event as InputEventMagnifyGesture)
+	elif event is InputEventMouseButton:
 		_handle_mouse_button(event as InputEventMouseButton)
 	elif event is InputEventMouseMotion and _is_orbiting:
 		_handle_mouse_drag(event as InputEventMouseMotion)
@@ -168,6 +172,25 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 func _handle_mouse_drag(event: InputEventMouseMotion) -> void:
 	yaw -= event.relative.x * mouse_sensitivity
 	pitch = clampf(pitch - event.relative.y * mouse_sensitivity, -1.1, -0.32)
+	_update_camera()
+	get_viewport().set_input_as_handled()
+
+
+## [P2.1] macOS 触摸板双指滑动直接环绕，不要求模拟右键拖拽。
+func _handle_trackpad_pan(event: InputEventPanGesture) -> void:
+	yaw -= event.delta.x * mouse_sensitivity * 12.0
+	pitch = clampf(
+		pitch - event.delta.y * mouse_sensitivity * 12.0, -1.1, -0.32
+	)
+	_update_camera()
+	get_viewport().set_input_as_handled()
+
+
+## [P2.1] macOS 触摸板捏合缩放观察距离。
+func _handle_trackpad_zoom(event: InputEventMagnifyGesture) -> void:
+	if is_zero_approx(event.factor):
+		return
+	distance = clampf(distance / event.factor, min_distance, max_distance)
 	_update_camera()
 	get_viewport().set_input_as_handled()
 
@@ -242,7 +265,9 @@ func _is_pointer_over_ui(pointer_position: Vector2) -> bool:
 	var ui := root_node.find_child("UI", true, false) as Control
 	if ui == null:
 		return false
-	for node_name in ["InputArea", "ChatPanel", "HUD", "StatusPanel", "CameraHint"]:
+	for node_name in [
+		"InputArea", "ChatPanel", "HUD", "StatusPanel", "CameraHint", "ViewModeButton"
+	]:
 		var node := ui.find_child(node_name, true, false) as Control
 		if node != null and node.visible and node.get_global_rect().has_point(pointer_position):
 			return true
