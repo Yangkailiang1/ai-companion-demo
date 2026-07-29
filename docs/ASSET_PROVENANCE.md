@@ -1,6 +1,8 @@
 # ASSET_PROVENANCE.md — 资产来源记录
 
-> v0.8.8 | 最后更新: 2026-07-27
+> v0.8.9 | 最后更新: 2026-07-29
+>
+> 新增: polyhaven_kitchen_batch_01 — 3 个 CC0 厨房/餐厅模型（餐桌、餐椅、花瓶）
 
 ## 免责声明
 
@@ -9,6 +11,21 @@
 Poly Haven 下载的家具模型与 PBR 贴图按 Poly Haven 公示许可证记录为 **CC0**，可用于当前 demo 原型与后续重混/改造；仍建议发布前保留来源清单与下载 manifest。
 
 ## 资产清单
+
+### Batch: polyhaven_kitchen_batch_01（2026-07-29）
+
+| 属性 | WoodenTable_01 | WoodenChair_01 | ceramic_vase_01 |
+|------|---------------|----------------|-----------------|
+| **来源** | [Poly Haven](https://polyhaven.com/a/WoodenTable_01) | [Poly Haven](https://polyhaven.com/a/WoodenChair_01) | [Poly Haven](https://polyhaven.com/a/ceramic_vase_01) |
+| **许可证** | CC0-1.0 | CC0-1.0 | CC0-1.0 |
+| **格式** | GLTF 1K | GLTF 1K | GLTF 1K |
+| **SHA-256** | `413804e0...1e1d17` | `d7139c63...5fdec6` | `4e2c69eb...57d91e` |
+| **三角形** | 952 | 19,992 | 10,296 |
+| **项目路径** | `assets/props/polyhaven/woodentable_01/` | `assets/props/polyhaven/woodenchair_01/` | `assets/props/polyhaven/ceramic_vase_01/` |
+| **Registry** | `data/scene_generation/asset_registry_candidates/polyhaven_kitchen_batch_01.json` | 同上 | 同上 |
+| **用途** | 厨房/餐厅餐桌 | 厨房/餐厅餐椅 | 桌面装饰 |
+| **Style** | vintage, worn, wooden | gothic, victorian, wooden | modern, ceramic |
+| **状态** | previewed（模型通过；批次风格不一致，未 accepted） | 同上 | 同上 |
 
 ### 0. Chibi Castorice（本机非商业验证，不入库）
 
@@ -148,6 +165,8 @@ Godot 接入状态：
 | `export_garden.py` | `tools/blender/export_garden.py` | 清理灯光/相机、修复 alpha 材质、缩放导出 garden.glb |
 | `download_polyhaven_models.py` | `tools/assets/download_polyhaven_models.py` | 下载 Poly Haven 1K glTF 家具模型 |
 | `download_polyhaven_textures.py` | `tools/assets/download_polyhaven_textures.py` | 下载 Poly Haven 1K PBR 纹理 |
+| `download_kitchen_models.py` | `tools/assets/download_kitchen_models.py` | 下载 Poly Haven CC0 厨房/餐厅模型到隔离区 |
+| `normalize_kitchen_registry.py` | `tools/assets/normalize_kitchen_registry.py` | 规范化厨房资产到项目 + Registry 候选 |
 
 运行方式（Blender headless）：
 ```bash

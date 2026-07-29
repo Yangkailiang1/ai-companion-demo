@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "asset_id": "WoodenTable_01",
+  "provider": "polyhaven",
+  "official_page": "https://polyhaven.com/a/WoodenTable_01",
+  "download_url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/WoodenTable_01/WoodenTable_01_1k.gltf",
+  "license": "CC0-1.0",
+  "redistribution": "allowed",
+  "accessed_at": "2026-07-29",
+  "resolution": "1k",
+  "main_file": "res://assets/props/polyhaven/woodentable_01/WoodenTable_01_1k.gltf",
+  "sha256": "413804e054055c397b4cfbd0916027097d2a20853b165b533007a46d131e1d17",
+  "bytes": 554348,
+  "included_files": {
+    "WoodenTable_01.bin": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/WoodenTable_01/WoodenTable_01.bin",
+      "size": 42064,
+      "sha256": "1083a3442969d27e18e6a7a454bc164407439e3908bf8f17f5fb24d58cd0172e"
+    },
+    "textures/WoodenTable_01_nor_gl_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_nor_gl_1k.jpg",
+      "size": 151350,
+      "sha256": "330655534ea1fc7c7387b5d2ba5ca3231711a9fa680b980933a3a9c82cdb1c67"
+    },
+    "textures/WoodenTable_01_diff_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_diff_1k.jpg",
+      "size": 160147,
+      "sha256": "9535de577ad6b64deb68457af14240dd9b6d82143da0b6d2bf337660ebd855f3"
+    },
+    "textures/WoodenTable_01_arm_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenTable_01/WoodenTable_01_arm_1k.jpg",
+      "size": 198099,
+      "sha256": "ad876f814215006d35f74670d4fc14a9f6eab386a9307764521449464a1cd6ef"
+    }
+  },
+  "intended_archetype": "static_furniture",
+  "style_tags": [
+    "vintage",
+    "worn",
+    "wooden",
+    "indoor"
+  ],
+  "status": "previewed"
+}

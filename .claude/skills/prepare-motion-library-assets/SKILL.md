@@ -42,3 +42,14 @@ Read `CLAUDE.md`, `docs/roadmap/C-characters/C2-motion-library-retargeting.md`,
   visually reviewed.
 - Do not commit or push. DeepSeek prepares deterministic artifacts and evidence;
   Codex owns acceptance and catalog promotion.
+
+## Guardrails
+
+- **Fixture vs real data**: Hand-crafted smoke-test fixtures (e.g. a manually
+  generated `/private/tmp/hml_fixture.npy` with text `fixture walk`) must be
+  labeled `pipeline_smoke_test` in manifests and reports. They prove the retarget
+  pipeline works but are not real HumanML3D/Light-T2M samples. Never present a
+  fixture as an accepted motion clip.
+- **Ignored manifest paths**: `motion_lab/generated/motion_library_manifest.json`
+  lives in a git-ignored directory. It is not a tracked project artifact. For
+  reproducible summaries, use a lightweight metadata path under tracked space.

@@ -41,9 +41,11 @@ LLM、记忆、人格、剧情导演和物理世界只消费稳定语义 ID，�
 
 1. 每批只处理一种资产类别、一个来源、一个许可证和一个格式族。
 2. 场景/人物每批最多 3 个；动作最多 5 条；表情最多 3 个角色或 1 个表情包。
-3. 失败按单个资产隔离，输出 accepted/quarantined/rejected 列表。
+3. 失败按单个资产隔离，输出 downloaded/inventoried/candidate/quarantined/rejected
+   列表；DeepSeek 不输出 accepted。
 4. DeepSeek/Claude Code 只负责审计、提取、转换、生成候选配置和测试证据。
 5. Codex 负责许可证终审、视觉验收、目录晋级、路线图状态、提交和推送。
+6. 测量、轴向与预览状态必须绑定源 SHA-256；同名文件内容变化后退回 inventoried。
 
 ## 对应 Skills
 

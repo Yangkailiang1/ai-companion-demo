@@ -47,3 +47,11 @@ Read `CLAUDE.md`, `docs/roadmap/C-characters/C6-character-import.md`,
 - Do not declare an embedded animation usable merely because its name exists.
 - Do not commit, push, edit `data/llm_config.json`, or move restricted assets into
   tracked paths. Codex owns final visual acceptance and Git operations.
+
+## Guardrails
+
+- **License fail-closed**: Automation must never promote a license from
+  `unknown` or `local_only` to `allowed` / `public_redistributable`. If the
+  source license is unknown or private, the output provenance must preserve
+  `redistribution: local_only` (or equivalent). Do not fabricate placeholder
+  URLs like `github.com/your-org/...`.

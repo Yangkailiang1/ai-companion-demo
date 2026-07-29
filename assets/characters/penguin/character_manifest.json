@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "agent_id": "main_agent",
+  "display_name": "咕咕嘎嘎",
+  "node_name": "MainAgent",
+  "model_scene": "res://assets/characters/penguin/penguin.glb",
+  "spawn": {
+    "position": [0.0, 0.0, -1.5],
+    "rotation_degrees": [0.0, 0.0, 0.0],
+    "model_scale": 1.0,
+    "move_speed_mps": 1.7,
+    "collision_height": 1.2,
+    "collision_radius": 0.28,
+    "label_height": 1.45,
+    "bubble_height": 1.65
+  },
+  "adapter": {
+    "display_name": "咕咕嘎嘎",
+    "identity": "你是咕咕嘎嘎，一只可爱的终末地小企鹅。你性格温和开朗，好奇心强，喜欢在客厅里探索和陪伴主人。",
+    "model_family": "penguin_glb",
+    "motion_adapter": {
+      "type": "animation_player",
+      "locomotion_profile": {
+        "reference_speed_mps": 1.7,
+        "stride_meters": 0.82,
+        "min_playback_scale": 0.62,
+        "max_playback_scale": 1.35,
+        "blend_seconds": 0.16,
+        "root_motion": "in_place"
+      },
+      "clip_map": {
+        "idle": "idle",
+        "walk": "walk",
+        "wave": "wave",
+        "nod": "nod",
+        "think": "think",
+        "happy": "happy",
+        "sit": "sit",
+        "talk": "idle",
+        "offline_smoke_walk": "offline_smoke_walk"
+      }
+    },
+    "skeleton_adapter": {
+      "enabled": false,
+      "reason": "Penguin already has reviewed AnimationPlayer clips; do not overlay bones on top of real clips.",
+      "bone_aliases": {
+        "hips": ["hips"],
+        "spine": ["spine"],
+        "chest": ["chest"],
+        "neck": ["neck"],
+        "head": ["head"],
+        "left_upper_arm": ["upper_arm.L"],
+        "left_lower_arm": ["lower_arm.L"],
+        "right_upper_arm": ["upper_arm.R"],
+        "right_lower_arm": ["lower_arm.R"]
+      },
+      "rest_pose_degrees": {
+        "left_upper_arm": [0, 0, -10],
+        "right_upper_arm": [0, 0, 10],
+        "left_lower_arm": [0, 0, -4],
+        "right_lower_arm": [0, 0, 4]
+      },
+      "idle_motion": {
+        "breath_hz": 0.24,
+        "breath_degrees": {
+          "chest": [-1.2, 0, 0],
+          "head": [0.6, 0, 0]
+        },
+        "sway_degrees": {
+          "hips": [0, 0, 1.2],
+          "head": [0, 0, -1.0]
+        }
+      },
+      "gesture_overlays": {
+        "talk": {
+          "duration": 0.65,
+          "cycles": 2.0,
+          "oscillate_degrees": {"head": [0, 2, 0], "chest": [0, 0, 1.2]}
+        }
+      },
+      "expression_bone_map": {
+        "head_pitch_degrees": "head",
+        "head_roll_degrees": "head",
+        "head_yaw_degrees": "head"
+      }
+    },
+    "expression_adapter": {
+      "type": "blend_shapes",
+      "supported_morphs": ["joy", "angry", "blink", "a", "i", "u", "e", "o"],
+      "channel_map": {
+        "joy": ["joy", "smile", "happy"],
+        "angry": ["angry"],
+        "blink": ["blink", "eye_close", "eyes_closed"],
+        "a": ["a", "mouth_a"],
+        "i": ["i", "mouth_i"],
+        "u": ["u", "mouth_u"],
+        "e": ["e", "mouth_e"],
+        "o": ["o", "mouth_o"]
+      },
+      "fallback": "expression_library_weights"
+    }
+  }
+}

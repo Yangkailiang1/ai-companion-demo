@@ -4,7 +4,7 @@
 > 节点编号：O2
 > 状态：`[ACTIVE tooling baseline]`
 > 依赖：T3（插件接口）、C6（角色导入协议）
-> 最后更新：2026-07-28 | 基线程：v0.8.9
+> 最后更新：2026-07-29 | 基线程：v0.8.9
 
 ## 规划方向
 
@@ -37,6 +37,24 @@
 
 为人物包、动作包、表情包及批处理结果建立正式 JSON Schema、CLI 校验器和
 Godot 编辑器预览入口；当前 Skill 合同先作为可执行基线。
+
+### O2.3 `[DONE golden pipeline]` 安全资产发布黄金样例
+
+- Poly Haven 三项 CC0 候选已验证 source ID 与 normalized ID 分离，大小写不会造成
+  隔离目录解析失败。
+- 发布器先验证许可证、provenance、GLTF 和依赖，再通过同文件系统 staging 与
+  rollback 原子替换；缺失源不会破坏旧目标。
+- 隔离 unittest 覆盖连续运行哈希一致、公开路径可迁移、`local_only` fail-closed
+  和失败保留旧目标。真实三资产批次连续运行两次也得到相同 manifest/hash。
+- 自动化只允许生成 `downloaded`/`inventoried` 候选；AABB、轴向和 Metal 视觉
+  验收仍由 Codex 完成后才能晋级 `accepted`。
+- 三个真实 Poly Haven 候选已完成 1280×720 Metal 批次预览和米制 AABB 测量；
+  模型各自可用，但预览识别出复古桌、哥特椅、现代花瓶的风格不一致，因此停在
+  `previewed`，验证了视觉门槛能够阻止“技术通过即生产 accepted”。
+- `test_asset_metadata_contracts.py` 将人物 provenance、Morph 数量、表情候选
+  非回退、动作 fixture、公开路径与三资产 AABB/SHA 状态纳入 203 行的参数化
+  回归测试；与原子发布器测试合计 12 项通过。DeepSeek 首次压缩曾弱化 AABB
+  断言，Codex 验收后已改为缺字段即失败，作为后续批处理的强制质量门。
 
 ## 相关节点
 

@@ -28,7 +28,7 @@ Read `CLAUDE.md`, `docs/ASSET_PROVENANCE.md`,
 6. For ZIP files run `scripts/audit_asset_archive.py`. Reject path traversal,
    symlinks, executables, nested archives, missing model formats, and excessive
    uncompressed size.
-7. Do not extract into the Godot project. Hand accepted manifests and archives to
+7. Do not extract into the Godot project. Hand license-audited candidates to
    `$build-parametric-asset-library`.
 8. Report downloads, bytes, hashes, license evidence, rejected candidates and
    retryable network failures. Never commit archives automatically.
@@ -54,3 +54,13 @@ to `$prepare-expression-library-assets`. Never mix those asset classes in one ba
   per-asset license record.
 
 Codex owns license acceptance, visual review, project promotion and Git operations.
+
+## Guardrails
+
+- **Status semantics**: A download script writes `status: "downloaded"` (or
+  `quarantined` for rejected content). It must not write `accepted`.
+  `accepted` requires AABB measurement, axis inspection, Metal preview, and
+  Codex visual review — script exit 0 alone is not acceptance.
+- **Archetype accuracy**: Per-asset intended archetype and style tags must
+  match the asset (e.g. vase → `decor`/`ceramic`, not `static_furniture`/`wooden`).
+  Do not apply a blanket default to a mixed batch.

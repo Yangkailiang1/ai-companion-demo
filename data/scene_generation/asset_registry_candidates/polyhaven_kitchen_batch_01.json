@@ -1,0 +1,121 @@
+[
+  {
+    "schema_version": 1,
+    "asset_id": "woodentable_01",
+    "source_id": "WoodenTable_01",
+    "resource_path": "res://assets/props/polyhaven/woodentable_01/WoodenTable_01_1k.gltf",
+    "resource_hash": "f8d1f979c698390c8642a4e623b32c07593e8570f69604db46e5d8d6b93caa8f",
+    "provenance": {
+      "provider": "polyhaven",
+      "official_page": "https://polyhaven.com/a/WoodenTable_01",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "413804e054055c397b4cfbd0916027097d2a20853b165b533007a46d131e1d17"
+    },
+    "geometry": {
+      "aabb_m": [
+        1.799648,
+        0.548849,
+        0.657175
+      ],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 952
+    },
+    "roles": {
+      "visual": "furniture",
+      "physics": "static",
+      "semantic": [
+        "observable"
+      ],
+      "placement": "floor"
+    },
+    "style_tags": [
+      "vintage",
+      "worn",
+      "wooden",
+      "indoor"
+    ],
+    "interaction_profile": "",
+    "status": "previewed"
+  },
+  {
+    "schema_version": 1,
+    "asset_id": "woodenchair_01",
+    "source_id": "WoodenChair_01",
+    "resource_path": "res://assets/props/polyhaven/woodenchair_01/WoodenChair_01_1k.gltf",
+    "resource_hash": "071c9dd310a01434750a1ec0e8e3e60bccdb146e1efcabf7d58c9706fc08dedc",
+    "provenance": {
+      "provider": "polyhaven",
+      "official_page": "https://polyhaven.com/a/WoodenChair_01",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "d7139c63be77bb91ceb25cb38733008156bf93d2299a6ca4673ea3c49f5fdec6"
+    },
+    "geometry": {
+      "aabb_m": [
+        0.688173,
+        2.273515,
+        0.658462
+      ],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 19992
+    },
+    "roles": {
+      "visual": "furniture",
+      "physics": "static",
+      "semantic": [
+        "observable"
+      ],
+      "placement": "floor"
+    },
+    "style_tags": [
+      "gothic",
+      "victorian",
+      "wooden",
+      "indoor"
+    ],
+    "interaction_profile": "",
+    "status": "previewed"
+  },
+  {
+    "schema_version": 1,
+    "asset_id": "ceramic_vase_01",
+    "source_id": "ceramic_vase_01",
+    "resource_path": "res://assets/props/polyhaven/ceramic_vase_01/ceramic_vase_01_1k.gltf",
+    "resource_hash": "ab1bd0fd79e5f7d112e59dfd9172d1926eb22a0ab088ec01cfcaa08aa11084e7",
+    "provenance": {
+      "provider": "polyhaven",
+      "official_page": "https://polyhaven.com/a/ceramic_vase_01",
+      "license": "CC0-1.0",
+      "redistribution": "allowed",
+      "source_sha256": "4e2c69eb5bbccf86e9fbf92af438464669d804c1f0eae041ee28651a5b57d91e"
+    },
+    "geometry": {
+      "aabb_m": [
+        0.203634,
+        0.400268,
+        0.203636
+      ],
+      "front_axis": "+Z",
+      "up_axis": "+Y",
+      "triangle_count": 10296
+    },
+    "roles": {
+      "visual": "decor",
+      "physics": "static",
+      "semantic": [
+        "observable"
+      ],
+      "placement": "surface"
+    },
+    "style_tags": [
+      "modern",
+      "ceramic",
+      "indoor"
+    ],
+    "interaction_profile": "",
+    "status": "previewed"
+  }
+]

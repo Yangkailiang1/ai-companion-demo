@@ -43,3 +43,25 @@ material ownership or intended interaction semantics are ambiguous.
 Do not ingest rigged characters, body animations, facial morph packs, cameras, audio,
 or scripts. Those are separate character/motion/expression pipelines and must not
 appear as scene Registry assets.
+
+## Guardrails
+
+- **Source ID ≠ normalized ID**: The provider's asset ID (e.g. `WoodenTable_01`)
+  may differ in case from the project's normalized ID (e.g. `woodentable_01`).
+  Scripts must resolve quarantined sources by source ID, then write targets
+  under the normalized ID. The Registry entry must record both.
+- **Atomic target creation**: Never `rmtree(target)` before verifying the source
+  directory, GLTF, `.bin` companion, and provenance manifest all exist. Use a
+  task-local temp directory for staging, then atomically rename into place.
+- **No machine paths**: Public manifests and Registry candidates must use
+  `res://`-style resource paths or project-relative paths. Never write
+  `/Users/...`, `/private/tmp/...`, or similar absolute paths.
+- **Idempotency**: Running the normalization script twice must produce identical
+  output files with identical hashes.
+- **Style is visual evidence**: Provider tags and filenames do not prove a coherent
+  batch. Compare silhouette, era, material and proportions in the shared preview;
+  retain individually valid but mismatched assets as candidates instead of accepting
+  them as one production style set.
+- **Bind review to content**: Store measured geometry and preview status with the
+  reviewed source SHA-256. A changed binary under the same asset ID returns to
+  `inventoried`; never reuse old axes, bounds or visual acceptance by filename alone.

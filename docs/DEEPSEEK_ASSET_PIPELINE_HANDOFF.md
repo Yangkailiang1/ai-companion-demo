@@ -3,6 +3,19 @@
 DeepSeek 每次只接收一个小批次，并显式调用对应 Skill。不要让一个任务同时下载
 场景、转换人物、重定向动作和映射表情。
 
+## 黄金样例与批量派发
+
+1. Codex 先完成一个同 archetype 黄金样例，包含许可证、哈希、失败回滚、Godot
+   导入、米制边界和 Metal 预览。
+2. 将黄金样例的确定性规则写入对应 Skill 与测试脚本；测量/预览结论必须绑定源
+   SHA-256，不能只绑定文件名。
+3. DeepSeek 只处理最多三个同来源、同许可证、同格式、同 archetype 且视觉风格
+   可比较的兄弟候选。
+4. DeepSeek 只能输出 `downloaded`、`inventoried`、`metadata_candidate` 或
+   `pipeline_smoke_test` 等事实状态；不得输出 `accepted`。
+5. Codex 复跑测试并检查共享预览。单体技术通过但风格不匹配时保留为独立候选，
+   不得组成 production 风格套装。
+
 ## 场景素材批次
 
 ```text
@@ -51,7 +64,7 @@ DeepSeek 每次只接收一个小批次，并显式调用对应 Skill。不要�
 
 每个任务最终必须返回：
 
-1. accepted / quarantined / rejected 文件清单；
+1. downloaded / inventoried / metadata_candidate / quarantined / rejected 文件清单；
 2. 许可证证据和 SHA-256；
 3. 新增/修改文件；
 4. 执行的验证命令及退出码；
@@ -60,3 +73,13 @@ DeepSeek 每次只接收一个小批次，并显式调用对应 Skill。不要�
 
 禁止事项：提交或推送 Git、读取 `data/llm_config.json`、把本地受限模型移入公开
 目录、按文件名猜骨骼/Morph 语义、绕过许可证或视觉验收。
+
+批次返回前还必须运行：
+
+```bash
+python3 -m unittest tools.assets.test_asset_metadata_contracts -v
+```
+
+该测试锁定许可证 fail-closed、受限人物元数据、表情候选非回退、动作 fixture
+状态、`res://` 路径安全以及厨房黄金批次的 ID/AABB/SHA 合同。代理不得通过
+条件跳过或删除断言来让坏元数据“通过”。

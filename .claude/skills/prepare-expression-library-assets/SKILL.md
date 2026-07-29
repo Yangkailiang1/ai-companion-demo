@@ -40,3 +40,13 @@ Read `CLAUDE.md`, `docs/roadmap/C-characters/C3-expression-body-language.md`,
 - Do not treat head-bone fallback as a native facial morph.
 - Do not edit cognition, story, scene geometry, or motion clips; do not commit or
   push. Codex owns final visual acceptance and adapter promotion.
+
+## Guardrails
+
+- Treat a standalone `expression_adapter.candidate.json` as metadata only. Runtime
+  support exists only after its aliases enter the character manifest consumed by
+  `CharacterAdapterRegistry`.
+- Compare every candidate with the same character's current runtime manifest. Preserve
+  verified aliases and fail the batch on any supported-to-unsupported regression.
+- Script success and name matching are not facial acceptance. Require live mesh weight,
+  neutral reset, crossfade and close-up visual evidence before `accepted`.

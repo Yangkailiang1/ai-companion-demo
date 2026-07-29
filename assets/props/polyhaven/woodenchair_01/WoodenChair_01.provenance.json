@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "asset_id": "WoodenChair_01",
+  "provider": "polyhaven",
+  "official_page": "https://polyhaven.com/a/WoodenChair_01",
+  "download_url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/WoodenChair_01/WoodenChair_01_1k.gltf",
+  "license": "CC0-1.0",
+  "redistribution": "allowed",
+  "accessed_at": "2026-07-29",
+  "resolution": "1k",
+  "main_file": "res://assets/props/polyhaven/woodenchair_01/WoodenChair_01_1k.gltf",
+  "sha256": "d7139c63be77bb91ceb25cb38733008156bf93d2299a6ca4673ea3c49f5fdec6",
+  "bytes": 1079531,
+  "included_files": {
+    "textures/WoodenChair_01_nor_gl_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenChair_01/WoodenChair_01_nor_gl_1k.jpg",
+      "size": 213336,
+      "sha256": "ddf8d239f1381a8c9407b1af5508b8b9b178b72228ff39f8dcc2feae5cb47e66"
+    },
+    "textures/WoodenChair_01_arm_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenChair_01/WoodenChair_01_arm_1k.jpg",
+      "size": 169084,
+      "sha256": "ab1ef5b47cfe96cb11f380310d9b6efe458f14bccf4540a45c350919c0c1232c"
+    },
+    "WoodenChair_01.bin": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/WoodenChair_01/WoodenChair_01.bin",
+      "size": 546416,
+      "sha256": "d36a4fb77139769e17301904dd9fe45a19e29f01273e587bf4e7478d687a016e"
+    },
+    "textures/WoodenChair_01_diff_1k.jpg": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/WoodenChair_01/WoodenChair_01_diff_1k.jpg",
+      "size": 147990,
+      "sha256": "4deb2125ad6e7dc17597db40be4f01c09a4d7c3b991ea0c269836f864aa67301"
+    }
+  },
+  "intended_archetype": "static_furniture",
+  "style_tags": [
+    "gothic",
+    "victorian",
+    "wooden",
+    "indoor"
+  ],
+  "status": "previewed"
+}

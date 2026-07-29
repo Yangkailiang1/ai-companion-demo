@@ -1,4 +1,7 @@
-# Inspect imported Poly Haven furniture bounds.
+# Roadmap: S4.1, O2.1
+# Responsibility: Measure imported Poly Haven model bounds; do not alter assets or Registry.
+# Tests: Run this script headlessly after Godot import.
+#
 # Run with:
 # Godot --headless --log-file /private/tmp/ai_companion_polyhaven_bounds.log --path . --script scripts/debug/polyhaven_asset_bounds_check.gd
 
@@ -13,13 +16,18 @@ const ASSETS := {
 	"Shelf_01": "res://assets/props/polyhaven/Shelf_01/Shelf_01_1k.gltf",
 	"modern_ceiling_lamp_01": "res://assets/props/polyhaven/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.gltf",
 	"hanging_picture_frame_01": "res://assets/props/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.gltf",
+	"woodentable_01": "res://assets/props/polyhaven/woodentable_01/WoodenTable_01_1k.gltf",
+	"woodenchair_01": "res://assets/props/polyhaven/woodenchair_01/WoodenChair_01_1k.gltf",
+	"ceramic_vase_01": "res://assets/props/polyhaven/ceramic_vase_01/ceramic_vase_01_1k.gltf",
 }
 
 
+## [S4.1][O2.1] 延迟到资源导入完成后执行只读测量。
 func _init() -> void:
 	call_deferred("_run")
 
 
+## [S4.1][O2.1] 实例化每个模型并输出米制世界 AABB。
 func _run() -> void:
 	await process_frame
 	for asset_name in ASSETS:
@@ -43,6 +51,7 @@ func _run() -> void:
 	quit(0)
 
 
+## [S4.1][O2.1] 合并节点树内所有可见 MeshInstance3D 的世界边界。
 func _collect_bounds(node: Node) -> AABB:
 	var bounds := AABB()
 	var has_bounds := false

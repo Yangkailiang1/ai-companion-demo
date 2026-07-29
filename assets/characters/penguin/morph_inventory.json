@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "character_id": "penguin",
+  "total_morphs": 41,
+  "morphs": [
+    {
+      "mesh": "Cube.009",
+      "index": 0,
+      "name": "mouth1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 1,
+      "name": "face1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 2,
+      "name": "blink",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 3,
+      "name": "blink_l",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 4,
+      "name": "blink_r",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 5,
+      "name": "a",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 6,
+      "name": "i",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 7,
+      "name": "u",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 8,
+      "name": "e",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 9,
+      "name": "o",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 10,
+      "name": "angry",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 0,
+      "name": "mouth1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 1,
+      "name": "face1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 2,
+      "name": "blink",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 3,
+      "name": "blink_l",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 4,
+      "name": "blink_r",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 5,
+      "name": "a",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 6,
+      "name": "i",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 7,
+      "name": "u",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 8,
+      "name": "e",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 9,
+      "name": "o",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.009",
+      "index": 10,
+      "name": "angry",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.010",
+      "index": 0,
+      "name": "joy",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.010",
+      "index": 1,
+      "name": "angry",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 0,
+      "name": "blink",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 1,
+      "name": "blink.r",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 2,
+      "name": "blink.l",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 0,
+      "name": "blink",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 1,
+      "name": "blink.r",
+      "default_weight": 0
+    },
+    {
+      "mesh": "球体",
+      "index": 2,
+      "name": "blink.l",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 0,
+      "name": "mouth1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 1,
+      "name": "face1",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 2,
+      "name": "blink",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 3,
+      "name": "blink.l",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 4,
+      "name": "blink.r",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 5,
+      "name": "a",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 6,
+      "name": "i",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 7,
+      "name": "u",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 8,
+      "name": "e",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 9,
+      "name": "o",
+      "default_weight": 0
+    },
+    {
+      "mesh": "Cube.001",
+      "index": 10,
+      "name": "angry",
+      "default_weight": 0
+    }
+  ]
+}

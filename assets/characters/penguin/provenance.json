@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "asset_id": "penguin",
+  "provider": "local",
+  "license": "unknown",
+  "redistribution": "local_only",
+  "license_note": "Source is a local .blend/.vrm archive with no redistribution terms. Treated as private prototype only.",
+  "source_file": "assets/characters/penguin/penguin.glb",
+  "source_sha256": "15435e0997a422c6dfd14564408bb09217242b8662aa622139831820f1d9e48b",
+  "conversion": {
+    "source": "penguin.blend",
+    "tool": "Blender",
+    "script": "tools/blender/export_penguin.py",
+    "animations": "tools/blender/generate_penguin_animations.py"
+  }
+}

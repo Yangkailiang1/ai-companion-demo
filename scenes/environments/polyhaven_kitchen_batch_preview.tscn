@@ -1,0 +1,76 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/environments/polyhaven_kitchen_batch_preview.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/woodentable_01/WoodenTable_01_1k.gltf" id="2_table"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/woodenchair_01/WoodenChair_01_1k.gltf" id="3_chair"]
+[ext_resource type="PackedScene" path="res://assets/props/polyhaven/ceramic_vase_01/ceramic_vase_01_1k.gltf" id="4_vase"]
+
+[sub_resource type="StandardMaterial3D" id="mat_floor"]
+albedo_color = Color(0.72, 0.58, 0.42, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="mesh_floor"]
+material = SubResource("mat_floor")
+size = Vector3(7, 0.08, 4.5)
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.16, 0.12, 0.1, 1)
+ambient_light_source = 3
+ambient_light_color = Color(1, 0.82, 0.66, 1)
+ambient_light_energy = 0.55
+tonemap_mode = 2
+
+[sub_resource type="LabelSettings" id="label_settings"]
+font_size = 28
+font_color = Color(1, 0.94, 0.82, 1)
+outline_size = 8
+outline_color = Color(0.08, 0.05, 0.03, 0.92)
+
+[node name="PolyHavenKitchenBatchPreview" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -32, 0)
+light_color = Color(1, 0.82, 0.62, 1)
+light_energy = 1.15
+shadow_enabled = true
+
+[node name="FillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 3.4, 2.6)
+light_color = Color(0.68, 0.78, 1, 1)
+light_energy = 1.4
+omni_range = 8.0
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.04, 0)
+mesh = SubResource("mesh_floor")
+
+[node name="WoodenTable01" parent="." instance=ExtResource("2_table")]
+position = Vector3(-1.35, 0, 0)
+
+[node name="WoodenChair01" parent="." instance=ExtResource("3_chair")]
+position = Vector3(1.2, 0, 0)
+
+[node name="CeramicVase01" parent="." instance=ExtResource("4_vase")]
+position = Vector3(-1.35, 0.55, 0)
+
+[node name="TableLabel" type="Label3D" parent="."]
+position = Vector3(-1.35, 1.2, 0)
+text = "woodentable_01 + ceramic_vase_01"
+billboard = 1
+label_settings = SubResource("label_settings")
+
+[node name="ChairLabel" type="Label3D" parent="."]
+position = Vector3(1.2, 2.55, 0)
+text = "woodenchair_01"
+billboard = 1
+label_settings = SubResource("label_settings")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(4.8, 3.1, 6.4)
+current = true
+fov = 42.0
