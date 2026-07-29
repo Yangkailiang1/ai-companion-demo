@@ -50,8 +50,12 @@ func _physics_process(_delta: float) -> void:
 	):
 		return
 	_last_event_msec = now
-	SemanticWorld.update_object_state(object_id, "被碰离了原来的位置")
-	MessageBus.world_state_changed.emit("dynamic_prop_displaced", {
+	var semantic_world := _autoload("SemanticWorld")
+	var message_bus := _autoload("MessageBus")
+	if semantic_world == null or message_bus == null:
+		return
+	semantic_world.update_object_state(object_id, "被碰离了原来的位置")
+	message_bus.world_state_changed.emit("dynamic_prop_displaced", {
 		"object_id": object_id,
 		"location_id": _location_id(),
 		"home_position": _home_position,
@@ -62,7 +66,10 @@ func _physics_process(_delta: float) -> void:
 
 ## [S3.3] 刚体移动时更新语义对象坐标，保证 AI 导航到当前位置而非出生点。
 func _sync_semantic_position(body: RigidBody3D) -> void:
-	var object = SemanticWorld.get_object(object_id)
+	var semantic_world := _autoload("SemanticWorld")
+	if semantic_world == null:
+		return
+	var object = semantic_world.get_object(object_id)
 	if object == null:
 		return
 	object.position = body.global_position
@@ -80,3 +87,10 @@ func _location_id() -> String:
 			return String(cursor.get_meta("location_id"))
 		cursor = cursor.get_parent()
 	return "living_room"
+
+
+## [S3.3][T4.2] Resolves runtime services without requiring autoload identifiers
+## during standalone headless script compilation.
+func _autoload(singleton_name: String) -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	return tree.root.get_node_or_null(singleton_name) if tree != null else null

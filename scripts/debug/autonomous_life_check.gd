@@ -21,6 +21,11 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	await process_frame
+	# [S2.1] This legacy contract must not inherit the developer's last saved
+	# world mode; parametric embodied watering has its own dedicated contract.
+	scene.get_node("WorldRoot").switch_location("legacy")
+	await process_frame
+	await process_frame
 	var context := _build_context(scene)
 	await _wait_for_navigation(context.main_agent)
 	var baseline := _prepare_routine_fixture(context)

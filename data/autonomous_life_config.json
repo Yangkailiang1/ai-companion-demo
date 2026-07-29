@@ -31,7 +31,7 @@
       "cooldown_seconds": 60.0,
       "focus_target": "plant",
       "goals": ["water_plant", "rest_on_sofa"],
-      "resources": ["plant", "sofa"],
+      "resources": ["plant", "watering_can", "sofa"],
       "start_memory": "注意到小绿缺水，决定先去浇水再到沙发休息。",
       "completion_memory": "发现小绿缺水后主动浇了水，并去沙发休息。",
       "start_line": "小绿看起来有点渴，我去给它浇水。",

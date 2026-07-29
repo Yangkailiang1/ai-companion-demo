@@ -23,6 +23,9 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	await process_frame
+	scene.get_node("WorldRoot").switch_location("legacy")
+	await process_frame
+	await process_frame
 	var room := scene.get_node("WorldRoot/LivingRoom")
 	_connect_capture()
 	await _verify_failed_pickup_stops_queue(room)

@@ -1,4 +1,4 @@
-# Roadmap: S2.1, S2.2, S4.1
+# Roadmap: S1.2, S2.2, S4.1
 # Responsibility: Assemble one playable generated room, its shared cast and
 # visible travel portals; does not choose world mode or implement generation
 # algorithms.
@@ -11,6 +11,7 @@
 extends Node3D
 
 const WorldPortalAssemblerScript = preload("res://scripts/environments/world_portal_assembler.gd")
+const RoomLightingScript = preload("res://scripts/environments/parametric_room_lighting.gd")
 
 ## [S2.2] 入口旅行请求；由 WorldLocationLoader 连接并处理。
 signal portal_travel_requested(exit_id: String)
@@ -33,6 +34,7 @@ var _location_spawns_restored := false
 var _exits: Dictionary = {}
 var _location_active := true
 var _cast_retire_serial := 0
+var _room_lighting: ParametricRoomLighting
 
 
 ## [S2.2] 在节点入树前注入地点资源、角色出生策略与出口入口数据。
@@ -53,7 +55,7 @@ func configure_location(location_data: Dictionary) -> void:
 	_location_active = bool(location_data.get("runtime_active", true))
 
 
-## [S2.1][S4.1][C6.2][S2.2] 构建房间，迁移角色，然后创建可见入口。
+## [S1.2][S2.2][S4.1] 构建房间、数据驱动灯光、角色与可见入口。
 func _ready() -> void:
 	var manifest := _load_json(manifest_path)
 	var registry := _load_json(registry_path)
@@ -61,6 +63,7 @@ func _ready() -> void:
 		push_error("ParametricRoomRuntime: manifest or registry unavailable")
 		return
 	build_report = ParametricSceneBuilder.new().build_room(self, manifest, registry)
+	_configure_room_lighting(manifest.get("room", {}))
 	assembled_cast = WorldCastAssembler.new().assemble_into(
 		self, cast_members, local_character_manifests
 	)
@@ -207,11 +210,27 @@ func reactivate_portals() -> void:
 func set_location_active(active: bool) -> void:
 	_location_active = active
 	_set_navigation_enabled(active)
+	if is_instance_valid(_room_lighting):
+		_room_lighting.set_active(active)
 	if active:
 		reactivate_portals()
 		refresh_semantic_registration()
 	else:
 		deactivate_portals()
+
+
+## [S1.2][S4.1] 用 Manifest 灯光块替换模板场景中的固定灯光。
+## 旧灯节点先删除，避免拼接住宅出现四盏无限 DirectionalLight 叠加。
+func _configure_room_lighting(room_data: Dictionary) -> void:
+	for legacy_name in ["DirectionalLight3D", "WarmFillLight"]:
+		var legacy_light := get_node_or_null(legacy_name)
+		if legacy_light != null:
+			legacy_light.free()
+	_room_lighting = RoomLightingScript.new()
+	_room_lighting.name = "RoomLighting"
+	add_child(_room_lighting)
+	_room_lighting.configure(room_data.get("lighting", {}))
+	_room_lighting.set_active(_location_active)
 
 
 ## [S2.5] 切换生成房间导航区；不存在导航区时安全跳过。

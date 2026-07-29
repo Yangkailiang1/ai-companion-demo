@@ -93,7 +93,8 @@ func _navigate(params: Dictionary) -> void:
 		_fail_queue("target_missing", {"target": target_id})
 		return
 
-	var obj = SemanticWorld.get_object(target_id)
+	var semantic_world := _autoload("SemanticWorld")
+	var obj = semantic_world.get_object(target_id) if semantic_world != null else null
 	if not obj:
 		_fail_queue("target_not_found", {"target": target_id})
 		return
@@ -183,6 +184,15 @@ func _interact(params: Dictionary) -> void:
 	if not ResultClass.is_success(result):
 		_finish_result(result)
 		return
+	if verb == "water":
+		var message_bus := _autoload("MessageBus")
+		if message_bus != null:
+			message_bus.performance_cue.emit("nod", {
+				"source": "executor",
+				"agent_id": _agent_id(),
+				"interaction": "water",
+				"held_tool": String(params.get("held_tool", "")),
+			})
 	await get_tree().create_timer(1.0).timeout
 	_on_action_finished()
 
@@ -190,9 +200,13 @@ func _interact(params: Dictionary) -> void:
 func _speak(params: Dictionary) -> void:
 	var text: String = params.get("text", "")
 	var tone: String = params.get("tone", "neutral")
+	var message_bus := _autoload("MessageBus")
+	if message_bus == null:
+		_fail_queue("message_bus_missing", {})
+		return
 	if not text.is_empty():
-		MessageBus.agent_show_bubble.emit(_agent_id(), text, tone, 4.0)
-	MessageBus.performance_cue.emit("talk", {"source": "executor", "agent_id": _agent_id()})
+		message_bus.agent_show_bubble.emit(_agent_id(), text, tone, 4.0)
+	message_bus.performance_cue.emit("talk", {"source": "executor", "agent_id": _agent_id()})
 	# speak 不阻塞，立即继续
 	_on_action_finished()
 
@@ -239,7 +253,9 @@ func _sit(params: Dictionary) -> void:
 	if not ResultClass.is_success(result):
 		_finish_result(result)
 		return
-	MessageBus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
+	var message_bus := _autoload("MessageBus")
+	if message_bus != null:
+		message_bus.performance_cue.emit("sit", {"source": "executor", "agent_id": _agent_id()})
 	await get_tree().create_timer(0.8).timeout
 	_on_action_finished()
 
@@ -297,3 +313,10 @@ func _agent_id() -> String:
 	if is_instance_valid(agent_node) and agent_node.get("agent_name") != null:
 		return String(agent_node.get("agent_name"))
 	return ""
+
+
+## [T4.2] Resolves runtime services without requiring autoload identifiers
+## while standalone headless contracts compile this executor.
+func _autoload(singleton_name: String) -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	return tree.root.get_node_or_null(singleton_name) if tree != null else null

@@ -4,7 +4,7 @@
 > 节点编号：C4
 > 状态：`[ACTIVE]`
 > 依赖：T2（SceneObjectDescriptor、语义世界空间查询）、S3（可交互物体）
-> 最后更新：2026-07-28 | 基线程：v0.8.8
+> 最后更新：2026-07-29 | 基线程：v0.8.10
 
 ## 当前状态
 
@@ -51,9 +51,12 @@
 
 - `[DONE baseline]` `ActionExecutor → InteractableObject → RigidBody3D` 已打通；
   书和奶茶会实际挂到 `CarryAnchor`，放下/投掷后恢复物理模拟。
+- `[DONE watering-tool baseline]` 参数化客厅的浇水活动会寻找并走近独立
+  `watering_can` 刚体，拿到 CarryAnchor 后再走向盆栽、执行浇水并在植物旁放下；
+  没有水壶的旧房间确定性降级为原直接浇水链。
 - `[DONE H10-B1]` 走近距离校验（`PICK_UP_DISTANCE_THRESHOLD_METERS = 2.0`）
   和 `InteractionReservation` 占用锁已接入 pick_up/put_down 链路。
-- `[NEXT]` 增加身体对齐、手部 IK、抓握姿势和抓取锚点使用。
+- `[NEXT]` 增加身体对齐、手部 IK、抓握姿势、倒水动画和精确归位锚点。
 
 ### C4.5 `[ACTIVE H10-B1]` 失败处理
 

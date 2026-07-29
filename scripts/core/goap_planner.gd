@@ -71,7 +71,10 @@ func _pa(type: AffordanceTypes.Primitive, params: Dictionary = {}) -> Affordance
 
 
 func _validate_blueprints():
-	var available_ids = SemanticWorld.get_active_object_ids()
+	var semantic_world := _semantic_world()
+	if semantic_world == null:
+		return
+	var available_ids = semantic_world.get_active_object_ids()
 	for goal in goal_blueprints:
 		for action in goal_blueprints[goal]:
 			var target = action.params.get("target", action.params.get("object", ""))
@@ -82,6 +85,16 @@ func _validate_blueprints():
 # === 核心：将 Goal 展开为 Primitive Action 链 ===
 
 func plan(goal: String) -> Array:
+	var semantic_world := _semantic_world()
+	var watering_can = (
+		semantic_world.get_object("watering_can") if semantic_world != null else null
+	)
+	if (
+		goal == "water_plant"
+		and watering_can != null
+		and is_instance_valid(watering_can.godot_node)
+	):
+		return _plan_embodied_watering()
 	# 1. 精确匹配
 	if goal_blueprints.has(goal):
 		return goal_blueprints[goal].duplicate()
@@ -96,6 +109,20 @@ func plan(goal: String) -> Array:
 	return [_pa(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
 
 
+## [C4.4][C9.5b] Builds the visible watering chain when the current room owns
+## a portable watering can; legacy rooms keep the direct-interaction fallback.
+func _plan_embodied_watering() -> Array:
+	return [
+		_pa(AffordanceTypes.Primitive.NAVIGATE, {"target": "watering_can"}),
+		_pa(AffordanceTypes.Primitive.PICK_UP, {"object": "watering_can"}),
+		_pa(AffordanceTypes.Primitive.NAVIGATE, {"target": "plant"}),
+		_pa(AffordanceTypes.Primitive.INTERACT, {
+			"object": "plant", "verb": "water", "held_tool": "watering_can",
+		}),
+		_pa(AffordanceTypes.Primitive.PUT_DOWN, {"object": "watering_can"}),
+	]
+
+
 # === 动态生成 Goal Blueprint（当 LLM 提出新 Goal，而映射表里没有时） ===
 
 func register_blueprint(goal: String, object_id: String, verb: String) -> void:
@@ -107,7 +134,8 @@ func register_blueprint(goal: String, object_id: String, verb: String) -> void:
 
 # 使用 affordance 表自动生成 blueprint
 func auto_plan(goal: String, object_id: String) -> Array:
-	var obj = SemanticWorld.get_object(object_id)
+	var semantic_world := _semantic_world()
+	var obj = semantic_world.get_object(object_id) if semantic_world != null else null
 	if not obj:
 		return [_pa(AffordanceTypes.Primitive.IDLE, {"duration": 1.0})]
 
@@ -134,3 +162,10 @@ func auto_plan(goal: String, object_id: String) -> Array:
 	# 注册到 blueprint 供后续使用
 	goal_blueprints[goal] = actions
 	return actions
+
+
+## [T2][T4.2] Resolves the semantic service without a compile-time singleton
+## dependency, allowing standalone contract scripts to load the planner.
+func _semantic_world() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	return tree.root.get_node_or_null("SemanticWorld") if tree != null else null

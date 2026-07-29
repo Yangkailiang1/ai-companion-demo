@@ -1,0 +1,66 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="CanMaterial"]
+albedo_color = Color(0.18, 0.58, 0.62, 1)
+metallic = 0.18
+roughness = 0.48
+
+[sub_resource type="StandardMaterial3D" id="CanAccentMaterial"]
+albedo_color = Color(0.78, 0.88, 0.75, 1)
+metallic = 0.08
+roughness = 0.55
+
+[sub_resource type="CylinderMesh" id="BodyMesh"]
+top_radius = 0.24
+bottom_radius = 0.28
+height = 0.36
+radial_segments = 20
+
+[sub_resource type="CylinderMesh" id="SpoutMesh"]
+top_radius = 0.055
+bottom_radius = 0.075
+height = 0.48
+radial_segments = 16
+
+[sub_resource type="CylinderMesh" id="RoseMesh"]
+top_radius = 0.105
+bottom_radius = 0.065
+height = 0.12
+radial_segments = 16
+
+[sub_resource type="TorusMesh" id="HandleMesh"]
+inner_radius = 0.15
+outer_radius = 0.205
+rings = 16
+ring_segments = 24
+
+[node name="StylizedWateringCan" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("BodyMesh")
+surface_material_override/0 = SubResource("CanMaterial")
+
+[node name="TopRim" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.205, 0)
+scale = Vector3(0.78, 0.13, 0.78)
+mesh = SubResource("BodyMesh")
+surface_material_override/0 = SubResource("CanAccentMaterial")
+
+[node name="Spout" type="MeshInstance3D" parent="."]
+position = Vector3(0.32, 0.08, 0)
+rotation = Vector3(0, 0, -1.05)
+mesh = SubResource("SpoutMesh")
+surface_material_override/0 = SubResource("CanMaterial")
+
+[node name="Rose" type="MeshInstance3D" parent="."]
+position = Vector3(0.54, 0.205, 0)
+rotation = Vector3(0, 0, -1.05)
+mesh = SubResource("RoseMesh")
+surface_material_override/0 = SubResource("CanAccentMaterial")
+
+[node name="Handle" type="MeshInstance3D" parent="."]
+position = Vector3(-0.1, 0.19, 0)
+rotation = Vector3(1.5708, 0, 0)
+scale = Vector3(1, 1.28, 0.82)
+mesh = SubResource("HandleMesh")
+surface_material_override/0 = SubResource("CanMaterial")

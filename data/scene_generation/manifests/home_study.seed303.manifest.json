@@ -14,6 +14,19 @@
       "depth": 6.4,
       "height": 3.0
     },
+    "lighting": {
+      "key_color": [1.0, 0.82, 0.66],
+      "key_energy": 0.62,
+      "key_rotation_deg": [-54.0, 34.0, 0.0],
+      "fill_color": [1.0, 0.64, 0.38],
+      "fill_energy": 0.46,
+      "fill_position": [1.7, 1.8, -0.8],
+      "fill_range_m": 4.8,
+      "accent_color": [0.48, 0.65, 0.96],
+      "accent_energy": 0.2,
+      "accent_position": [-2.4, 1.8, -2.2],
+      "accent_range_m": 3.4
+    },
     "bounds": {
       "min": [-3.0, 0.0, -2.7],
       "max": [3.0, 0.0, 2.7]

@@ -150,6 +150,9 @@
         "consumable": {
           "type": "boolean"
         },
+        "starts_dynamic": { "type": "boolean" },
+        "mass_kg": { "type": "number", "minimum": 0.05, "maximum": 20 },
+        "continuous_collision": { "type": "boolean" },
         "effects": {
           "type": "object",
           "description": "Map of need name to effect delta when interacted with.",

@@ -711,6 +711,47 @@
         "min_clearance_m": 0.0
       },
       "status": "accepted"
+    },
+    {
+      "asset_id": "watering_can_stylized",
+      "display_name": "青绿色浇水壶",
+      "resource_path": "res://scenes/objects/stylized_watering_can.tscn",
+      "provenance": {
+        "provider": "AI Companion Demo",
+        "official_page": "",
+        "license": "CC0-1.0",
+        "redistribution": "allowed"
+      },
+      "geometry": {
+        "aabb_m": [0.72, 0.52, 0.38],
+        "front_axis": "+X",
+        "up_axis": "+Y",
+        "fit_mode": "uniform"
+      },
+      "roles": {
+        "visual": "clutter",
+        "physics": "rigid",
+        "semantic": ["observable", "interactable", "portable"],
+        "placement": "floor"
+      },
+      "style_tags": ["project_authored", "cozy", "portable", "gardening"],
+      "interaction_profile": "interactable",
+      "capabilities": {
+        "affordances": ["pick_up", "put_down", "inspect"],
+        "has_states": true,
+        "needs_proximity": true,
+        "consumable": false,
+        "starts_dynamic": false,
+        "mass_kg": 0.8,
+        "continuous_collision": false,
+        "effects": {}
+      },
+      "placement_profile": {
+        "preferred_zone": "floor_near_wall",
+        "min_clearance_m": 0.35,
+        "anchor_side": "right_wall"
+      },
+      "status": "accepted"
     }
   ]
 }

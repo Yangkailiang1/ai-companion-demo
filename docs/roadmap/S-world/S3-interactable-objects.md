@@ -4,7 +4,7 @@
 > 节点编号：S3
 > 状态：`[ACTIVE]`
 > 依赖：T2（SceneObjectDescriptor）
-> 最后更新：2026-07-28 | 基线程：v0.8.8
+> 最后更新：2026-07-29 | 基线程：v0.8.10
 
 ## 职责
 
@@ -15,6 +15,11 @@
 ### S3.1 `[DONE baseline]` 盆栽
 
 含水量、健康、成长阶段、枯萎、浇水、恢复、语义同步和存档。
+
+- `[DONE portable-tool baseline]` 新增项目自制 CC0 青绿色浇水壶，具备 Registry
+  来源、碰撞、可携带刚体、SemanticWorld 描述和拿取/放下 affordance；角色浇水
+  时会真实携带该物体，而非隔空修改植物状态。
+- `[NEXT]` 水量状态、壶嘴浇水锚点、水流反馈、固定收纳位置和完整刚体存档。
 
 ### S3.2 `[ACTIVE physics baseline]` 奶茶/食物
 

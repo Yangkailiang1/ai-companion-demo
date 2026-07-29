@@ -168,8 +168,10 @@ func _run_check() -> void:
 				if body == null or not body is RigidBody3D:
 					printerr("FAIL: '%s' expected RigidBody3D, got %s" % [sid, body.get_class() if body else "null"])
 					errors += 1
-				elif not (body as RigidBody3D).freeze:
-					printerr("FAIL: '%s' rigid body not frozen" % sid)
+				elif (body as RigidBody3D).freeze == _starts_dynamic(
+					String(mp.get("asset_id", "")), registry
+				):
+					printerr("FAIL: '%s' rigid freeze state contradicts registry" % sid)
 					errors += 1
 			"none":
 				if body != null:
@@ -220,6 +222,14 @@ func _expected_counts(manifest: Dictionary, registry: Dictionary) -> Dictionary:
 		if role != "none":
 			result.collisions += 1
 	return result
+
+
+## [S3.3][S4.1] Reads the Registry's initial dynamics contract for one asset.
+func _starts_dynamic(asset_id: String, registry: Dictionary) -> bool:
+	for asset in registry.get("assets", []):
+		if String(asset.get("asset_id", "")) == asset_id:
+			return bool(asset.get("capabilities", {}).get("starts_dynamic", false))
+	return false
 
 
 ## [S4.1] 从 res:// 路径加载并解析 JSON，返回 Dictionary。

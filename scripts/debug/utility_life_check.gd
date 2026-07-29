@@ -22,6 +22,9 @@ func _run() -> void:
 	current_scene = scene
 	await process_frame
 	await process_frame
+	scene.get_node("WorldRoot").switch_location("legacy")
+	await process_frame
+	await process_frame
 
 	var bus := root.get_node("MessageBus")
 	var autonomy := root.get_node("AutonomousBehaviorSystem")
@@ -52,6 +55,12 @@ func _configure_fixture(bus: Node, autonomy: Node, world_simulator: Node, plant_
 	world_simulator.get_needs_for_agent("main_agent").energy = 100.0
 	world_simulator.get_needs_for_agent("jue_agent").fun = 35.0
 	world_simulator.get_needs_for_agent("jue_agent").energy = 80.0
+	for node in get_nodes_in_group("agents"):
+		var agent_id := String(node.get("agent_name"))
+		if agent_id not in ["main_agent", "jue_agent"]:
+			autonomy._agent_available_after_msec[agent_id] = (
+				Time.get_ticks_msec() + 30000
+			)
 	bus.emit_actions.connect(func(agent_id: String, actions: Array):
 		if not actions.is_empty():
 			captured_agent_id = agent_id
